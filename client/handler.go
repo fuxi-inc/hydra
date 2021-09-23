@@ -23,6 +23,9 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
+	"github.com/ory/hydra/pkg/magnolia"
+	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
 	"io"
 	"net/http"
 	"time"
@@ -41,7 +44,8 @@ import (
 )
 
 type Handler struct {
-	r InternalRegistry
+	r         InternalRegistry
+	validator *validator.Validate
 }
 
 const (
@@ -50,7 +54,8 @@ const (
 
 func NewHandler(r InternalRegistry) *Handler {
 	return &Handler{
-		r: r,
+		r:         r,
+		validator: validator.New(),
 	}
 }
 
@@ -110,6 +115,48 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	secret := c.Secret
 	c.CreatedAt = time.Now().UTC().Round(time.Second)
 	c.UpdatedAt = c.CreatedAt
+	// Validate the property for identity identifier
+	err := h.validator.Struct(c)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	identity, err := magnolia.GetIdentityIdentifier(c.GetID())
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	if identity != nil {
+		h.r.Writer().WriteError(w, r, errors.New("client_id already exists"))
+		return
+	}
+
+	// Create identity identifier
+	privKey, pubKey, err := x.GenerateKey()
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	signature, err := x.Sign([]byte(c.GetID()+c.GetOwner()), privKey)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	identity = &magolia_api.IdentityIdentifier{
+		Id:        c.GetID(),
+		Name:      c.Name,
+		Email:     c.GetOwner(),
+		PublicKey: pubKey,
+		Signature: signature,
+	}
+	identity, err = magnolia.CreateIdentityIdentifier(identity)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	c.PrivateKey = privKey
+	c.PublicKey = pubKey
 	if err := h.r.ClientManager().CreateClient(r.Context(), &c); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

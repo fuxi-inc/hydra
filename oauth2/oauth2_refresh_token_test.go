@@ -50,7 +50,7 @@ func TestCreateRefreshTokenSessionStress(t *testing.T) {
 		ResponseTypes: []string{"id_token", "code", "token"},
 		GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials"},
 		Scope:         "hydra offline openid",
-		Audience:      []string{"https://api.ory.sh/"},
+		Audience:      []string{"https://magnolia.ory.sh/"},
 	}
 
 	request := &fosite.AccessRequest{

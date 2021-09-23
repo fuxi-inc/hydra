@@ -4,6 +4,15 @@ export GO111MODULE := on
 export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
+APP_PROFILE ?= dev
+ifdef $$APP_PROFILE
+APP_PROFILE := $$APP_PROFILE
+endif
+DSN ?= "cockroach://root@localhost:26257/hydra?sslmode=disable&max_conns=20&max_idle_conns=4"
+ifdef $$DSN
+DSN := $$DSN
+endif
+
 GO_DEPENDENCIES = github.com/ory/go-acc \
 				  golang.org/x/tools/cmd/goimports \
 				  github.com/golang/mock/mockgen \
@@ -122,3 +131,24 @@ install-stable:
 .PHONY: install
 install:
 		GO111MODULE=on go install -tags sqlite .
+
+.PHONY: up
+up:
+	docker-compose -f quickstart-cockroach.yml up -d
+	@echo "Started"
+
+down:
+	docker-compose down
+	@echo "Destroyed"
+
+.PHONY: cockroach
+cockroach:
+	docker exec -it cockroach ./cockroach sql --insecure --user root
+
+.PHONY: migrate
+migrate:
+	APP_PROFILE=$(APP_PROFILE) DSN=$(DSN) go run main.go migrate sql -e
+
+.PHONY: run
+run:
+	APP_PROFILE=$(APP_PROFILE) DSN=$(DSN) go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml

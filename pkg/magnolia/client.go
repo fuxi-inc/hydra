@@ -1,0 +1,88 @@
+package magnolia
+
+import (
+	"context"
+	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
+	"github.com/ory/hydra/internal/logger"
+	api "github.com/ory/hydra/pkg/magnolia/v1"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+	"os"
+	"time"
+)
+
+const (
+	apiServerAddress = "magnolia.cornflower.fuxi.is:50552"
+	apiKey           = "89c14896-1748-a1b6-d963-27bf99c4fb47"
+	apiSecret        = "c01735ef-23ef-0114-705d-1c201502fa51"
+)
+
+func GetApiLicense() (string, string) {
+	return apiKey, apiSecret
+}
+
+func ConnectSecureServer() *grpc.ClientConn {
+	conn, err := grpc.Dial(apiServerAddress, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		logger.Get().Warnw("can't connect to the magnolia v1 server", zap.Error(err))
+		os.Exit(1)
+	}
+	return conn
+}
+
+func GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
+	conn := ConnectSecureServer()
+	defer conn.Close()
+
+	apiKey, apiSecret := GetApiLicense()
+
+	client := api.NewEntropyServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.GetIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Name: name})
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Result.StatusCode != 200 {
+		return nil, errors.New(resp.Result.Message)
+	}
+	logger.Get().Infow("get identity identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}
+
+func CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
+	conn := ConnectSecureServer()
+	defer conn.Close()
+
+	apiKey, apiSecret := GetApiLicense()
+
+	client := api.NewEntropyServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
+		Id:        entity.GetId(),
+		Name:      entity.GetName(),
+		Email:     entity.GetEmail(),
+		PublicKey: entity.GetPublicKey(),
+		Signature: entity.GetSignature(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Result.StatusCode != 200 {
+		return nil, errors.New(resp.Result.Message)
+	}
+	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}

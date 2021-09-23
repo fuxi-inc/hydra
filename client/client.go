@@ -40,7 +40,8 @@ type Client struct {
 	ID int64 `json:"-" db:"pk"`
 
 	// ID  is the id for this client.
-	OutfacingID string `json:"client_id" db:"id"`
+	// Changed validation for FUXI identity identifier, it must be a domain format now.
+	OutfacingID string `json:"client_id" db:"id" validate:"fqdn"`
 
 	// Name is the human-readable string name of the client to be presented to the
 	// end-user during authorization.
@@ -78,7 +79,14 @@ type Client struct {
 	Audience sqlxx.StringSlicePipeDelimiter `json:"audience" db:"audience"`
 
 	// Owner is a string identifying the owner of the OAuth 2.0 Client.
-	Owner string `json:"owner" db:"owner"`
+	// Used for FUXI identity identifier as email property.
+	Owner string `json:"owner" db:"owner" validate:"email"`
+
+	// New property for FUXI identity identifier
+	PrivateKey []byte `json:"-" db:"private_key" validate:"required"`
+
+	// New property for FUXI identity identifier
+	PublicKey []byte `json:"publicKey" db:"public_key" validate:"required"`
 
 	// PolicyURI is a URL string that points to a human-readable privacy policy document
 	// that describes how the deployment organization collects, uses,

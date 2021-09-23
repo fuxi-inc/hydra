@@ -1,0 +1,20 @@
+strategies:
+  access_token: jwt
+  scope: exact
+
+ttl:
+  access_token: 24h
+  refresh_token: 1h
+  id_token: 1h
+  auth_code: 1h
+  login_consent_request: 1h
+
+secrets:
+  cookie:
+    - this-is-the-primary-secret
+    - this-is-an-old-secret
+    - this-is-another-old-secret
+  system:
+    - this-is-the-primary-secret
+    - this-is-an-old-secret
+    - this-is-another-old-secret

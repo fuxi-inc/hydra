@@ -203,7 +203,7 @@ func createPlan(t *testing.T, extra url.Values, isParallel bool) {
 	// https://localhost:8443/api/plan?planName=oidcc-formpost-basic-certification-test-plan&variant={"server_metadata":"discovery","client_registration":"dynamic_client"}&variant={"server_metadata":"discovery","client_registration":"dynamic_client"}
 	//planConfig, err := sjson.SetBytes(config, "alias", uuid.New())
 	//require.NoError(t, err)
-	body := makePost(t, urlx.CopyWithQuery(urlx.AppendPaths(server, "/api/plan"), extra).String(),
+	body := makePost(t, urlx.CopyWithQuery(urlx.AppendPaths(server, "/magnolia/plan"), extra).String(),
 		bytes.NewReader(config),
 		201)
 
@@ -235,7 +235,7 @@ func createPlan(t *testing.T, extra url.Values, isParallel bool) {
 				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
 
 				t.Logf("Creating retry %d/%d testModule %s for plan %s with params: %+v", retry, maxRetries, module, plan, params)
-				body := makePost(t, urlx.CopyWithQuery(urlx.AppendPaths(server, "/api/runner"), params).String(),
+				body := makePost(t, urlx.CopyWithQuery(urlx.AppendPaths(server, "/magnolia/runner"), params).String(),
 					nil, 201)
 
 				conf := backoff.NewExponentialBackOff()
@@ -287,7 +287,7 @@ func createPlan(t *testing.T, extra url.Values, isParallel bool) {
 								time.Sleep(bo)
 							}
 
-							makePost(t, urlx.AppendPaths(server, "/api/runner/", gjson.GetBytes(body, "id").String()).String(), nil, 200)
+							makePost(t, urlx.AppendPaths(server, "/magnolia/runner/", gjson.GetBytes(body, "id").String()).String(), nil, 200)
 						}
 					}
 				}
@@ -300,7 +300,7 @@ func createPlan(t *testing.T, extra url.Values, isParallel bool) {
 }
 
 func checkStatus(t *testing.T, testID string) (string, status) {
-	res, err := httpClient.Get(urlx.AppendPaths(server, "/api/info", testID).String())
+	res, err := httpClient.Get(urlx.AppendPaths(server, "/magnolia/info", testID).String())
 	require.NoError(t, err)
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)

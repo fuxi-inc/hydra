@@ -172,7 +172,7 @@ workflows:
               only: master
       - sdk/generate:
           appname: Ory_Hydra
-          swagpath: spec/api.json
+          swagpath: spec/magnolia.json
           specignorepgks: internal/httpclient gopkg.in/square/go-jose.v2
           requires:
             - test
@@ -186,7 +186,7 @@ workflows:
               ignore: /master/
       - sdk/release:
           specignorepgks: internal/httpclient gopkg.in/square/go-jose.v2
-          swagpath: spec/api.json
+          swagpath: spec/magnolia.json
           requires:
             - test
             - sdk/generate
@@ -201,7 +201,7 @@ workflows:
           requires:
             - test
       - docs/build:
-          swag-spec-location: spec/api.json
+          swag-spec-location: spec/magnolia.json
           requires:
             - test
           filters:

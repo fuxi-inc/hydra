@@ -9,7 +9,7 @@ serve:
     host: localhost
     socket:
       owner: hydra
-      group: hydra-public-api
+      group: hydra-public-magnolia
       mode: 0775
     cors:
       enabled: false
@@ -32,7 +32,7 @@ serve:
     host: localhost
     socket:
       owner: hydra
-      group: hydra-admin-api
+      group: hydra-admin-magnolia
       mode: 0770
 
     cors:
@@ -141,4 +141,4 @@ tracing:
         value: 1
         server_url: http://sampling
     zipkin:
-      server_url: http://zipkin/api/v2/spans
+      server_url: http://zipkin/magnolia/v2/spans

@@ -57,7 +57,7 @@ func TestClientCredentials(t *testing.T) {
 			ResponseTypes: []string{"token"},
 			GrantTypes:    []string{"client_credentials"},
 			Scope:         "foobar",
-			Audience:      []string{"https://api.ory.sh/"},
+			Audience:      []string{"https://magnolia.ory.sh/"},
 		}
 		require.NoError(t, reg.ClientManager().CreateClient(context.TODO(), c))
 		return c, clientcredentials.Config{
@@ -125,7 +125,7 @@ func TestClientCredentials(t *testing.T) {
 
 	t.Run("case=should fail because audience is not allowed", func(t *testing.T) {
 		_, conf := newClient(t)
-		conf.EndpointParams = url.Values{"audience": {"https://not-api.ory.sh/"}}
+		conf.EndpointParams = url.Values{"audience": {"https://not-magnolia.ory.sh/"}}
 		_, err := getToken(t, conf)
 		require.Error(t, err)
 	})

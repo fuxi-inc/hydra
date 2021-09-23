@@ -13,20 +13,23 @@
 version: '3.7'
 
 services:
-  hydra-migrate:
-    image: oryd/hydra:v1.10.6
-    environment:
-      - DSN=cockroach://root@cockroachd:26257/defaultdb?sslmode=disable&max_conns=20&max_idle_conns=4
 
-  hydra:
-    image: oryd/hydra:v1.10.6
-    environment:
-      - DSN=cockroach://root@cockroachd:26257/defaultdb?sslmode=disable&max_conns=20&max_idle_conns=4
-
-  cockroachd:
-    image: cockroachdb/cockroach:v2.1.6
+  cockroach:
+    container_name: cockroach
+    image: cockroachdb/cockroach:latest
+    command: start-single-node --accept-sql-without-tls --insecure
     ports:
       - "26257:26257"
-    command: start --insecure
+      - "8384:8080"
     networks:
       - intranet
+    volumes:
+      - db_data:/cockroach/cockroach-data
+
+networks:
+  intranet:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

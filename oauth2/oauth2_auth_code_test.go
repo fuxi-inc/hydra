@@ -95,7 +95,7 @@ func TestAuthCodeWithDefaultStrategy(t *testing.T) {
 			ResponseTypes: []string{"id_token", "code", "token"},
 			GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials"},
 			Scope:         "hydra offline openid",
-			Audience:      []string{"https://api.ory.sh/"},
+			Audience:      []string{"https://magnolia.ory.sh/"},
 		}
 		require.NoError(t, reg.ClientManager().CreateClient(context.TODO(), c))
 		return c, &oauth2.Config{
@@ -265,7 +265,7 @@ func TestAuthCodeWithDefaultStrategy(t *testing.T) {
 	t.Run("case=checks if request fails when audience does not match", func(t *testing.T) {
 		testhelpers.NewLoginConsentUI(t, reg.Config(), testhelpers.HTTPServerNoExpectedCallHandler(t), testhelpers.HTTPServerNoExpectedCallHandler(t))
 		_, conf := newOAuth2Client(t, testhelpers.NewCallbackURL(t, "callback", testhelpers.HTTPServerNotImplementedHandler))
-		code, _ := getAuthorizeCode(t, conf, nil, oauth2.SetAuthURLParam("audience", "https://not-ory-api/"))
+		code, _ := getAuthorizeCode(t, conf, nil, oauth2.SetAuthURLParam("audience", "https://not-ory-magnolia/"))
 		require.Empty(t, code)
 	})
 
@@ -350,7 +350,7 @@ func TestAuthCodeWithDefaultStrategy(t *testing.T) {
 	})
 
 	t.Run("case=perform flow with audience", func(t *testing.T) {
-		expectAud := "https://api.ory.sh/"
+		expectAud := "https://magnolia.ory.sh/"
 		c, conf := newOAuth2Client(t, testhelpers.NewCallbackURL(t, "callback", testhelpers.HTTPServerNotImplementedHandler))
 		testhelpers.NewLoginConsentUI(t, reg.Config(),
 			acceptLoginHandler(t, c, subject, func(r *admin.GetLoginRequestOK) *models.AcceptLoginRequest {
@@ -364,7 +364,7 @@ func TestAuthCodeWithDefaultStrategy(t *testing.T) {
 			}))
 
 		code, _ := getAuthorizeCode(t, conf, nil,
-			oauth2.SetAuthURLParam("audience", "https://api.ory.sh/"),
+			oauth2.SetAuthURLParam("audience", "https://magnolia.ory.sh/"),
 			oauth2.SetAuthURLParam("nonce", nonce))
 		require.NotEmpty(t, code)
 
