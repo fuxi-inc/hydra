@@ -7,7 +7,6 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 )
 
 func MarshalRSAPrivate(priv *rsa.PrivateKey) string {
@@ -24,10 +23,8 @@ func MarshalRSAPublic(pub *rsa.PublicKey) string {
 }
 
 func UnmarshalPrivateKey(priv []byte) (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode(priv)
-	b := block.Bytes
 	var err error
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	key, err := x509.ParsePKCS1PrivateKey(priv)
 	if err != nil {
 		return nil, err
 	}
@@ -35,18 +32,12 @@ func UnmarshalPrivateKey(priv []byte) (*rsa.PrivateKey, error) {
 }
 
 func UnmarshalPublickey(pub []byte) (*rsa.PublicKey, error) {
-	block, _ := pem.Decode(pub)
-	b := block.Bytes
 	var err error
-	ifc, err := x509.ParsePKIXPublicKey(b)
+	pubKey, err := x509.ParsePKCS1PublicKey(pub)
 	if err != nil {
 		return nil, err
 	}
-	key, ok := ifc.(*rsa.PublicKey)
-	if !ok {
-		return nil, errors.New("not a legal public key")
-	}
-	return key, nil
+	return pubKey, nil
 }
 
 func GenerateKey() ([]byte, []byte, error) {
@@ -96,7 +87,7 @@ func Sign(msg []byte, privKeyBytes []byte) ([]byte, error) {
 	hash := sha512.New()
 	hash.Write(msg)
 	hs := hash.Sum(nil)
-	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hs)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA512, hs)
 	return signature, err
 }
 
@@ -108,5 +99,5 @@ func Verify(msg, sig, publicKeyBytes []byte) error {
 	hash := sha512.New()
 	hash.Write(msg)
 	hs := hash.Sum(nil)
-	return rsa.VerifyPKCS1v15(publicKey, crypto.SHA256, hs, sig)
+	return rsa.VerifyPKCS1v15(publicKey, crypto.SHA512, hs, sig)
 }

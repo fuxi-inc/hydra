@@ -24,11 +24,13 @@ package main
 
 import (
 	"github.com/ory/hydra/cmd"
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/profilex"
 )
 
 func main() {
 	defer profilex.Profile().Stop()
 
+	logger.Initialize(true)
 	cmd.Execute()
 }

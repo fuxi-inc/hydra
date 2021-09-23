@@ -24,8 +24,10 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-playground/validator/v10"
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/pkg/magnolia"
 	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"time"
@@ -121,10 +123,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
+	logger.Get().Infow("prepare to get identity identifier", zap.String("client_id", c.GetID()))
 	identity, err := magnolia.GetIdentityIdentifier(c.GetID())
 	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
+		logger.Get().Error(err)
+		//h.r.Writer().WriteError(w, r, err)
+		//return
 	}
 	if identity != nil {
 		h.r.Writer().WriteError(w, r, errors.New("client_id already exists"))

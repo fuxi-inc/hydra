@@ -45,7 +45,7 @@ type Client struct {
 
 	// Name is the human-readable string name of the client to be presented to the
 	// end-user during authorization.
-	Name string `json:"client_name" db:"client_name"`
+	Name string `json:"client_name" db:"client_name" validate:"required"`
 
 	// Secret is the client's secret. The secret will be included in the create request as cleartext, and then
 	// never again. The secret is stored using BCrypt so it is impossible to recover it. Tell your users
@@ -83,10 +83,10 @@ type Client struct {
 	Owner string `json:"owner" db:"owner" validate:"email"`
 
 	// New property for FUXI identity identifier
-	PrivateKey []byte `json:"-" db:"private_key" validate:"required"`
+	PrivateKey []byte `json:"-" db:"private_key"`
 
 	// New property for FUXI identity identifier
-	PublicKey []byte `json:"publicKey" db:"public_key" validate:"required"`
+	PublicKey []byte `json:"publicKey" db:"public_key"`
 
 	// PolicyURI is a URL string that points to a human-readable privacy policy document
 	// that describes how the deployment organization collects, uses,

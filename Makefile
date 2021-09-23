@@ -151,4 +151,4 @@ migrate:
 
 .PHONY: run
 run:
-	APP_PROFILE=$(APP_PROFILE) DSN=$(DSN) go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml
+	APP_PROFILE=$(APP_PROFILE) go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http

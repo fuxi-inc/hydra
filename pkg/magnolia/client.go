@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	apiServerAddress = "magnolia.cornflower.fuxi.is:50552"
-	apiKey           = "89c14896-1748-a1b6-d963-27bf99c4fb47"
-	apiSecret        = "c01735ef-23ef-0114-705d-1c201502fa51"
+	apiServerAddress = "api.cornflower.fuxi.is:50552"
+	apiKey           = "eb3bf3c4-8337-fc49-d8be-15151bbff634"
+	apiSecret        = "dc1ee1db-df9c-68f2-26ef-7b8c951b44ab"
 )
 
 func GetApiLicense() (string, string) {
@@ -45,7 +45,10 @@ func GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
+	print(name)
+	print(ctx)
 	resp, err := client.GetIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Name: name})
+	print(err)
 	if err != nil {
 		return nil, err
 	}

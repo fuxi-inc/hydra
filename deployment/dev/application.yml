@@ -1,3 +1,4 @@
+dsn: "cockroach://root@localhost:26257/hydra?sslmode=disable&max_conns=20&max_idle_conns=4"
 strategies:
   access_token: jwt
   scope: exact
