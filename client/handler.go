@@ -126,15 +126,15 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	logger.Get().Infow("prepare to get identity identifier", zap.String("client_id", c.GetID()))
 	identity, err := magnolia.GetIdentityIdentifier(c.GetID())
 	if err != nil {
-		logger.Get().Error(err)
-		//h.r.Writer().WriteError(w, r, err)
-		//return
+		h.r.Writer().WriteError(w, r, err)
+		return
 	}
 	if identity != nil {
 		h.r.Writer().WriteError(w, r, errors.New("client_id already exists"))
 		return
 	}
 
+	logger.Get().Infow("prepare to create key pairs for client")
 	// Create identity identifier
 	privKey, pubKey, err := x.GenerateKey()
 	if err != nil {
@@ -153,12 +153,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		PublicKey: pubKey,
 		Signature: signature,
 	}
+	logger.Get().Infow("prepare to create identity identifier")
 	identity, err = magnolia.CreateIdentityIdentifier(identity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
+	logger.Get().Infow("create identity identifier done")
 	c.PrivateKey = privKey
 	c.PublicKey = pubKey
 	if err := h.r.ClientManager().CreateClient(r.Context(), &c); err != nil {
@@ -406,7 +408,12 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
-	if err := h.r.ClientManager().DeleteClient(r.Context(), id); err != nil {
+	err := magnolia.DeleteIdentityIdentifier(id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	if err = h.r.ClientManager().DeleteClient(r.Context(), id); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

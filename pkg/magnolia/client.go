@@ -45,17 +45,11 @@ func GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
-	print(name)
-	print(ctx)
 	resp, err := client.GetIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Name: name})
-	print(err)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.Result.StatusCode != 200 {
-		return nil, errors.New(resp.Result.Message)
-	}
 	logger.Get().Infow("get identity identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }
@@ -88,4 +82,28 @@ func CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIden
 	}
 	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
+}
+
+func DeleteIdentityIdentifier(id string) error {
+	conn := ConnectSecureServer()
+	defer conn.Close()
+
+	apiKey, apiSecret := GetApiLicense()
+
+	client := api.NewEntropyServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.DeleteIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Name: id})
+	if err != nil {
+		return err
+	}
+
+	if resp.Result.StatusCode != 200 {
+		return errors.New(resp.Result.Message)
+	}
+	logger.Get().Infow("delete identity identifier", zap.Any("data", id))
+	return nil
 }
