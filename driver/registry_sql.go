@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"github.com/ory/hydra/identifier"
 	"strings"
 	"time"
 
@@ -121,5 +122,9 @@ func (m *RegistrySQL) OAuth2Storage() x.FositeStorer {
 }
 
 func (m *RegistrySQL) KeyManager() jwk.Manager {
+	return m.Persister()
+}
+
+func (m *RegistrySQL) IdentifierManager() identifier.Manager {
 	return m.Persister()
 }

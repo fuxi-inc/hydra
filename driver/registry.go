@@ -2,7 +2,7 @@ package driver
 
 import (
 	"context"
-
+	"github.com/ory/hydra/identifier"
 	"github.com/pkg/errors"
 
 	"github.com/ory/x/errorsx"
@@ -46,6 +46,7 @@ type Registry interface {
 	oauth2.Registry
 	PrometheusManager() *prometheus.MetricsManager
 	x.TracingProvider
+	identifier.Registry
 
 	RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPublic)
 	ClientHandler() *client.Handler

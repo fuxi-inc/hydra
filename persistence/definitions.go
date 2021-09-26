@@ -2,9 +2,9 @@ package persistence
 
 import (
 	"context"
-
 	"github.com/ory/hydra/client"
 	"github.com/ory/hydra/consent"
+	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/jwk"
 	"github.com/ory/hydra/x"
 	"github.com/ory/x/popx"
@@ -24,8 +24,10 @@ type (
 		MigrateUp(context.Context) error
 		PrepareMigration(context.Context) error
 		Connection(context.Context) *pop.Connection
+		identifier.Manager
 	}
 	Provider interface {
 		Persister() Persister
 	}
 )
+

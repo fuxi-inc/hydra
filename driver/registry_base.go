@@ -3,6 +3,7 @@ package driver
 import (
 	"context"
 	"fmt"
+	"github.com/ory/hydra/identifier"
 	"net"
 	"net/http"
 	"strings"
@@ -75,6 +76,8 @@ type RegistryBase struct {
 	buildDate    string
 	r            Registry
 	persister    persistence.Persister
+	ih           *identifier.Handler
+	iv           *identifier.Validator
 }
 
 func (m *RegistryBase) with(r Registry) *RegistryBase {
@@ -108,6 +111,7 @@ func (m *RegistryBase) RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPubl
 	m.KeyHandler().SetRoutes(admin, public, m.OAuth2AwareMiddleware())
 	m.ClientHandler().SetRoutes(admin)
 	m.OAuth2Handler().SetRoutes(admin, public, m.OAuth2AwareMiddleware())
+	m.IdentifierHandler().SetRoutes(public)
 }
 
 func (m *RegistryBase) BuildVersion() string {
@@ -474,4 +478,18 @@ func (m *RegistryBase) AccessRequestHooks() []oauth2.AccessRequestHook {
 		}
 	}
 	return m.arhs
+}
+
+func (m *RegistryBase) IdentifierValidator() *identifier.Validator {
+	if m.iv == nil {
+		m.iv = identifier.NewValidator()
+	}
+	return m.iv
+}
+
+func (m *RegistryBase) IdentifierHandler() *identifier.Handler {
+	if m.ih == nil {
+		m.ih = identifier.NewHandler(m.r)
+	}
+	return m.ih
 }
