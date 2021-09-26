@@ -21,6 +21,7 @@
 package oauth2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -68,6 +69,7 @@ const (
 	RevocationPath   = "/oauth2/revoke"
 	FlushPath        = "/oauth2/flush"
 	DeleteTokensPath = "/oauth2/tokens" // #nosec G101
+	AuthenticatePath = "/oauth2/authenticate"
 )
 
 type Handler struct {
@@ -110,6 +112,8 @@ func (h *Handler) SetRoutes(admin *x.RouterAdmin, public *x.RouterPublic, corsMi
 	admin.POST(IntrospectPath, h.IntrospectHandler)
 	admin.POST(FlushPath, h.FlushHandler)
 	admin.DELETE(DeleteTokensPath, h.DeleteHandler)
+	admin.POST(AuthenticatePath, h.Authenticate)
+	admin.GET(AuthenticatePath, h.Authenticate)
 }
 
 // swagger:route GET /oauth2/sessions/logout public disconnectUser
@@ -811,6 +815,68 @@ func (h *Handler) DeleteHandler(w http.ResponseWriter, r *http.Request, _ httpro
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if r.Method == "POST" {
+		var params = make(map[string]string)
+
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+			return
+		}
+
+		clientId := params["client_id"]
+		clientSecret := params["client_secret"]
+
+		c, err := h.r.ClientManager().GetConcreteClient(r.Context(), clientId)
+		if err != nil {
+			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+			return
+		}
+
+		if c.Secret != clientSecret {
+			h.r.Writer().WriteError(w, r, errors.New("wrong credentials"))
+			return
+		}
+		claim := &jwt.JWTClaims{
+			Subject:    clientId,
+			Issuer:     "mememe",
+			Audience:   []string{"master", "slave"},
+			JTI:        "",
+			IssuedAt:   time.Time{},
+			NotBefore:  time.Time{},
+			ExpiresAt:  time.Time{},
+			Scope:      []string{"data"},
+			Extra:      nil,
+			ScopeField: 0,
+		}
+		header := &jwt.Headers{}
+		rawToken, _, err := h.r.AccessTokenJWTStrategy().Generate(context.TODO(), claim.ToMapClaims(), header)
+		if err != nil {
+			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+			return
+		}
+		h.r.Writer().Write(w, r, rawToken)
+	} else if r.Method == "GET" {
+		accessToken := fosite.AccessTokenFromRequest(r)
+
+		if accessToken == "" {
+			h.r.Writer().WriteError(w, r, errors.New(""))
+			return
+		}
+
+		_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+		if err != nil {
+			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+			return
+		}
+		h.r.Writer().Write(w, r, "OK")
+	} else {
+		h.r.Writer().WriteError(w, r, errors.New("unsupported method"))
+		return
+	}
+
 }
 
 // This function will not be called, OPTIONS request will be handled by cors
