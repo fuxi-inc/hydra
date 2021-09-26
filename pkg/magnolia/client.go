@@ -107,3 +107,38 @@ func DeleteIdentityIdentifier(id string) error {
 	logger.Get().Infow("delete identity identifier", zap.Any("data", id))
 	return nil
 }
+
+func AvailableNamespaces() []string {
+	conn := ConnectSecureServer()
+	defer conn.Close()
+
+	apiKey, apiSecret := GetApiLicense()
+
+	client := api.NewEntropyServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	var result []string
+
+	resp, err := client.AvailableNamespace(ctx, &api.GeneralPaginationRequest{Pagination: &api.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}})
+	if err != nil {
+		println(err.Error())
+		return result
+	}
+
+	if resp.Result.StatusCode != 200 {
+		println(resp.Result.Message)
+		return result
+	}
+	namespaces := resp.Data
+	println(len(namespaces))
+	for _, ns := range namespaces {
+		result = append(result, ns.Id)
+	}
+	return result
+}
