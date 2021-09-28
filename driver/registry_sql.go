@@ -3,6 +3,7 @@ package driver
 import (
 	"context"
 	"github.com/ory/hydra/identifier"
+	"github.com/ory/hydra/subscription"
 	"strings"
 	"time"
 
@@ -126,5 +127,9 @@ func (m *RegistrySQL) KeyManager() jwk.Manager {
 }
 
 func (m *RegistrySQL) IdentifierManager() identifier.Manager {
+	return m.Persister()
+}
+
+func (m *RegistrySQL) SubscriptionManager() subscription.Manager {
 	return m.Persister()
 }

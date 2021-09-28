@@ -6,6 +6,7 @@ import (
 	"github.com/ory/hydra/consent"
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/jwk"
+	"github.com/ory/hydra/subscription"
 	"github.com/ory/hydra/x"
 	"github.com/ory/x/popx"
 
@@ -25,9 +26,9 @@ type (
 		PrepareMigration(context.Context) error
 		Connection(context.Context) *pop.Connection
 		identifier.Manager
+		subscription.Manager
 	}
 	Provider interface {
 		Persister() Persister
 	}
 )
-

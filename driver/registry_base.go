@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ory/hydra/identifier"
+	"github.com/ory/hydra/subscription"
 	"net"
 	"net/http"
 	"strings"
@@ -78,6 +79,8 @@ type RegistryBase struct {
 	persister    persistence.Persister
 	ih           *identifier.Handler
 	iv           *identifier.Validator
+	sh           *subscription.Handler
+	sv           *subscription.Validator
 }
 
 func (m *RegistryBase) with(r Registry) *RegistryBase {
@@ -112,6 +115,7 @@ func (m *RegistryBase) RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPubl
 	m.ClientHandler().SetRoutes(admin)
 	m.OAuth2Handler().SetRoutes(admin, public, m.OAuth2AwareMiddleware())
 	m.IdentifierHandler().SetRoutes(public)
+	m.SubscriptionHandler().SetRoutes(public)
 }
 
 func (m *RegistryBase) BuildVersion() string {
@@ -492,4 +496,18 @@ func (m *RegistryBase) IdentifierHandler() *identifier.Handler {
 		m.ih = identifier.NewHandler(m.r)
 	}
 	return m.ih
+}
+
+func (m *RegistryBase) SubscriptionValidator() *subscription.Validator {
+	if m.sv == nil {
+		m.sv = subscription.NewValidator()
+	}
+	return m.sv
+}
+
+func (m *RegistryBase) SubscriptionHandler() *subscription.Handler {
+	if m.sh == nil {
+		m.sh = subscription.NewHandler(m.r)
+	}
+	return m.sh
 }

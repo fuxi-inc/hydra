@@ -147,7 +147,7 @@ cockroach:
 
 .PHONY: migrate
 migrate:
-	APP_PROFILE=$(APP_PROFILE) DSN=$(DSN) go run main.go migrate sql -e
+	APP_PROFILE=$(APP_PROFILE) go run main.go migrate sql -e --config deployment/$(APP_PROFILE)/application.yml
 
 .PHONY: run
 run:
