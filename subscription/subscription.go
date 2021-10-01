@@ -3,6 +3,7 @@ package subscription
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/ory/x/sqlxx"
 	"time"
@@ -11,25 +12,27 @@ import (
 type SubscriptionType string
 
 const (
-	Free    SubscriptionType = "free"
-	Charged                  = "charged"
+	Free    SubscriptionType = "Free"
+	Charged                  = "Charged"
 )
 
 type SubscriptionStatus string
 
 const (
-	Applied SubscriptionStatus = "applied"
-	Granted                    = "granted"
-	Refused                    = "refused"
+	Applied SubscriptionStatus = "Applied"
+	Granted                    = "Granted"
+	Refused                    = "Refused"
 )
 
 type Subscription struct {
 	// Hash(Requestor+Target+Owner).Target
 	ID         string               `json:"id" db:"id"`
 	Name       string               `json:"name" db:"name"`
+	Content    string               `json:"content" db:"content"`
 	Requestor  string               `json:"requestor" db:"requestor"`
-	Target     string               `json:"target" db:"target"`
+	Recipient  string               `json:"recipient" db:"recipient"`
 	Owner      string               `json:"owner" db:"owner"`
+	Identifier string               `json:"identifier" db:"identifier"`
 	Type       SubscriptionType     `json:"type" db:"type"`
 	Status     SubscriptionStatus   `json:"status" db:"status"`
 	CreatedAt  time.Time            `json:"created_at" db:"created_at"`
@@ -38,27 +41,47 @@ type Subscription struct {
 	Metadata   sqlxx.JSONRawMessage `json:"metadata,omitempty" db:"metadata"`
 }
 
-func (sub *Subscription) init() {
-	if sub.Name == "" {
-		sub.Name = fmt.Sprintf("%s send an apply for your data identifier: %s", sub.Requestor, sub.Target)
+func (entity *Subscription) init() {
+	if entity.Name == "" {
+		if entity.Requestor != entity.Owner {
+			entity.Name = fmt.Sprintf("%s wants to access your data identifier: %s", entity.Requestor, entity.Identifier)
+		} else {
+			entity.Name = fmt.Sprintf("%s will share your data identifier: %s", entity.Requestor, entity.Identifier)
+		}
 	}
-	if sub.Type == "" {
-		sub.Type = Free
+	if entity.Type == "" {
+		entity.Type = Free
 	}
-	if sub.Status == "" {
-		sub.Status = Applied
+	if entity.Status == "" {
+		entity.Status = Applied
 	}
-	sub.CreatedAt = time.Now()
-	sub.ModifiedAt = time.Now()
-	sub.ExpiredAt = sub.CreatedAt.Add(time.Duration(120) * time.Hour)
+	entity.CreatedAt = time.Now()
+	entity.ModifiedAt = time.Now()
+	entity.ExpiredAt = entity.CreatedAt.Add(time.Duration(120) * time.Hour)
 	h := md5.New()
-	h.Write([]byte(sub.Requestor + sub.Target + sub.Owner))
+	h.Write([]byte(entity.Requestor + entity.Identifier + entity.Recipient + entity.Owner))
 	hash := hex.EncodeToString(h.Sum([]byte{}))
-	sub.ID = string(hash) + "." + sub.Target
+	entity.ID = string(hash) + "." + entity.Identifier
 }
 
 type ApproveResult struct {
 	ID     string             `json:"id" db:"id"`
 	Owner  string             `json:"owner" db:"owner"`
 	Status SubscriptionStatus `json:"status" db:"status"`
+}
+
+func (status SubscriptionStatus) IsValid() error {
+	switch status {
+	case Applied, Granted, Refused:
+		return nil
+	}
+	return errors.New("invalid SubscriptionStatus type")
+}
+
+func (st SubscriptionType) IsValid() error {
+	switch st {
+	case Free, Charged:
+		return nil
+	}
+	return errors.New("invalid SubscriptionType type")
 }

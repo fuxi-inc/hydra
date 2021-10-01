@@ -10,10 +10,8 @@ type Manager interface {
 
 type Storage interface {
 	GetSubscription(ctx context.Context, id string) (*Subscription, error)
-
 	CreateSubscription(ctx context.Context, entity *Subscription) error
-
-	UpdateSubscription(ctx context.Context, audit *ApproveResult) error
-
+	AuditSubscription(ctx context.Context, audit *ApproveResult) error
 	DeleteSubscription(ctx context.Context, id string) error
+	GetSubscriptions(ctx context.Context, filters Filter) (int, []Subscription, error)
 }

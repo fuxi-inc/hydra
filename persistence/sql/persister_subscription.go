@@ -15,7 +15,7 @@ func (p *Persister) GetSubscription(ctx context.Context, id string) (*subscripti
 	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
 }
 
-func (p *Persister) UpdateSubscription(ctx context.Context, audit *subscription.ApproveResult) error {
+func (p *Persister) AuditSubscription(ctx context.Context, audit *subscription.ApproveResult) error {
 	return p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		entity, err := p.GetSubscription(ctx, audit.ID)
 		if err != nil {
@@ -45,7 +45,7 @@ func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {
 	return sqlcon.HandleError(p.Connection(ctx).Destroy(&subscription.Subscription{ID: cl.ID}))
 }
 
-func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.Filter) ([]subscription.Subscription, error) {
+func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.Filter) (int, []subscription.Subscription, error) {
 	cs := make([]subscription.Subscription, 0)
 
 	query := p.Connection(ctx).
@@ -55,9 +55,9 @@ func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.F
 	if filters.Name != "" {
 		query.Where("name = ?", filters.Name)
 	}
-	if filters.Owner != "" {
-		query.Where("owner = ?", filters.Owner)
+	if filters.Requestor != "" {
+		query.Where("owner = ?", filters.Requestor)
 	}
 
-	return cs, sqlcon.HandleError(query.All(&cs))
+	return 0, cs, sqlcon.HandleError(query.All(&cs))
 }

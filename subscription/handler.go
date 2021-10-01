@@ -9,6 +9,7 @@ import (
 	"github.com/ory/herodot"
 	"github.com/ory/hydra/x"
 	"github.com/ory/x/errorsx"
+	"github.com/ory/x/pagination"
 	"net/http"
 )
 
@@ -30,6 +31,8 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(SubscriptionHandlerPath, h.Create)
 	public.GET(SubscriptionHandlerPath+"/:id", h.Get)
 	public.DELETE(SubscriptionHandlerPath+"/:id", h.Delete)
+	public.PATCH(SubscriptionHandlerPath+"/:id", h.Audit)
+	public.GET(SubscriptionHandlerPath, h.List)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -79,15 +82,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	h.r.Writer().WriteCreated(w, r, SubscriptionHandlerPath+"/"+entity.ID, &entity)
 }
 
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
-}
-
 type Filter struct {
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
-	Name   string `json:"name"`
-	Owner  string `json:"owner"`
+	Limit     int    `json:"limit"`
+	Offset    int    `json:"offset"`
+	Name      string `json:"name"`
+	Requestor string `json:"requestor"`
+	Status    string `json:"status"`
+	Type      string `json:"type"`
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -148,4 +149,77 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	limit, offset := pagination.Parse(r, 100, 0, 500)
+	filters := Filter{
+		Limit:  limit,
+		Offset: offset,
+		Name:   r.URL.Query().Get("client_name"),
+	}
+
+	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(r.Context(), filters)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	pagination.Header(w, r.URL, totalCount, limit, offset)
+
+	if c == nil {
+		c = []Subscription{}
+	}
+
+	h.r.Writer().Write(w, r, c)
+}
+
+func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var id = ps.ByName("id")
+	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
+		return
+	}
+	if entity == nil {
+		h.r.Writer().WriteError(w, r, errors.New("no entity exists"))
+		return
+	}
+	accessToken := fosite.AccessTokenFromRequest(r)
+
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+		return
+	}
+
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+	if subject != entity.Owner {
+		h.r.Writer().WriteError(w, r, errors.New("no permission"))
+		return
+	}
+
+	var approveResult ApproveResult
+
+	if err := json.NewDecoder(r.Body).Decode(&approveResult); err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), &approveResult)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
