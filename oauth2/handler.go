@@ -24,7 +24,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ory/hydra/pkg/magnolia"
 	"html/template"
 	"net/http"
 	"reflect"
@@ -231,7 +230,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request, ps httpr
 //       401: jsonError
 //       500: jsonError
 func (h *Handler) WellKnownHandler(w http.ResponseWriter, r *http.Request) {
-	availableNamespaces := magnolia.AvailableNamespaces()
+	availableNamespaces := h.r.ClientManager().AvailableNamespaces(r.Context())
 	h.r.Writer().Write(w, r, &WellKnown{
 		Issuer:                                 strings.TrimRight(h.c.IssuerURL().String(), "/") + "/",
 		AuthURL:                                h.c.OAuth2AuthURL().String(),

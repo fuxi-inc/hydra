@@ -80,7 +80,7 @@ type Client struct {
 
 	// Owner is a string identifying the owner of the OAuth 2.0 Client.
 	// Used for FUXI identity identifier as email property.
-	Owner string `json:"owner" db:"owner" validate:"email"`
+	Owner string `json:"owner" db:"owner" validate:"required, email"`
 
 	// New property for FUXI identity identifier
 	PrivateKey []byte `json:"-" db:"private_key"`

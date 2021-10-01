@@ -7,7 +7,6 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/herodot"
 	"github.com/ory/hydra/internal/logger"
-	"github.com/ory/hydra/pkg/magnolia"
 	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
 	"github.com/ory/x/errorsx"
 	"net/http"
@@ -162,7 +161,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	err = magnolia.DeleteIdentityIdentifier(id)
+	err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

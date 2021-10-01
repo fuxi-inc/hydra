@@ -2,6 +2,10 @@ package sql
 
 import (
 	"context"
+	"github.com/ory/hydra/internal/logger"
+	magoliaapi "github.com/ory/hydra/pkg/magnolia/v1"
+	"github.com/ory/hydra/x"
+	"go.uber.org/zap"
 
 	"github.com/ory/x/errorsx"
 
@@ -64,6 +68,33 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 	}
 
 	c.Secret = string(h)
+
+	// Create identity identifier
+	privKey, pubKey, err := x.GenerateKey()
+	if err != nil {
+		return errorsx.WithStack(err)
+	}
+	signature, err := x.Sign([]byte(c.GetID()+c.GetOwner()), privKey)
+	if err != nil {
+		return errorsx.WithStack(err)
+	}
+
+	identity := &magoliaapi.IdentityIdentifier{
+		Id:        c.GetID(),
+		Name:      c.Name,
+		Email:     c.GetOwner(),
+		PublicKey: pubKey,
+		Signature: signature,
+	}
+	identity, err = p.client.CreateIdentityIdentifier(identity)
+	if err != nil {
+		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("identity", identity))
+		return errorsx.WithStack(err)
+	}
+
+	c.PrivateKey = privKey
+	c.PublicKey = pubKey
+
 	return sqlcon.HandleError(p.Connection(ctx).Create(c, "pk"))
 }
 
@@ -73,6 +104,11 @@ func (p *Persister) DeleteClient(ctx context.Context, id string) error {
 		return err
 	}
 
+	err = p.client.DeleteIdentityIdentifier(id)
+	if err != nil {
+		logger.Get().Warnw("failed to delete identity identifier", zap.Error(err))
+		return errorsx.WithStack(err)
+	}
 	return sqlcon.HandleError(p.Connection(ctx).Destroy(&client.Client{ID: cl.ID}))
 }
 
@@ -96,4 +132,8 @@ func (p *Persister) GetClients(ctx context.Context, filters client.Filter) ([]cl
 func (p *Persister) CountClients(ctx context.Context) (int, error) {
 	n, err := p.Connection(ctx).Count(&client.Client{})
 	return n, sqlcon.HandleError(err)
+}
+
+func (p *Persister) AvailableNamespaces(ctx context.Context) []string {
+	return p.client.AvailableNamespaces()
 }

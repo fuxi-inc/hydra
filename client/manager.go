@@ -46,4 +46,6 @@ type Storage interface {
 	CountClients(ctx context.Context) (int, error)
 
 	GetConcreteClient(ctx context.Context, id string) (*Client, error)
+
+	AvailableNamespaces(ctx context.Context) []string
 }

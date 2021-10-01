@@ -23,6 +23,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"net/url"
 	"strings"
@@ -52,14 +53,16 @@ var (
 )
 
 type Validator struct {
-	c    *http.Client
-	conf *config.Provider
+	c         *http.Client
+	conf      *config.Provider
+	validator *validator.Validate
 }
 
 func NewValidator(conf *config.Provider) *Validator {
 	return &Validator{
-		c:    http.DefaultClient,
-		conf: conf,
+		c:         http.DefaultClient,
+		conf:      conf,
+		validator: validator.New(),
 	}
 }
 
@@ -181,6 +184,13 @@ func (v *Validator) Validate(c *Client) error {
 				WithHintf(`post_logout_redirect_uri "%s" must match the domain, port, scheme of at least one of the registered redirect URIs but did not'`, l),
 			)
 		}
+	}
+
+	err := v.validator.Struct(c)
+	if err != nil {
+		return errorsx.WithStack(ErrInvalidClientMetadata.
+			WithHint("Name cand owner are necessary, and owner must be email format derived from our supported namespaces."),
+		)
 	}
 
 	return nil

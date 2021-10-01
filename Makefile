@@ -8,9 +8,17 @@ APP_PROFILE ?= dev
 ifdef $$APP_PROFILE
 APP_PROFILE := $$APP_PROFILE
 endif
-DSN ?= "cockroach://root@localhost:26257/hydra?sslmode=disable&max_conns=20&max_idle_conns=4"
-ifdef $$DSN
-DSN := $$DSN
+API_SERVER_ADDRESS ?= "api.cornflower.fuxi.is:50552"
+ifdef $$API_SERVER_ADDRESS
+API_SERVER_ADDRESS := $$API_SERVER_ADDRESS
+endif
+API_KEY ?= "eb3bf3c4-8337-fc49-d8be-15151bbff634"
+ifdef $$API_KEY
+API_KEY := $$API_KEY
+endif
+API_SECRET ?= "dc1ee1db-df9c-68f2-26ef-7b8c951b44ab"
+ifdef $$API_SECRET
+API_SECRET := $$API_SECRET
 endif
 
 GO_DEPENDENCIES = github.com/ory/go-acc \
@@ -151,4 +159,4 @@ migrate:
 
 .PHONY: run
 run:
-	APP_PROFILE=$(APP_PROFILE) go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http
+	APP_PROFILE=$(APP_PROFILE) API_SERVER_ADDRESS=$(API_SERVER_ADDRESS) API_KEY=$(API_KEY)  API_SECRET=$(API_SECRET)  go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http

@@ -14,18 +14,45 @@ import (
 	"time"
 )
 
-const (
-	apiServerAddress = "api.cornflower.fuxi.is:50552"
-	apiKey           = "eb3bf3c4-8337-fc49-d8be-15151bbff634"
-	apiSecret        = "dc1ee1db-df9c-68f2-26ef-7b8c951b44ab"
-)
-
-func GetApiLicense() (string, string) {
-	return apiKey, apiSecret
+type Config struct {
+	apiServerAddress string
+	apiKey           string
+	apiSecret        string
 }
 
-func ConnectSecureServer() *grpc.ClientConn {
-	conn, err := grpc.Dial(apiServerAddress, grpc.WithInsecure(), grpc.WithBlock())
+type Client struct {
+	config *Config
+	conn   *grpc.ClientConn
+}
+
+func NewMagnoliaClient() *Client {
+	config, err := loadConfigFromEnv()
+	if err != nil {
+		logger.Get().Warnw("can't connect to the magnolia v1 server", zap.Error(err))
+		os.Exit(1)
+	}
+	return &Client{
+		config: config,
+		conn:   connectSecureServer(config),
+	}
+}
+
+func loadConfigFromEnv() (*Config, error) {
+	apiServerAddress := os.Getenv("API_SERVER_ADDRESS")
+	apiKey := os.Getenv("API_KEY")
+	apiSecret := os.Getenv("API_SECRET")
+	if apiServerAddress == "" || apiKey == "" || apiSecret == "" {
+		return nil, errors.New("no required environment variables")
+	}
+	return &Config{
+		apiServerAddress: apiServerAddress,
+		apiKey:           apiKey,
+		apiSecret:        apiSecret,
+	}, nil
+}
+
+func connectSecureServer(config *Config) *grpc.ClientConn {
+	conn, err := grpc.Dial(config.apiServerAddress, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		logger.Get().Warnw("can't connect to the magnolia v1 server", zap.Error(err))
 		os.Exit(1)
@@ -33,15 +60,15 @@ func ConnectSecureServer() *grpc.ClientConn {
 	return conn
 }
 
-func GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
-	conn := ConnectSecureServer()
-	defer conn.Close()
+func (c *Client) Close() {
+	c.conn.Close()
+}
 
-	apiKey, apiSecret := GetApiLicense()
+func (c *Client) GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
 
-	client := api.NewEntropyServiceClient(conn)
+	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
@@ -54,15 +81,10 @@ func GetIdentityIdentifier(name string) (*api.IdentityIdentifier, error) {
 	return resp.Data, nil
 }
 
-func CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
-	conn := ConnectSecureServer()
-	defer conn.Close()
-
-	apiKey, apiSecret := GetApiLicense()
-
-	client := api.NewEntropyServiceClient(conn)
+func (c *Client) CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
+	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
@@ -84,15 +106,10 @@ func CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIden
 	return resp.Data, nil
 }
 
-func DeleteIdentityIdentifier(id string) error {
-	conn := ConnectSecureServer()
-	defer conn.Close()
-
-	apiKey, apiSecret := GetApiLicense()
-
-	client := api.NewEntropyServiceClient(conn)
+func (c *Client) DeleteIdentityIdentifier(id string) error {
+	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
@@ -108,15 +125,10 @@ func DeleteIdentityIdentifier(id string) error {
 	return nil
 }
 
-func AvailableNamespaces() []string {
-	conn := ConnectSecureServer()
-	defer conn.Close()
-
-	apiKey, apiSecret := GetApiLicense()
-
-	client := api.NewEntropyServiceClient(conn)
+func (c *Client) AvailableNamespaces() []string {
+	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", apiKey, apiSecret))
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 

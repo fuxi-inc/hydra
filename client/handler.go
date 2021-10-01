@@ -23,11 +23,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
-	"github.com/ory/hydra/internal/logger"
-	"github.com/ory/hydra/pkg/magnolia"
-	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"time"
@@ -46,8 +41,7 @@ import (
 )
 
 type Handler struct {
-	r         InternalRegistry
-	validator *validator.Validate
+	r InternalRegistry
 }
 
 const (
@@ -56,8 +50,7 @@ const (
 
 func NewHandler(r InternalRegistry) *Handler {
 	return &Handler{
-		r:         r,
-		validator: validator.New(),
+		r: r,
 	}
 }
 
@@ -117,52 +110,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	secret := c.Secret
 	c.CreatedAt = time.Now().UTC().Round(time.Second)
 	c.UpdatedAt = c.CreatedAt
-	// Validate the property for identity identifier
-	err := h.validator.Struct(c)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	logger.Get().Infow("prepare to get identity identifier", zap.String("client_id", c.GetID()))
-	identity, err := magnolia.GetIdentityIdentifier(c.GetID())
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	if identity != nil {
-		h.r.Writer().WriteError(w, r, errors.New("client_id already exists"))
-		return
-	}
 
-	logger.Get().Infow("prepare to create key pairs for client")
-	// Create identity identifier
-	privKey, pubKey, err := x.GenerateKey()
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	signature, err := x.Sign([]byte(c.GetID()+c.GetOwner()), privKey)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	identity = &magolia_api.IdentityIdentifier{
-		Id:        c.GetID(),
-		Name:      c.Name,
-		Email:     c.GetOwner(),
-		PublicKey: pubKey,
-		Signature: signature,
-	}
-	logger.Get().Infow("prepare to create identity identifier")
-	identity, err = magnolia.CreateIdentityIdentifier(identity)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-
-	logger.Get().Infow("create identity identifier done")
-	c.PrivateKey = privKey
-	c.PublicKey = pubKey
 	if err := h.r.ClientManager().CreateClient(r.Context(), &c); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -408,12 +356,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
-	err := magnolia.DeleteIdentityIdentifier(id)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	if err = h.r.ClientManager().DeleteClient(r.Context(), id); err != nil {
+	if err := h.r.ClientManager().DeleteClient(r.Context(), id); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
