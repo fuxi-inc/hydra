@@ -830,6 +830,10 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 
 		clientId := params["client_id"]
 		clientSecret := params["client_secret"]
+		if clientId == "" || clientSecret == "" {
+			h.r.Writer().WriteError(w, r, errors.New("required parameters must be provided"))
+			return
+		}
 
 		c, err := h.r.ClientManager().GetConcreteClient(r.Context(), clientId)
 		if err != nil {
@@ -843,13 +847,13 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 		claim := &jwt.JWTClaims{
 			Subject:    clientId,
-			Issuer:     "mememe",
-			Audience:   []string{"master", "slave"},
+			Issuer:     "ORY Hydra",
+			Audience:   []string{"identity", "data identifier"},
 			JTI:        "",
 			IssuedAt:   time.Time{},
 			NotBefore:  time.Time{},
-			ExpiresAt:  time.Time{},
-			Scope:      []string{"data"},
+			ExpiresAt:  time.Time{}.Add(time.Duration(168)),
+			Scope:      []string{"data exchange", "identity"},
 			Extra:      nil,
 			ScopeField: 0,
 		}
@@ -864,7 +868,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 		accessToken := fosite.AccessTokenFromRequest(r)
 
 		if accessToken == "" {
-			h.r.Writer().WriteError(w, r, errors.New(""))
+			h.r.Writer().WriteError(w, r, errors.New("required parameters were missed"))
 			return
 		}
 
