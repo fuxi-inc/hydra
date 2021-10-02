@@ -33,6 +33,11 @@ func (p *Persister) AuditSubscription(ctx context.Context, audit *subscription.A
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
+	identifier, err := p.client.GetIdentifier(ctx, entity.Identifier)
+	if err != nil {
+		return errorsx.WithStack(err)
+	}
+	entity.Owner = identifier.Owner
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity, "pk"))
 }
 
@@ -52,11 +57,11 @@ func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.F
 		Paginate(filters.Offset/filters.Limit+1, filters.Limit).
 		Order("id")
 
-	if filters.Name != "" {
-		query.Where("name = ?", filters.Name)
+	if filters.Status != "" {
+		query.Where("status = ?", filters.Status)
 	}
 	if filters.Requestor != "" {
-		query.Where("owner = ?", filters.Requestor)
+		query.Where("requestor = ?", filters.Requestor)
 	}
 
 	return 0, cs, sqlcon.HandleError(query.All(&cs))

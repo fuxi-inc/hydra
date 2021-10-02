@@ -15,5 +15,8 @@ func (v *Validator) Validate(entity *Subscription) error {
 	if entity.Identifier == "" {
 		return errorsx.WithStack(ErrInvalidSubscription.WithHint("identifier must be provided"))
 	}
+	if entity.Recipient == "" {
+		return errorsx.WithStack(ErrInvalidSubscription.WithHint("recipient must be provided"))
+	}
 	return nil
 }

@@ -49,6 +49,9 @@ func (entity *Subscription) init() {
 			entity.Name = fmt.Sprintf("%s will share your data identifier: %s", entity.Requestor, entity.Identifier)
 		}
 	}
+	if entity.Content == "" {
+		entity.Content = fmt.Sprintf("#{entity.Requestor}")
+	}
 	if entity.Type == "" {
 		entity.Type = Free
 	}

@@ -47,12 +47,10 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-	entity.init()
 
 	accessToken := fosite.AccessTokenFromRequest(r)
-
 	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
+		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
 		return
 	}
 
@@ -68,10 +66,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 	subject := token.Claims["sub"].(string)
-	if subject != entity.Requestor {
-		h.r.Writer().WriteError(w, r, errors.New("no permission"))
-		return
-	}
+	entity.Requestor = subject
+	entity.init()
 
 	err = h.r.SubscriptionManager().CreateSubscription(r.Context(), &entity)
 	if err != nil {
@@ -93,6 +89,25 @@ type Filter struct {
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
+	accessToken := fosite.AccessTokenFromRequest(r)
+
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+		return
+	}
+
+	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 
 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
@@ -102,6 +117,11 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	}
 	if entity == nil {
 		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	if subject != entity.Requestor || subject != entity.Owner {
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -152,11 +172,30 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	accessToken := fosite.AccessTokenFromRequest(r)
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+		return
+	}
+
+	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+
 	limit, offset := pagination.Parse(r, 100, 0, 500)
 	filters := Filter{
-		Limit:  limit,
-		Offset: offset,
-		Name:   r.URL.Query().Get("client_name"),
+		Limit:     limit,
+		Offset:    offset,
+		Requestor: subject,
 	}
 
 	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(r.Context(), filters)
