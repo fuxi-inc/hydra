@@ -15,4 +15,6 @@ type Storage interface {
 	CreateIdentifier(ctx context.Context, entity *magnoliaApi.DataIdentifier) error
 
 	DeleteIdentifier(ctx context.Context, id string) error
+
+	GetIdentifiers(ctx context.Context, filters Filter) ([]*magnoliaApi.DataIdentifier, error)
 }

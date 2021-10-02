@@ -1,6 +1,5 @@
 package identifier
 
-
 import (
 	"net/http"
 
@@ -8,7 +7,7 @@ import (
 )
 
 var ErrInvalidIdentifierMetadata = &fosite.RFC6749Error{
-	DescriptionField: "The value of one of the Client Metadata fields is invalid and the server has rejected this request. Note that an Authorization Server MAY choose to substitute a valid value for any requested parameter of a Client's Metadata.",
-	ErrorField:       "invalid_client_metadata",
+	DescriptionField: "The value of the identifier is invalid and the server has rejected this request.",
+	ErrorField:       "invalid_identifier",
 	CodeField:        http.StatusBadRequest,
 }

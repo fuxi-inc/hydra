@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ory/fosite"
-	"github.com/ory/herodot"
-	"github.com/ory/hydra/internal/logger"
 	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
 	"github.com/ory/x/errorsx"
+	"github.com/ory/x/pagination"
 	"net/http"
 
 	"github.com/ory/hydra/x"
@@ -34,6 +33,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(IdentifierHandlerPath, h.Create)
 	public.GET(IdentifierHandlerPath+"/:id", h.Get)
 	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
+	public.GET(IdentifierHandlerPath, h.List)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -72,14 +72,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return
 	}
-	logger.Get().Infow("prepare to create data identifier")
 	err = h.r.IdentifierManager().CreateIdentifier(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	logger.Get().Infow("create data identifier done")
 	h.r.Writer().WriteCreated(w, r, IdentifierHandlerPath+"/"+entity.GetId(), &entity)
 }
 
@@ -89,24 +87,33 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 // swagger:parameters listOAuth2Clients
 type Filter struct {
-	// The maximum amount of clients to returned, upper bound is 500 clients.
-	// in: query
-	Limit int `json:"limit"`
-
-	// The offset from where to start looking.
-	// in: query
-	Offset int `json:"offset"`
-
-	// The name of the clients to filter by.
-	// in: query
-	Name string `json:"client_name"`
-
-	// The owner of the clients to filter by.
-	// in: query
-	Owner string `json:"owner"`
+	Limit    int    `json:"limit"`
+	Offset   int    `json:"offset"`
+	ClientId string `json:"client_id"`
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	limit, offset := pagination.Parse(r, 100, 0, 500)
+	filters := Filter{
+		Limit:    limit,
+		Offset:   offset,
+		ClientId: r.URL.Query().Get("client_id"),
+	}
+
+	c, err := h.r.IdentifierManager().GetIdentifiers(r.Context(), filters)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	// TODO should get real total count
+	pagination.Header(w, r.URL, 10000, limit, offset)
+
+	if c == nil {
+		c = []*magolia_api.DataIdentifier{}
+	}
+
+	h.r.Writer().Write(w, r, c)
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -114,7 +121,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
 	if err != nil {
-		err = herodot.ErrUnauthorized.WithReason("The requested OAuth 2.0 client does not exist or you did not provide the necessary credentials")
+		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -130,11 +137,11 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	var id = ps.ByName("id")
 	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
 	if err != nil {
-		h.r.Writer().WriteError(w, r, errors.New(""))
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	if entity == nil {
-		h.r.Writer().WriteError(w, r, errors.New(""))
+		h.r.Writer().WriteError(w, r, errors.New("notfound"))
 		return
 	}
 	accessToken := fosite.AccessTokenFromRequest(r)

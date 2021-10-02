@@ -385,6 +385,8 @@ type EntropyServiceClient interface {
 	CreateDataIdentifier(ctx context.Context, in *CreateDataIdentifierRequest, opts ...grpc.CallOption) (*DataIdentifierResponse, error)
 	DeleteDataIdentifier(ctx context.Context, in *DataIdentifierRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
 	GetDataIdentifier(ctx context.Context, in *DataIdentifierRequest, opts ...grpc.CallOption) (*DataIdentifierResponse, error)
+	GetDataIdentifiers(ctx context.Context, in *GeneralPaginationRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error)
+	FindDataIdentifierByOwner(ctx context.Context, in *FindDataIdentifierByOwnerRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error)
 	FindDataIdentifierByMetadata(ctx context.Context, in *FindDataIdentifierByMetadataRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error)
 	FindDataIdentifierByTag(ctx context.Context, in *FindDataIdentifierByTagRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error)
 }
@@ -559,6 +561,24 @@ func (c *entropyServiceClient) GetDataIdentifier(ctx context.Context, in *DataId
 	return out, nil
 }
 
+func (c *entropyServiceClient) GetDataIdentifiers(ctx context.Context, in *GeneralPaginationRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error) {
+	out := new(DataIdentifiersResponse)
+	err := c.cc.Invoke(ctx, "/v1.EntropyService/GetDataIdentifiers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entropyServiceClient) FindDataIdentifierByOwner(ctx context.Context, in *FindDataIdentifierByOwnerRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error) {
+	out := new(DataIdentifiersResponse)
+	err := c.cc.Invoke(ctx, "/v1.EntropyService/FindDataIdentifierByOwner", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *entropyServiceClient) FindDataIdentifierByMetadata(ctx context.Context, in *FindDataIdentifierByMetadataRequest, opts ...grpc.CallOption) (*DataIdentifiersResponse, error) {
 	out := new(DataIdentifiersResponse)
 	err := c.cc.Invoke(ctx, "/v1.EntropyService/FindDataIdentifierByMetadata", in, out, opts...)
@@ -604,6 +624,8 @@ type EntropyServiceServer interface {
 	CreateDataIdentifier(context.Context, *CreateDataIdentifierRequest) (*DataIdentifierResponse, error)
 	DeleteDataIdentifier(context.Context, *DataIdentifierRequest) (*GeneralResponse, error)
 	GetDataIdentifier(context.Context, *DataIdentifierRequest) (*DataIdentifierResponse, error)
+	GetDataIdentifiers(context.Context, *GeneralPaginationRequest) (*DataIdentifiersResponse, error)
+	FindDataIdentifierByOwner(context.Context, *FindDataIdentifierByOwnerRequest) (*DataIdentifiersResponse, error)
 	FindDataIdentifierByMetadata(context.Context, *FindDataIdentifierByMetadataRequest) (*DataIdentifiersResponse, error)
 	FindDataIdentifierByTag(context.Context, *FindDataIdentifierByTagRequest) (*DataIdentifiersResponse, error)
 	mustEmbedUnimplementedEntropyServiceServer()
@@ -666,6 +688,12 @@ func (UnimplementedEntropyServiceServer) DeleteDataIdentifier(context.Context, *
 }
 func (UnimplementedEntropyServiceServer) GetDataIdentifier(context.Context, *DataIdentifierRequest) (*DataIdentifierResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDataIdentifier not implemented")
+}
+func (UnimplementedEntropyServiceServer) GetDataIdentifiers(context.Context, *GeneralPaginationRequest) (*DataIdentifiersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDataIdentifiers not implemented")
+}
+func (UnimplementedEntropyServiceServer) FindDataIdentifierByOwner(context.Context, *FindDataIdentifierByOwnerRequest) (*DataIdentifiersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindDataIdentifierByOwner not implemented")
 }
 func (UnimplementedEntropyServiceServer) FindDataIdentifierByMetadata(context.Context, *FindDataIdentifierByMetadataRequest) (*DataIdentifiersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindDataIdentifierByMetadata not implemented")
@@ -1010,6 +1038,42 @@ func _EntropyService_GetDataIdentifier_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EntropyService_GetDataIdentifiers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GeneralPaginationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntropyServiceServer).GetDataIdentifiers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.EntropyService/GetDataIdentifiers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntropyServiceServer).GetDataIdentifiers(ctx, req.(*GeneralPaginationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EntropyService_FindDataIdentifierByOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindDataIdentifierByOwnerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntropyServiceServer).FindDataIdentifierByOwner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.EntropyService/FindDataIdentifierByOwner",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntropyServiceServer).FindDataIdentifierByOwner(ctx, req.(*FindDataIdentifierByOwnerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _EntropyService_FindDataIdentifierByMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindDataIdentifierByMetadataRequest)
 	if err := dec(in); err != nil {
@@ -1124,6 +1188,14 @@ var EntropyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDataIdentifier",
 			Handler:    _EntropyService_GetDataIdentifier_Handler,
+		},
+		{
+			MethodName: "GetDataIdentifiers",
+			Handler:    _EntropyService_GetDataIdentifiers_Handler,
+		},
+		{
+			MethodName: "FindDataIdentifierByOwner",
+			Handler:    _EntropyService_FindDataIdentifierByOwner_Handler,
 		},
 		{
 			MethodName: "FindDataIdentifierByMetadata",

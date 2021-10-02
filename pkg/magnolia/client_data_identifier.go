@@ -65,5 +65,42 @@ func (c *Client) DeleteIdentifier(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
 
+func (c *Client) GetIdentifiers(ctx context.Context, limit, offset int32) ([]*api.DataIdentifier, error) {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.GetDataIdentifiers(ctx, &api.GeneralPaginationRequest{Pagination: &api.Pagination{
+		Limit:  limit,
+		Offset: offset,
+	}})
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}
+
+func (c *Client) FindIdentifiersByOwner(ctx context.Context, owner string, limit, offset int32) ([]*api.DataIdentifier, error) {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.FindDataIdentifierByOwner(ctx, &api.FindDataIdentifierByOwnerRequest{Id: owner, Pagination: &api.Pagination{
+		Limit:  limit,
+		Offset: offset,
+	}})
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
 }
