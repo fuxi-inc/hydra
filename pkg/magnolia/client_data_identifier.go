@@ -104,3 +104,25 @@ func (c *Client) FindIdentifiersByOwner(ctx context.Context, owner string, limit
 	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }
+
+func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier string) error {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.AddDomainResolutionRecord(ctx, &api.CreateDomainResolutionRecordRequest{
+		Name:   id,
+		Domain: identifier,
+		Type:   api.DomainResolutionRecordType_TXT,
+		Ttl:    3600,
+		Data:   &api.CreateDomainResolutionRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
+	})
+	if err != nil {
+		return err
+	}
+
+	logger.Get().Infow("create subscription record", zap.Any("data", resp.Data))
+	return nil
+}

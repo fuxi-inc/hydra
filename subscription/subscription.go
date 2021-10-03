@@ -68,8 +68,6 @@ func (entity *Subscription) init() {
 }
 
 type ApproveResult struct {
-	ID     string             `json:"id" db:"id"`
-	Owner  string             `json:"owner" db:"owner"`
 	Status SubscriptionStatus `json:"status" db:"status"`
 }
 
@@ -87,4 +85,11 @@ func (st SubscriptionType) IsValid() error {
 		return nil
 	}
 	return errors.New("invalid SubscriptionType type")
+}
+
+func (entity *Subscription) IsActive() bool {
+	if entity.Status != Applied {
+		return false
+	}
+	return true
 }

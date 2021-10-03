@@ -15,21 +15,17 @@ func (p *Persister) GetSubscription(ctx context.Context, id string) (*subscripti
 	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
 }
 
-func (p *Persister) AuditSubscription(ctx context.Context, audit *subscription.ApproveResult) error {
-	return p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
-		entity, err := p.GetSubscription(ctx, audit.ID)
-		if err != nil {
-			return err
-		}
-
-		if entity.Owner != audit.Owner {
-			if err != nil {
-				return errorsx.WithStack(err)
-			}
-		}
+func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.Subscription, audit *subscription.ApproveResult) error {
+	// Change database record's status
+	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		entity.Status = audit.Status
 		return sqlcon.HandleError(c.Update(entity))
 	})
+	if err != nil {
+		return err
+	}
+	// Create sub data identifier for the subscription
+	return p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {

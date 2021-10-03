@@ -507,7 +507,7 @@ func (m *RegistryBase) SubscriptionValidator() *subscription.Validator {
 
 func (m *RegistryBase) SubscriptionHandler() *subscription.Handler {
 	if m.sh == nil {
-		m.sh = subscription.NewHandler(m.r)
+		m.sh = subscription.NewHandler(m.r, m.C)
 	}
 	return m.sh
 }
