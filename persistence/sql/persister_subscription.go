@@ -51,7 +51,12 @@ func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {
 }
 
 func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.Filter) (int, []subscription.Subscription, error) {
-	cs := make([]subscription.Subscription, 0)
+	totalCount, err := p.Connection(ctx).Count(&subscription.Subscription{})
+	if err != nil {
+		return 0, nil, err
+	}
+
+	result := make([]subscription.Subscription, 0)
 
 	query := p.Connection(ctx).
 		Paginate(filters.Offset/filters.Limit+1, filters.Limit).
@@ -60,9 +65,15 @@ func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.F
 	if filters.Status != "" {
 		query.Where("status = ?", filters.Status)
 	}
+	if filters.Type != "" {
+		query.Where("type = ?", filters.Type)
+	}
 	if filters.Requestor != "" {
 		query.Where("requestor = ?", filters.Requestor)
 	}
+	if filters.Owner != "" {
+		query.Where("owner = ?", filters.Owner)
+	}
 
-	return 0, cs, sqlcon.HandleError(query.All(&cs))
+	return totalCount, result, sqlcon.HandleError(query.All(&result))
 }

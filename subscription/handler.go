@@ -83,8 +83,10 @@ type Filter struct {
 	Offset    int    `json:"offset"`
 	Name      string `json:"name"`
 	Requestor string `json:"requestor"`
+	Owner     string `json:"owner"`
 	Status    string `json:"status"`
 	Type      string `json:"type"`
+	Role      string `json:"role"`
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -190,12 +192,30 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		return
 	}
 	subject := token.Claims["sub"].(string)
+	role := r.URL.Query().Get("role")
+	if role == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no permission to query data"))
+		return
+	}
 
+	var filters Filter
 	limit, offset := pagination.Parse(r, 100, 0, 500)
-	filters := Filter{
-		Limit:     limit,
-		Offset:    offset,
-		Requestor: subject,
+	if role == "requestor" {
+		filters = Filter{
+			Limit:     limit,
+			Offset:    offset,
+			Requestor: subject,
+			Status:    r.URL.Query().Get("status"),
+			Type:      r.URL.Query().Get("type"),
+		}
+	} else {
+		filters = Filter{
+			Limit:  limit,
+			Offset: offset,
+			Owner:  subject,
+			Status: r.URL.Query().Get("status"),
+			Type:   r.URL.Query().Get("type"),
+		}
 	}
 
 	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(r.Context(), filters)
