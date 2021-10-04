@@ -24,6 +24,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ory/hydra/internal/logger"
+	"go.uber.org/zap"
 	"html/template"
 	"net/http"
 	"reflect"
@@ -845,18 +847,19 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 			h.r.Writer().WriteError(w, r, errors.New("wrong credentials"))
 			return
 		}
+		now := time.Now().UTC()
 		claim := &jwt.JWTClaims{
 			Subject:    clientId,
 			Issuer:     "ORY Hydra",
 			Audience:   []string{"identity", "data identifier"},
 			JTI:        "",
-			IssuedAt:   time.Time{},
-			NotBefore:  time.Time{},
-			ExpiresAt:  time.Time{}.Add(time.Duration(168)),
+			IssuedAt:   now,
+			ExpiresAt:  now.Add(time.Duration(259200)*time.Second),
 			Scope:      []string{"data exchange", "identity"},
 			Extra:      nil,
 			ScopeField: 0,
 		}
+		logger.Get().Infow("token", zap.Any("claim", claim.ToMapClaims()))
 		header := &jwt.Headers{}
 		rawToken, _, err := h.r.AccessTokenJWTStrategy().Generate(context.TODO(), claim.ToMapClaims(), header)
 		if err != nil {
