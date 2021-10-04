@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ory/fosite"
-	magolia_api "github.com/ory/hydra/pkg/magnolia/v1"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
 	"net/http"
@@ -37,7 +36,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity magolia_api.DataIdentifier
+	var entity Identifier
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -68,17 +67,17 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 	subject := token.Claims["sub"].(string)
-	if subject != entity.Owner {
-		h.r.Writer().WriteError(w, r, errors.New("no permission"))
-		return
-	}
+	entity.Owner = subject
+	// TODO should add real auth server address
+	entity.AuthAddress ="http://localhost:4444"
+
 	err = h.r.IdentifierManager().CreateIdentifier(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	h.r.Writer().WriteCreated(w, r, IdentifierHandlerPath+"/"+entity.GetId(), &entity)
+	h.r.Writer().WriteCreated(w, r, IdentifierHandlerPath+"/"+entity.ID, &entity)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -110,7 +109,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	pagination.Header(w, r.URL, 10000, limit, offset)
 
 	if c == nil {
-		c = []*magolia_api.DataIdentifier{}
+		c = []*Identifier{}
 	}
 
 	h.r.Writer().Write(w, r, c)

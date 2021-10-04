@@ -2,7 +2,6 @@ package identifier
 
 import (
 	"context"
-	magnoliaApi "github.com/ory/hydra/pkg/magnolia/v1"
 )
 
 type Manager interface {
@@ -10,11 +9,11 @@ type Manager interface {
 }
 
 type Storage interface {
-	GetIdentifier(ctx context.Context, id string) (*magnoliaApi.DataIdentifier, error)
+	GetIdentifier(ctx context.Context, id string) (*Identifier, error)
 
-	CreateIdentifier(ctx context.Context, entity *magnoliaApi.DataIdentifier) error
+	CreateIdentifier(ctx context.Context, entity *Identifier) error
 
 	DeleteIdentifier(ctx context.Context, id string) error
 
-	GetIdentifiers(ctx context.Context, filters Filter) ([]*magnoliaApi.DataIdentifier, error)
+	GetIdentifiers(ctx context.Context, filters Filter) ([]*Identifier, error)
 }
