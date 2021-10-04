@@ -62,12 +62,13 @@ func (p *Persister) Authenticate(ctx context.Context, id string, secret []byte) 
 }
 
 func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
-	h, err := p.r.ClientHasher().Hash(ctx, []byte(c.Secret))
-	if err != nil {
-		return err
+	if c.Secret == "" {
+		h, err := p.r.ClientHasher().Hash(ctx, []byte(c.Secret))
+		if err != nil {
+			return err
+		}
+		c.Secret = string(h)
 	}
-
-	c.Secret = string(h)
 
 	// Create identity identifier
 	privKey, pubKey, err := x.GenerateKey()
@@ -81,7 +82,7 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 
 	identity := &magoliaapi.IdentityIdentifier{
 		Id:        c.GetID(),
-		Name:      c.Name,
+		Name:      c.GetID(),
 		Email:     c.GetOwner(),
 		PublicKey: pubKey,
 		Signature: signature,

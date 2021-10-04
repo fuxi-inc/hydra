@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -81,6 +82,19 @@ func (c *Client) GetIdentityIdentifier(name string) (*api.IdentityIdentifier, er
 	return resp.Data, nil
 }
 
+func (c *Client) Support(id string) bool {
+	availableNamespaces := c.AvailableNamespaces()
+	if len(availableNamespaces) <= 0 {
+		return false
+	}
+	for _, namespace := range availableNamespaces {
+		if strings.HasSuffix(id, namespace) {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *Client) CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
 	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -88,6 +102,9 @@ func (c *Client) CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
+	if !c.Support(entity.GetId()) {
+		return nil, errors.New("no available namespaces")
+	}
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
 		Id:        entity.GetId(),
 		Name:      entity.GetName(),

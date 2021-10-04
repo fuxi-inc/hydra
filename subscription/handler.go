@@ -316,7 +316,7 @@ func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscrip
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
-	if approveResult.Status != Granted {
+	if entity.Status != Applied {
 		return
 	}
 
