@@ -69,7 +69,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	subject := token.Claims["sub"].(string)
 	entity.Owner = subject
 	// TODO should add real auth server address
-	entity.AuthAddress ="http://localhost:4444"
+	entity.AuthAddress = "http://localhost:4444"
 
 	err = h.r.IdentifierManager().CreateIdentifier(r.Context(), &entity)
 	if err != nil {
@@ -169,10 +169,6 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id)
 	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	if err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

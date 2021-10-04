@@ -38,6 +38,9 @@ func (entity *Identifier) ToDataIdentifier() *magnoliaApi.DataIdentifier {
 }
 
 func FromDataIdentifier(source *magnoliaApi.DataIdentifier) *Identifier {
+	if source == nil {
+		return nil
+	}
 	entity := &Identifier{}
 	subscriptionType := subscription.Free
 	if source.SubscriptionType == magnoliaApi.SubscriptionType_Charged {
