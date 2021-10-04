@@ -39,6 +39,9 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 	var result []*identifier.Identifier
 	if owner != "" {
 		entities, err := p.client.FindIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
+		if err != nil {
+			return nil, err
+		}
 		for _, entity := range entities {
 			result = append(result, identifier.FromDataIdentifier(entity))
 		}
@@ -46,6 +49,9 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 	}
 
 	entities, err := p.client.GetIdentifiers(ctx, int32(limit), int32(offset))
+	if err != nil {
+		return nil, err
+	}
 	for _, entity := range entities {
 		result = append(result, identifier.FromDataIdentifier(entity))
 	}
