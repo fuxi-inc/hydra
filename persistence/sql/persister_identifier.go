@@ -5,6 +5,7 @@ import (
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/internal/logger"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {
@@ -46,6 +47,33 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 			result = append(result, identifier.FromDataIdentifier(entity))
 		}
 		return result, err
+	}
+
+	tag := filters.Tag
+	if tag != "" {
+		entities, err := p.client.FindIdentifiersByTags(ctx, tag, int32(limit), int32(offset))
+		if err != nil {
+			return nil, err
+		}
+		for _, entity := range entities {
+			result = append(result, identifier.FromDataIdentifier(entity))
+		}
+		return result, err
+	}
+
+	metadata := filters.Metadata
+	if metadata != "" {
+		kvs := strings.Split(metadata, ":")
+		if len(kvs) == 2 {
+			entities, err := p.client.FindIdentifiersByMetadata(ctx, kvs[0], kvs[1], int32(limit), int32(offset))
+			if err != nil {
+				return nil, err
+			}
+			for _, entity := range entities {
+				result = append(result, identifier.FromDataIdentifier(entity))
+			}
+			return result, err
+		}
 	}
 
 	entities, err := p.client.GetIdentifiers(ctx, int32(limit), int32(offset))

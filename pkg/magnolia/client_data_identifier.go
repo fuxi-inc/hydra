@@ -126,3 +126,54 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier st
 	logger.Get().Infow("create subscription record", zap.Any("data", resp.Data))
 	return nil
 }
+
+func (c *Client) FindIdentifiersByTags(ctx context.Context, tag string, limit, offset int32) ([]*api.DataIdentifier, error) {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.FindDataIdentifierByTag(ctx, &api.FindDataIdentifierByTagRequest{
+		Tag: tag,
+		Pagination: &api.Pagination{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}
+
+func (c *Client) FindIdentifiersByMetadata(ctx context.Context, key, value string, limit, offset int32) ([]*api.DataIdentifier, error) {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.FindDataIdentifierByMetadata(ctx, &api.FindDataIdentifierByMetadataRequest{
+		Criteria: &api.Criteria{
+			LogicalType: api.LogicalOperator_AND,
+			Criterions: []*api.Criterion{{
+				Key:      key,
+				Operator: api.Operator_EQ,
+				Value:    value,
+			}},
+		},
+		Pagination: &api.Pagination{
+			Limit:  limit,
+			Offset: offset,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}
