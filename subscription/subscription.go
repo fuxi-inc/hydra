@@ -50,7 +50,7 @@ func (entity *Subscription) init() {
 		}
 	}
 	if entity.Content == "" {
-		entity.Content = fmt.Sprintf("#{entity.Requestor}")
+		entity.Content = fmt.Sprintf("requestor:%s, target:%s, you can choose grant permission or refuse it.", entity.Requestor, entity.Identifier)
 	}
 	if entity.Type == "" {
 		entity.Type = Free

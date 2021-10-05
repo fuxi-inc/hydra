@@ -8,10 +8,12 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/herodot"
 	"github.com/ory/hydra/driver/config"
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/oauth2"
 	"github.com/ory/hydra/x"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"time"
@@ -74,6 +76,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	subject := token.Claims["sub"].(string)
 	entity.Requestor = subject
 	entity.init()
+	logger.Get().Infow("subscription", zap.Any("data", entity))
 
 	err = h.r.SubscriptionManager().CreateSubscription(r.Context(), &entity)
 	if err != nil {
@@ -136,12 +139,12 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		return
 	}
 
-	if subject != entity.Requestor || subject != entity.Owner {
-		w.WriteHeader(http.StatusUnauthorized)
+	if strings.Compare(subject, entity.Requestor) == 0 || strings.Compare(subject, entity.Owner) == 0 {
+		h.r.Writer().Write(w, r, entity)
 		return
 	}
-
-	h.r.Writer().Write(w, r, entity)
+	logger.Get().Infow("unauthorized", zap.String("subject", subject), zap.Any("subscription", entity))
+	w.WriteHeader(http.StatusUnauthorized)
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
