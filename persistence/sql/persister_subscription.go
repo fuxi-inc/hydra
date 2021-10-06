@@ -2,10 +2,9 @@ package sql
 
 import (
 	"context"
+	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/subscription"
 	"github.com/ory/x/errorsx"
-
-	"github.com/gobuffalo/pop/v5"
 
 	"github.com/ory/x/sqlcon"
 )
@@ -16,16 +15,18 @@ func (p *Persister) GetSubscription(ctx context.Context, id string) (*subscripti
 }
 
 func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.Subscription, audit *subscription.ApproveResult) error {
-	// Change database record's status
-	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
-		entity.Status = audit.Status
-		return sqlcon.HandleError(c.Update(entity))
-	})
+	// Create sub data identifier for the subscription
+	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
 	if err != nil {
 		return err
 	}
-	// Create sub data identifier for the subscription
-	return p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
+	entity.Metadata["relatedDomainResourceRecordId"] = rrId
+	// Change database record's status
+	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+		entity.Status = audit.Status
+		return sqlcon.HandleError(c.Update(entity))
+	})
+	return err
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
@@ -38,12 +39,17 @@ func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription
 }
 
 func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {
-	cl, err := p.GetSubscription(ctx, id)
+	entity, err := p.GetSubscription(ctx, id)
 	if err != nil {
 		return err
 	}
-
-	return sqlcon.HandleError(p.Connection(ctx).Destroy(&subscription.Subscription{ID: cl.ID}))
+	if entity.Metadata != nil && entity.Metadata["relatedDomainResourceRecordId"] != "" {
+		err = p.client.DeleteSubscriptionRecord(ctx, entity.Metadata["relatedDomainResourceRecordId"])
+		if err != nil {
+			return err
+		}
+	}
+	return sqlcon.HandleError(p.Connection(ctx).Destroy(&subscription.Subscription{ID: entity.ID}))
 }
 
 func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.Filter) (int, []subscription.Subscription, error) {

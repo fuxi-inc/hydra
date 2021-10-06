@@ -6,10 +6,10 @@ import (
 	"errors"
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/fosite"
+	"github.com/ory/fosite/token/jwt"
 	"github.com/ory/herodot"
 	"github.com/ory/hydra/driver/config"
 	"github.com/ory/hydra/internal/logger"
-	"github.com/ory/hydra/oauth2"
 	"github.com/ory/hydra/x"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
@@ -302,6 +302,7 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		return
 	}
 
+	logger.Get().Infow("ready to audit the subscription", zap.Any("action", approveResult))
 	h.audit(w, r, entity, &approveResult)
 }
 
@@ -314,52 +315,48 @@ func (h *Handler) logOrAudit(err error, r *http.Request) {
 }
 
 func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscription, approveResult *ApproveResult) {
-	err := h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
+	// Generate the access token
+	now := time.Now().UTC()
+	claim := &jwt.JWTClaims{
+		Subject:    entity.Owner,
+		Issuer:     "ORY Hydra",
+		Audience:   []string{entity.Recipient},
+		IssuedAt:   now,
+		ExpiresAt:  now.Add(time.Duration(259200) * time.Second),
+		Scope:      []string{entity.Identifier},
+		Extra:      map[string]interface{}{"requestor": entity.Requestor, "subscription": entity.ID},
+		ScopeField: 0,
+	}
+	header := &jwt.Headers{}
+	rawToken, _, err := h.r.AccessTokenJWTStrategy().Generate(context.TODO(), claim.ToMapClaims(), header)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
-	if entity.Status != Applied {
-		return
-	}
+	logger.Get().Infow("token", zap.Any("claim", claim.ToMapClaims()), zap.String("token", rawToken))
 
-	// Generate the access token
-	var session = oauth2.NewSessionWithCustomClaims("", h.c.AllowedTopLevelClaims())
-	var ctx = r.Context()
-
-	accessRequest, err := h.r.OAuth2Provider().NewAccessRequest(ctx, r, session)
-
+	entity.Content = rawToken
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
 	if err != nil {
-		h.r.OAuth2Provider().WriteAccessError(w, accessRequest, err)
+		logger.Get().Infow("failed to audit subscription", zap.Error(err))
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
+	h.WriteAuditResponse(w, claim.ToMapClaims())
+}
 
-	if accessRequest.GetGrantTypes().ExactOne("client_credentials") {
-		var accessTokenKeyID string
-		if h.c.AccessTokenStrategy() == "jwt" {
-			accessTokenKeyID, err = h.r.AccessTokenJWTStrategy().GetPublicKeyID(r.Context())
-			if err != nil {
-				x.LogError(r, err, h.r.Logger())
-				h.r.OAuth2Provider().WriteAccessError(w, accessRequest, err)
-				return
-			}
-		}
+func (h *Handler) WriteAuditResponse(w http.ResponseWriter, claim jwt.MapClaims) {
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Pragma", "no-cache")
 
-		session.Subject = accessRequest.GetClient().GetID()
-		session.ClientID = accessRequest.GetClient().GetID()
-		session.KID = accessTokenKeyID
-		session.DefaultSession.Claims.Issuer = strings.TrimRight(h.c.IssuerURL().String(), "/") + "/"
-		session.DefaultSession.Claims.IssuedAt = time.Now().UTC()
-	}
-
-	accessRequest.GrantScope(entity.Identifier)
-	accessResponse, err := h.r.OAuth2Provider().NewAccessResponse(ctx, accessRequest)
-
+	js, err := json.Marshal(claim)
 	if err != nil {
-		h.logOrAudit(err, r)
-		h.r.OAuth2Provider().WriteAccessError(w, accessRequest, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	h.r.OAuth2Provider().WriteAccessResponse(w, accessRequest, accessResponse)
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(js)
 }

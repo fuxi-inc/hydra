@@ -854,7 +854,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 			Audience:   []string{"identity", "data identifier"},
 			JTI:        "",
 			IssuedAt:   now,
-			ExpiresAt:  now.Add(time.Duration(259200)*time.Second),
+			ExpiresAt:  now.Add(time.Duration(259200) * time.Second),
 			Scope:      []string{"data exchange", "identity"},
 			Extra:      nil,
 			ScopeField: 0,
@@ -880,7 +880,48 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, ps httpro
 			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 			return
 		}
-		h.r.Writer().Write(w, r, "OK")
+
+		token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+		if err != nil {
+			h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+			return
+		}
+		logger.Get().Infow("decode token", zap.Any("token", token))
+
+		resp := &fosite.IntrospectionResponse{
+			Active:          true,
+			AccessRequester: nil,
+			TokenUse:        fosite.AccessToken,
+			AccessTokenType: "Bearer",
+		}
+
+		rawScopes := token.Claims["scp"].([]interface{})
+		scopes := make([]string, len(rawScopes))
+		for i, s := range rawScopes {
+			scopes[i] = s.(string)
+		}
+
+		rawAudience := token.Claims["aud"].([]interface{})
+		audience := make([]string, len(rawAudience))
+		for i, s := range rawAudience {
+			audience[i] = s.(string)
+		}
+
+		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		if err = json.NewEncoder(w).Encode(&Introspection{
+			Active:    resp.IsActive(),
+			ClientID:  token.Claims["requestor"].(string),
+			Scope:     strings.Join(scopes, ","),
+			ExpiresAt: token.Claims["exp"].(int64),
+			IssuedAt:  token.Claims["iat"].(int64),
+			Subject:   token.Claims["sub"].(string),
+			Audience:  audience,
+			Issuer:    strings.TrimRight(h.c.IssuerURL().String(), "/") + "/",
+			TokenType: resp.GetAccessTokenType(),
+			TokenUse:  string(resp.GetTokenUse()),
+		}); err != nil {
+			x.LogError(r, errorsx.WithStack(err), h.r.Logger())
+		}
 	} else {
 		h.r.Writer().WriteError(w, r, errors.New("unsupported method"))
 		return

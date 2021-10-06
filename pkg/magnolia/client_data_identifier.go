@@ -105,7 +105,7 @@ func (c *Client) FindIdentifiersByOwner(ctx context.Context, owner string, limit
 	return resp.Data, nil
 }
 
-func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier string) error {
+func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier string) (string, error) {
 	client := api.NewEntropyServiceClient(c.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
@@ -120,10 +120,28 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier st
 		Data:   &api.CreateDomainResolutionRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	logger.Get().Infow("create subscription record", zap.Any("data", resp.Data))
+	return resp.Data.Id, nil
+}
+
+func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error {
+	client := api.NewEntropyServiceClient(c.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	md := metadata.Pairs("authorization", fmt.Sprintf("%s %v:%v", "bearer", c.config.apiKey, c.config.apiSecret))
+	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
+	defer cancel()
+
+	resp, err := client.DeleteDomainResolutionRecord(ctx, &api.DomainResolutionRecordRequest{
+		Id: "",
+	})
+	if err != nil {
+		return err
+	}
+
+	logger.Get().Infow("delete subscription record", zap.Any("data", resp))
 	return nil
 }
 

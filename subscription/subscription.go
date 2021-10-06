@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ory/x/sqlxx"
 	"time"
 )
 
@@ -26,19 +25,19 @@ const (
 
 type Subscription struct {
 	// Hash(Requestor+Target+Owner).Target
-	ID         string               `json:"id" db:"id"`
-	Name       string               `json:"name" db:"name"`
-	Content    string               `json:"content" db:"content"`
-	Requestor  string               `json:"requestor" db:"requestor"`
-	Recipient  string               `json:"recipient" db:"recipient"`
-	Owner      string               `json:"owner" db:"owner"`
-	Identifier string               `json:"identifier" db:"identifier"`
-	Type       SubscriptionType     `json:"type" db:"type"`
-	Status     SubscriptionStatus   `json:"status" db:"status"`
-	CreatedAt  time.Time            `json:"created_at" db:"created_at"`
-	ModifiedAt time.Time            `json:"modified_at" db:"modified_at"`
-	ExpiredAt  time.Time            `json:"expired_at" db:"expired_at"`
-	Metadata   sqlxx.JSONRawMessage `json:"metadata,omitempty" db:"metadata"`
+	ID         string             `json:"id" db:"id"`
+	Name       string             `json:"name" db:"name"`
+	Content    string             `json:"content" db:"content"`
+	Requestor  string             `json:"requestor" db:"requestor"`
+	Recipient  string             `json:"recipient" db:"recipient"`
+	Owner      string             `json:"owner" db:"owner"`
+	Identifier string             `json:"identifier" db:"identifier"`
+	Type       SubscriptionType   `json:"type" db:"type"`
+	Status     SubscriptionStatus `json:"status" db:"status"`
+	CreatedAt  time.Time          `json:"created_at" db:"created_at"`
+	ModifiedAt time.Time          `json:"modified_at" db:"modified_at"`
+	ExpiredAt  time.Time          `json:"expired_at" db:"expired_at"`
+	Metadata   map[string]string  `json:"metadata,omitempty" db:"metadata"`
 }
 
 func (entity *Subscription) init() {
@@ -61,6 +60,7 @@ func (entity *Subscription) init() {
 	entity.CreatedAt = time.Now()
 	entity.ModifiedAt = time.Now()
 	entity.ExpiredAt = entity.CreatedAt.Add(time.Duration(120) * time.Hour)
+	entity.Metadata = map[string]string{}
 	h := md5.New()
 	h.Write([]byte(entity.Requestor + entity.Identifier + entity.Recipient + entity.Owner))
 	hash := hex.EncodeToString(h.Sum([]byte{}))
