@@ -259,6 +259,7 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	var id = ps.ByName("id")
 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
+		logger.Get().Info(zap.Error(err))
 		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
 		return
 	}

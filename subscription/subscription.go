@@ -2,7 +2,9 @@ package subscription
 
 import (
 	"crypto/md5"
+	"database/sql/driver"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -23,6 +25,32 @@ const (
 	Refused                    = "Refused"
 )
 
+type Metadata map[string]string
+
+func (metadata Metadata) Value() (driver.Value, error) {
+	if len(metadata) == 0 {
+		return "{}", nil
+	}
+	return json.Marshal(metadata)
+}
+
+func (metadata *Metadata) Scan(src interface{}) (err error) {
+	var result map[string]string
+	switch src.(type) {
+	case string:
+		err = json.Unmarshal([]byte(src.(string)), &result)
+	case []byte:
+		err = json.Unmarshal(src.([]byte), &result)
+	default:
+		return errors.New("incompatible type for Metadata")
+	}
+	if err != nil {
+		return
+	}
+	*metadata = result
+	return nil
+}
+
 type Subscription struct {
 	// Hash(Requestor+Target+Owner).Target
 	ID         string             `json:"id" db:"id"`
@@ -37,7 +65,7 @@ type Subscription struct {
 	CreatedAt  time.Time          `json:"created_at" db:"created_at"`
 	ModifiedAt time.Time          `json:"modified_at" db:"modified_at"`
 	ExpiredAt  time.Time          `json:"expired_at" db:"expired_at"`
-	Metadata   map[string]string  `json:"metadata,omitempty" db:"metadata"`
+	Metadata   Metadata           `json:"metadata,omitempty" db:"metadata"`
 }
 
 func (entity *Subscription) init() {
