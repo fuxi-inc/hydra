@@ -1,7 +1,7 @@
 package identifier
 
 import (
-	magnoliaApi "github.com/ory/hydra/pkg/magnolia/v1"
+	magnoliaApi "github.com/ory/hydra/pkg/magnolia/magnolia"
 	"github.com/ory/hydra/subscription"
 )
 

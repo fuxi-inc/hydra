@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/ory/hydra/internal/logger"
-	api "github.com/ory/hydra/pkg/magnolia/v1"
+	api "github.com/ory/hydra/pkg/magnolia/magnolia"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

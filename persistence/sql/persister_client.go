@@ -3,7 +3,7 @@ package sql
 import (
 	"context"
 	"github.com/ory/hydra/internal/logger"
-	magoliaapi "github.com/ory/hydra/pkg/magnolia/v1"
+	magoliaapi "github.com/ory/hydra/pkg/magnolia/magnolia"
 	"github.com/ory/hydra/x"
 	"go.uber.org/zap"
 
