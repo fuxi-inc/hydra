@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/ory/hydra/internal/logger"
 	api "github.com/ory/hydra/pkg/magnolia/magnolia"
+	"github.com/jaswdr/faker"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -105,13 +106,18 @@ func (c *Client) CreateIdentityIdentifier(entity *api.IdentityIdentifier) (*api.
 	if !c.Support(entity.GetId()) {
 		return nil, errors.New("no available namespaces")
 	}
+
+	faker := faker.New()
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
 		Id:        entity.GetId(),
 		Name:      entity.GetName(),
 		Email:     entity.GetEmail(),
-		PublicKey: entity.GetPublicKey(),
-		Signature: entity.GetSignature(),
+		Signature: []byte(faker.Beer().Name()),
+		PublicKey: []byte(faker.Gamer().Tag()),
+//		PublicKey: entity.GetPublicKey(),
+//		Signature: entity.GetSignature(),
 	})
+ 	logger.Get().Infow("pubKey3", zap.Any("pubkey", resp))
 	if err != nil {
 		return nil, err
 	}

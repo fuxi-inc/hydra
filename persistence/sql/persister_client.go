@@ -72,6 +72,9 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 
 	// Create identity identifier
 	privKey, pubKey, err := x.GenerateKey()
+	logger.Get().Infow("pubKeytest", zap.Any("pubkey", string(pubKey)))
+	logger.Get().Infow("pubKeytest1", zap.Any("pubkey", pubKey))
+	
 	if err != nil {
 		return errorsx.WithStack(err)
 	}
@@ -80,6 +83,7 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 		return errorsx.WithStack(err)
 	}
 
+	logger.Get().Infow("pubKey", zap.Any("pubkey", pubKey))
 	identity := &magoliaapi.IdentityIdentifier{
 		Id:        c.GetID(),
 		Name:      c.GetID(),
@@ -87,7 +91,9 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 		PublicKey: pubKey,
 		Signature: signature,
 	}
+	logger.Get().Infow("pubKey2", zap.Any("pubkey", identity.PublicKey))
 	identity, err = p.client.CreateIdentityIdentifier(identity)
+//	logger.Get().Infow("pubKey3", zap.Any("pubkey", identity.PublicKey))
 	if err != nil {
 		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("identity", identity))
 		return errorsx.WithStack(err)
