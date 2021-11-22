@@ -372,11 +372,11 @@ type EntropyServiceClient interface {
 	GetDomain(ctx context.Context, in *DomainRequest, opts ...grpc.CallOption) (*DomainResponse, error)
 	ListDomain(ctx context.Context, in *ListDomainRequest, opts ...grpc.CallOption) (*DomainsResponse, error)
 	// For DNS RR
-	AddDomainResolutionRecord(ctx context.Context, in *CreateDomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordResponse, error)
-	UpdateDomainResolutionRecord(ctx context.Context, in *UpdateDomainResolutionRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
-	DeleteDomainResolutionRecord(ctx context.Context, in *DomainResolutionRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
-	GetDomainResolutionRecord(ctx context.Context, in *DomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordResponse, error)
-	FindDomainResolutionRecord(ctx context.Context, in *FindDomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordsResponse, error)
+	AddDomainResourceRecord(ctx context.Context, in *CreateDomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordResponse, error)
+	UpdateDomainResourceRecord(ctx context.Context, in *UpdateDomainResourceRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
+	DeleteDomainResourceRecord(ctx context.Context, in *DomainResourceRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
+	GetDomainResourceRecord(ctx context.Context, in *DomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordResponse, error)
+	FindDomainResourceRecord(ctx context.Context, in *FindDomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordsResponse, error)
 	// For Identifier
 	CreateIdentityIdentifier(ctx context.Context, in *CreateIdentityIdentifierRequest, opts ...grpc.CallOption) (*IdentityIdentifierResponse, error)
 	DeleteIdentityIdentifier(ctx context.Context, in *IdentityIdentifierRequest, opts ...grpc.CallOption) (*GeneralResponse, error)
@@ -462,45 +462,45 @@ func (c *entropyServiceClient) ListDomain(ctx context.Context, in *ListDomainReq
 	return out, nil
 }
 
-func (c *entropyServiceClient) AddDomainResolutionRecord(ctx context.Context, in *CreateDomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordResponse, error) {
-	out := new(DomainResolutionRecordResponse)
-	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/AddDomainResolutionRecord", in, out, opts...)
+func (c *entropyServiceClient) AddDomainResourceRecord(ctx context.Context, in *CreateDomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordResponse, error) {
+	out := new(DomainResourceRecordResponse)
+	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/AddDomainResourceRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *entropyServiceClient) UpdateDomainResolutionRecord(ctx context.Context, in *UpdateDomainResolutionRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error) {
+func (c *entropyServiceClient) UpdateDomainResourceRecord(ctx context.Context, in *UpdateDomainResourceRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error) {
 	out := new(GeneralResponse)
-	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/UpdateDomainResolutionRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/UpdateDomainResourceRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *entropyServiceClient) DeleteDomainResolutionRecord(ctx context.Context, in *DomainResolutionRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error) {
+func (c *entropyServiceClient) DeleteDomainResourceRecord(ctx context.Context, in *DomainResourceRecordRequest, opts ...grpc.CallOption) (*GeneralResponse, error) {
 	out := new(GeneralResponse)
-	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/DeleteDomainResolutionRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/DeleteDomainResourceRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *entropyServiceClient) GetDomainResolutionRecord(ctx context.Context, in *DomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordResponse, error) {
-	out := new(DomainResolutionRecordResponse)
-	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/GetDomainResolutionRecord", in, out, opts...)
+func (c *entropyServiceClient) GetDomainResourceRecord(ctx context.Context, in *DomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordResponse, error) {
+	out := new(DomainResourceRecordResponse)
+	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/GetDomainResourceRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *entropyServiceClient) FindDomainResolutionRecord(ctx context.Context, in *FindDomainResolutionRecordRequest, opts ...grpc.CallOption) (*DomainResolutionRecordsResponse, error) {
-	out := new(DomainResolutionRecordsResponse)
-	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/FindDomainResolutionRecord", in, out, opts...)
+func (c *entropyServiceClient) FindDomainResourceRecord(ctx context.Context, in *FindDomainResourceRecordRequest, opts ...grpc.CallOption) (*DomainResourceRecordsResponse, error) {
+	out := new(DomainResourceRecordsResponse)
+	err := c.cc.Invoke(ctx, "/magnolia.EntropyService/FindDomainResourceRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -611,11 +611,11 @@ type EntropyServiceServer interface {
 	GetDomain(context.Context, *DomainRequest) (*DomainResponse, error)
 	ListDomain(context.Context, *ListDomainRequest) (*DomainsResponse, error)
 	// For DNS RR
-	AddDomainResolutionRecord(context.Context, *CreateDomainResolutionRecordRequest) (*DomainResolutionRecordResponse, error)
-	UpdateDomainResolutionRecord(context.Context, *UpdateDomainResolutionRecordRequest) (*GeneralResponse, error)
-	DeleteDomainResolutionRecord(context.Context, *DomainResolutionRecordRequest) (*GeneralResponse, error)
-	GetDomainResolutionRecord(context.Context, *DomainResolutionRecordRequest) (*DomainResolutionRecordResponse, error)
-	FindDomainResolutionRecord(context.Context, *FindDomainResolutionRecordRequest) (*DomainResolutionRecordsResponse, error)
+	AddDomainResourceRecord(context.Context, *CreateDomainResourceRecordRequest) (*DomainResourceRecordResponse, error)
+	UpdateDomainResourceRecord(context.Context, *UpdateDomainResourceRecordRequest) (*GeneralResponse, error)
+	DeleteDomainResourceRecord(context.Context, *DomainResourceRecordRequest) (*GeneralResponse, error)
+	GetDomainResourceRecord(context.Context, *DomainResourceRecordRequest) (*DomainResourceRecordResponse, error)
+	FindDomainResourceRecord(context.Context, *FindDomainResourceRecordRequest) (*DomainResourceRecordsResponse, error)
 	// For Identifier
 	CreateIdentityIdentifier(context.Context, *CreateIdentityIdentifierRequest) (*IdentityIdentifierResponse, error)
 	DeleteIdentityIdentifier(context.Context, *IdentityIdentifierRequest) (*GeneralResponse, error)
@@ -656,20 +656,20 @@ func (UnimplementedEntropyServiceServer) GetDomain(context.Context, *DomainReque
 func (UnimplementedEntropyServiceServer) ListDomain(context.Context, *ListDomainRequest) (*DomainsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDomain not implemented")
 }
-func (UnimplementedEntropyServiceServer) AddDomainResolutionRecord(context.Context, *CreateDomainResolutionRecordRequest) (*DomainResolutionRecordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddDomainResolutionRecord not implemented")
+func (UnimplementedEntropyServiceServer) AddDomainResourceRecord(context.Context, *CreateDomainResourceRecordRequest) (*DomainResourceRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDomainResourceRecord not implemented")
 }
-func (UnimplementedEntropyServiceServer) UpdateDomainResolutionRecord(context.Context, *UpdateDomainResolutionRecordRequest) (*GeneralResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateDomainResolutionRecord not implemented")
+func (UnimplementedEntropyServiceServer) UpdateDomainResourceRecord(context.Context, *UpdateDomainResourceRecordRequest) (*GeneralResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDomainResourceRecord not implemented")
 }
-func (UnimplementedEntropyServiceServer) DeleteDomainResolutionRecord(context.Context, *DomainResolutionRecordRequest) (*GeneralResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteDomainResolutionRecord not implemented")
+func (UnimplementedEntropyServiceServer) DeleteDomainResourceRecord(context.Context, *DomainResourceRecordRequest) (*GeneralResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDomainResourceRecord not implemented")
 }
-func (UnimplementedEntropyServiceServer) GetDomainResolutionRecord(context.Context, *DomainResolutionRecordRequest) (*DomainResolutionRecordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDomainResolutionRecord not implemented")
+func (UnimplementedEntropyServiceServer) GetDomainResourceRecord(context.Context, *DomainResourceRecordRequest) (*DomainResourceRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDomainResourceRecord not implemented")
 }
-func (UnimplementedEntropyServiceServer) FindDomainResolutionRecord(context.Context, *FindDomainResolutionRecordRequest) (*DomainResolutionRecordsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindDomainResolutionRecord not implemented")
+func (UnimplementedEntropyServiceServer) FindDomainResourceRecord(context.Context, *FindDomainResourceRecordRequest) (*DomainResourceRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindDomainResourceRecord not implemented")
 }
 func (UnimplementedEntropyServiceServer) CreateIdentityIdentifier(context.Context, *CreateIdentityIdentifierRequest) (*IdentityIdentifierResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIdentityIdentifier not implemented")
@@ -840,92 +840,92 @@ func _EntropyService_ListDomain_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EntropyService_AddDomainResolutionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateDomainResolutionRecordRequest)
+func _EntropyService_AddDomainResourceRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDomainResourceRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntropyServiceServer).AddDomainResolutionRecord(ctx, in)
+		return srv.(EntropyServiceServer).AddDomainResourceRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/magnolia.EntropyService/AddDomainResolutionRecord",
+		FullMethod: "/magnolia.EntropyService/AddDomainResourceRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntropyServiceServer).AddDomainResolutionRecord(ctx, req.(*CreateDomainResolutionRecordRequest))
+		return srv.(EntropyServiceServer).AddDomainResourceRecord(ctx, req.(*CreateDomainResourceRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EntropyService_UpdateDomainResolutionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateDomainResolutionRecordRequest)
+func _EntropyService_UpdateDomainResourceRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDomainResourceRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntropyServiceServer).UpdateDomainResolutionRecord(ctx, in)
+		return srv.(EntropyServiceServer).UpdateDomainResourceRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/magnolia.EntropyService/UpdateDomainResolutionRecord",
+		FullMethod: "/magnolia.EntropyService/UpdateDomainResourceRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntropyServiceServer).UpdateDomainResolutionRecord(ctx, req.(*UpdateDomainResolutionRecordRequest))
+		return srv.(EntropyServiceServer).UpdateDomainResourceRecord(ctx, req.(*UpdateDomainResourceRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EntropyService_DeleteDomainResolutionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DomainResolutionRecordRequest)
+func _EntropyService_DeleteDomainResourceRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DomainResourceRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntropyServiceServer).DeleteDomainResolutionRecord(ctx, in)
+		return srv.(EntropyServiceServer).DeleteDomainResourceRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/magnolia.EntropyService/DeleteDomainResolutionRecord",
+		FullMethod: "/magnolia.EntropyService/DeleteDomainResourceRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntropyServiceServer).DeleteDomainResolutionRecord(ctx, req.(*DomainResolutionRecordRequest))
+		return srv.(EntropyServiceServer).DeleteDomainResourceRecord(ctx, req.(*DomainResourceRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EntropyService_GetDomainResolutionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DomainResolutionRecordRequest)
+func _EntropyService_GetDomainResourceRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DomainResourceRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntropyServiceServer).GetDomainResolutionRecord(ctx, in)
+		return srv.(EntropyServiceServer).GetDomainResourceRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/magnolia.EntropyService/GetDomainResolutionRecord",
+		FullMethod: "/magnolia.EntropyService/GetDomainResourceRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntropyServiceServer).GetDomainResolutionRecord(ctx, req.(*DomainResolutionRecordRequest))
+		return srv.(EntropyServiceServer).GetDomainResourceRecord(ctx, req.(*DomainResourceRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EntropyService_FindDomainResolutionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FindDomainResolutionRecordRequest)
+func _EntropyService_FindDomainResourceRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindDomainResourceRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntropyServiceServer).FindDomainResolutionRecord(ctx, in)
+		return srv.(EntropyServiceServer).FindDomainResourceRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/magnolia.EntropyService/FindDomainResolutionRecord",
+		FullMethod: "/magnolia.EntropyService/FindDomainResourceRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntropyServiceServer).FindDomainResolutionRecord(ctx, req.(*FindDomainResolutionRecordRequest))
+		return srv.(EntropyServiceServer).FindDomainResourceRecord(ctx, req.(*FindDomainResourceRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1146,24 +1146,24 @@ var EntropyService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _EntropyService_ListDomain_Handler,
 		},
 		{
-			MethodName: "AddDomainResolutionRecord",
-			Handler:    _EntropyService_AddDomainResolutionRecord_Handler,
+			MethodName: "AddDomainResourceRecord",
+			Handler:    _EntropyService_AddDomainResourceRecord_Handler,
 		},
 		{
-			MethodName: "UpdateDomainResolutionRecord",
-			Handler:    _EntropyService_UpdateDomainResolutionRecord_Handler,
+			MethodName: "UpdateDomainResourceRecord",
+			Handler:    _EntropyService_UpdateDomainResourceRecord_Handler,
 		},
 		{
-			MethodName: "DeleteDomainResolutionRecord",
-			Handler:    _EntropyService_DeleteDomainResolutionRecord_Handler,
+			MethodName: "DeleteDomainResourceRecord",
+			Handler:    _EntropyService_DeleteDomainResourceRecord_Handler,
 		},
 		{
-			MethodName: "GetDomainResolutionRecord",
-			Handler:    _EntropyService_GetDomainResolutionRecord_Handler,
+			MethodName: "GetDomainResourceRecord",
+			Handler:    _EntropyService_GetDomainResourceRecord_Handler,
 		},
 		{
-			MethodName: "FindDomainResolutionRecord",
-			Handler:    _EntropyService_FindDomainResolutionRecord_Handler,
+			MethodName: "FindDomainResourceRecord",
+			Handler:    _EntropyService_FindDomainResourceRecord_Handler,
 		},
 		{
 			MethodName: "CreateIdentityIdentifier",

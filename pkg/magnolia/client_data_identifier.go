@@ -112,12 +112,12 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier st
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
-	resp, err := client.AddDomainResolutionRecord(ctx, &api.CreateDomainResolutionRecordRequest{
+	resp, err := client.AddDomainResourceRecord(ctx, &api.CreateDomainResourceRecordRequest{
 		Name:   id,
 		Domain: identifier,
-		Type:   api.DomainResolutionRecordType_TXT,
+		Type:   api.DomainResourceRecordType_TXT,
 		Ttl:    3600,
-		Data:   &api.CreateDomainResolutionRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
+		Data:   &api.CreateDomainResourceRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
 	})
 	if err != nil {
 		return "", err
@@ -134,7 +134,7 @@ func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error 
 	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
 	defer cancel()
 
-	resp, err := client.DeleteDomainResolutionRecord(ctx, &api.DomainResolutionRecordRequest{
+	resp, err := client.DeleteDomainResourceRecord(ctx, &api.DomainResourceRecordRequest{
 		Id: "",
 	})
 	if err != nil {
