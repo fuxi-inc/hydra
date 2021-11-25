@@ -160,3 +160,7 @@ migrate:
 .PHONY: run
 run:
 	APP_PROFILE=$(APP_PROFILE) API_SERVER_ADDRESS=$(API_SERVER_ADDRESS) API_KEY=$(API_KEY)  API_SECRET=$(API_SECRET)  go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http
+
+.PHONY: sync
+sync:
+	cp ../magnolia/api/*.go ./pkg/magnolia/magnolia/
