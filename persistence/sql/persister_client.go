@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"github.com/fuxi-inc/magnolia/pkg/api"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/spi"
 	"go.uber.org/zap"
@@ -17,7 +18,11 @@ import (
 
 func (p *Persister) GetConcreteClient(ctx context.Context, id string) (*client.Client, error) {
 	var cl client.Client
-	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
+	cl.Organization = "*"
+	cl.Email = "*"
+	cl.Mobile = "*"
+	return &cl, err
 }
 
 func (p *Persister) GetClient(ctx context.Context, id string) (fosite.Client, error) {
@@ -124,4 +129,12 @@ func (p *Persister) CountClients(ctx context.Context) (int, error) {
 
 func (p *Persister) AvailableOrganizations(ctx context.Context) []*spi.OrganizationSpec {
 	return p.client.AvailableOrganizations(ctx)
+}
+
+func (p *Persister) GetLicenses(ctx context.Context, clientID, clientSecret string) ([]*api.License, error) {
+	return p.client.GetLicenses(ctx, clientID, clientSecret)
+}
+
+func (p *Persister) CreateLicense(ctx context.Context, clientID, clientSecret string) (*api.License, error) {
+	return p.client.CreateLicenses(ctx, clientID, clientSecret)
 }

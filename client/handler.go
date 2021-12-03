@@ -23,6 +23,8 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/ory/fosite"
 	"io"
 	"net/http"
 	"time"
@@ -45,7 +47,8 @@ type Handler struct {
 }
 
 const (
-	ClientsHandlerPath = "/clients"
+	ClientsHandlerPath  = "/clients"
+	LicensesHandlerPath = "/licenses"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -61,6 +64,8 @@ func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
 	admin.PUT(ClientsHandlerPath+"/:id", h.Update)
 	admin.PATCH(ClientsHandlerPath+"/:id", h.Patch)
 	admin.DELETE(ClientsHandlerPath+"/:id", h.Delete)
+	admin.GET(ClientsHandlerPath+"/:id"+LicensesHandlerPath, h.GetLicenses)
+	admin.POST(ClientsHandlerPath+"/:id"+LicensesHandlerPath, h.CreateLicense)
 }
 
 // swagger:route POST /clients admin createOAuth2Client
@@ -362,4 +367,42 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) CreateLicense(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	clientID := ps.ByName("id")
+
+	clientSecret := fosite.AccessTokenFromRequest(r)
+
+	if clientID == "" || clientSecret == "" {
+		h.r.Writer().WriteError(w, r, errors.New("invalid argument"))
+		return
+	}
+	entity, err := h.r.ClientManager().CreateLicense(r.Context(), clientID, clientSecret)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	h.r.Writer().WriteCode(w, r, 200, entity)
+}
+
+func (h *Handler) GetLicenses(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var clientID = ps.ByName("id")
+	clientSecret := fosite.AccessTokenFromRequest(r)
+
+	if clientID == "" || clientSecret == "" {
+		fmt.Println(clientID)
+		fmt.Println(clientSecret)
+		h.r.Writer().WriteError(w, r, errors.New("invalid argument"))
+		return
+	}
+
+	entities, err := h.r.ClientManager().GetLicenses(r.Context(), clientID, clientSecret)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	h.r.Writer().Write(w, r, entities)
 }

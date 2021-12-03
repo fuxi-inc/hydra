@@ -22,6 +22,7 @@ package client
 
 import (
 	"context"
+	"github.com/fuxi-inc/magnolia/pkg/api"
 	"github.com/ory/hydra/spi"
 
 	"github.com/ory/fosite"
@@ -49,4 +50,8 @@ type Storage interface {
 	GetConcreteClient(ctx context.Context, id string) (*Client, error)
 
 	AvailableOrganizations(ctx context.Context) []*spi.OrganizationSpec
+
+	GetLicenses(ctx context.Context, clientID, clientSecret string) ([]*api.License, error)
+
+	CreateLicense(ctx context.Context, clientID, clientSecret string) (*api.License, error)
 }
