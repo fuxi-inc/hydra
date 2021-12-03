@@ -54,4 +54,6 @@ type Storage interface {
 	GetLicenses(ctx context.Context, clientID, clientSecret string) ([]*api.License, error)
 
 	CreateLicense(ctx context.Context, clientID, clientSecret string) (*api.License, error)
+
+	AvailableNamespaces(ctx context.Context) []string
 }

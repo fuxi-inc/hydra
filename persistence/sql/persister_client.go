@@ -138,3 +138,7 @@ func (p *Persister) GetLicenses(ctx context.Context, clientID, clientSecret stri
 func (p *Persister) CreateLicense(ctx context.Context, clientID, clientSecret string) (*api.License, error) {
 	return p.client.CreateLicenses(ctx, clientID, clientSecret)
 }
+
+func (p *Persister) AvailableNamespaces(ctx context.Context) []string {
+	return p.client.AvailableNamespaces(ctx)
+}

@@ -23,7 +23,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/ory/fosite"
 	"io"
 	"net/http"
@@ -47,8 +46,9 @@ type Handler struct {
 }
 
 const (
-	ClientsHandlerPath  = "/clients"
-	LicensesHandlerPath = "/licenses"
+	ClientsHandlerPath    = "/clients"
+	LicensesHandlerPath   = "/licenses"
+	NamespacesHandlerPath = "/namespaces"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -66,6 +66,7 @@ func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
 	admin.DELETE(ClientsHandlerPath+"/:id", h.Delete)
 	admin.GET(ClientsHandlerPath+"/:id"+LicensesHandlerPath, h.GetLicenses)
 	admin.POST(ClientsHandlerPath+"/:id"+LicensesHandlerPath, h.CreateLicense)
+	admin.GET(ClientsHandlerPath+"/:id"+NamespacesHandlerPath, h.GetNamespaces)
 }
 
 // swagger:route POST /clients admin createOAuth2Client
@@ -392,8 +393,6 @@ func (h *Handler) GetLicenses(w http.ResponseWriter, r *http.Request, ps httprou
 	clientSecret := fosite.AccessTokenFromRequest(r)
 
 	if clientID == "" || clientSecret == "" {
-		fmt.Println(clientID)
-		fmt.Println(clientSecret)
 		h.r.Writer().WriteError(w, r, errors.New("invalid argument"))
 		return
 	}
@@ -405,4 +404,19 @@ func (h *Handler) GetLicenses(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	h.r.Writer().Write(w, r, entities)
+}
+
+func (h *Handler) GetNamespaces(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var clientID = ps.ByName("id")
+	apiKey := fosite.AccessTokenFromRequest(r)
+
+	if clientID == "" || apiKey == "" {
+		h.r.Writer().WriteError(w, r, errors.New("invalid argument"))
+		return
+	}
+
+	ctx := context.WithValue(context.TODO(), "apiKey", apiKey)
+	result := h.r.ClientManager().AvailableNamespaces(ctx)
+
+	h.r.Writer().Write(w, r, result)
 }
