@@ -3,8 +3,7 @@ package sql
 import (
 	"context"
 	"github.com/ory/hydra/internal/logger"
-	magoliaapi "github.com/ory/hydra/pkg/magnolia/magnolia"
-	"github.com/ory/hydra/x"
+	"github.com/ory/hydra/spi"
 	"go.uber.org/zap"
 
 	"github.com/ory/x/errorsx"
@@ -70,37 +69,19 @@ func (p *Persister) CreateClient(ctx context.Context, c *client.Client) error {
 		c.Secret = string(h)
 	}
 
-	// Create identity identifier
-	privKey, pubKey, err := x.GenerateKey()
-	logger.Get().Infow("pubKeytest", zap.Any("pubkey", string(pubKey)))
-	logger.Get().Infow("pubKeytest1", zap.Any("pubkey", pubKey))
-	
+	entity := &spi.UserAccount{
+		Organization: c.Organization,
+		Name:         c.Name,
+		Password:     c.Secret,
+		Email:        c.Email,
+		Mobile:       c.Mobile,
+	}
+	userAccount, err := p.client.CreateUser(ctx, entity)
 	if err != nil {
+		logger.Get().Warnw("failed to create user account", zap.Error(err), zap.Any("entity", entity))
 		return errorsx.WithStack(err)
 	}
-	signature, err := x.Sign([]byte(c.GetID()+c.GetOwner()), privKey)
-	if err != nil {
-		return errorsx.WithStack(err)
-	}
-
-	logger.Get().Infow("pubKey", zap.Any("pubkey", pubKey))
-	identity := &magoliaapi.IdentityIdentifier{
-		Id:        c.GetID(),
-		Name:      c.GetID(),
-		Email:     c.GetOwner(),
-		PublicKey: pubKey,
-		Signature: signature,
-	}
-	logger.Get().Infow("pubKey2", zap.Any("pubkey", identity.PublicKey))
-	identity, err = p.client.CreateIdentityIdentifier(identity)
-//	logger.Get().Infow("pubKey3", zap.Any("pubkey", identity.PublicKey))
-	if err != nil {
-		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("identity", identity))
-		return errorsx.WithStack(err)
-	}
-
-	c.PrivateKey = privKey
-	c.PublicKey = pubKey
+	c.OutfacingID = userAccount.ClientID
 
 	return sqlcon.HandleError(p.Connection(ctx).Create(c, "pk"))
 }
@@ -111,7 +92,7 @@ func (p *Persister) DeleteClient(ctx context.Context, id string) error {
 		return err
 	}
 
-	err = p.client.DeleteIdentityIdentifier(id)
+	//err = p.client.DeleteIdentityIdentifier(id)
 	if err != nil {
 		logger.Get().Warnw("failed to delete identity identifier", zap.Error(err))
 		return errorsx.WithStack(err)
@@ -141,6 +122,6 @@ func (p *Persister) CountClients(ctx context.Context) (int, error) {
 	return n, sqlcon.HandleError(err)
 }
 
-func (p *Persister) AvailableNamespaces(ctx context.Context) []string {
-	return p.client.AvailableNamespaces()
+func (p *Persister) AvailableOrganizations(ctx context.Context) []*spi.OrganizationSpec {
+	return p.client.AvailableOrganizations(ctx)
 }

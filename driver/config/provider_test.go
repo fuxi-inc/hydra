@@ -208,12 +208,12 @@ func TestViperProviderValidates(t *testing.T) {
 
 	expectedPublicPermission := &configx.UnixPermission{
 		Owner: "hydra",
-		Group: "hydra-public-magnolia",
+		Group: "hydra-public-identifier",
 		Mode:  0775,
 	}
 	expectedAdminPermission := &configx.UnixPermission{
 		Owner: "hydra",
-		Group: "hydra-admin-magnolia",
+		Group: "hydra-admin-identifier",
 		Mode:  0770,
 	}
 	assert.Equal(t, expectedPublicPermission, c.SocketPermission(PublicInterface))
@@ -313,7 +313,7 @@ func TestViperProviderValidates(t *testing.T) {
 				MaxTagValueLength: 1024,
 			},
 			Zipkin: &tracing.ZipkinConfig{
-				ServerURL: "http://zipkin/magnolia/v2/spans",
+				ServerURL: "http://zipkin/identifier/v2/spans",
 			},
 		},
 	}, c.Tracing())

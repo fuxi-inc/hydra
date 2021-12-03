@@ -10,6 +10,11 @@ ttl:
   auth_code: 1h
   login_consent_request: 1h
 
+magnolia:
+  address: api.cornflower.fuxi.is
+  insecure_port: 50551
+  secure_port: 50552
+
 secrets:
   cookie:
     - this-is-the-primary-secret

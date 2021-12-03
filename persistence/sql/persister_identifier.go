@@ -3,27 +3,28 @@ package sql
 import (
 	"context"
 	"github.com/ory/hydra/identifier"
-	"github.com/ory/hydra/internal/logger"
-	"go.uber.org/zap"
 	"strings"
 )
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {
-	source, err := p.client.GetIdentifier(ctx, id)
-	logger.Get().Infow("get identifier", zap.Error(err), zap.Any("data identifier", source))
+	//source, err := p.client.GetDataIdentifier(ctx, id)
+	var err error
+	//logger.Get().Infow("get identifier", zap.Error(err), zap.Any("data identifier", source))
 	if err != nil {
 		return nil, err
 	} else {
-		return identifier.FromDataIdentifier(source), nil
+		return identifier.FromDataIdentifier(nil), nil
 	}
 }
 
 func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Identifier) error {
-	return p.client.CreateIdentifier(ctx, entity.ToDataIdentifier())
+	//return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
+	return nil
 }
 
 func (p *Persister) DeleteIdentifier(ctx context.Context, id string) error {
-	return p.client.DeleteIdentifier(ctx, id)
+	//return p.client.DeleteDatIdentifier(ctx, id)
+	return nil
 }
 
 func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filter) ([]*identifier.Identifier, error) {
@@ -39,49 +40,49 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 
 	var result []*identifier.Identifier
 	if owner != "" {
-		entities, err := p.client.FindIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identifier.FromDataIdentifier(entity))
-		}
-		return result, err
+		//entities, err := p.client.FindDataIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for _, entity := range entities {
+		//	result = append(result, identifier.FromDataIdentifier(entity))
+		//}
+		//return result, err
 	}
 
 	tag := filters.Tag
 	if tag != "" {
-		entities, err := p.client.FindIdentifiersByTags(ctx, tag, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identifier.FromDataIdentifier(entity))
-		}
-		return result, err
+		//entities, err := p.client.FindDataIdentifiersByTags(ctx, tag, int32(limit), int32(offset))
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for _, entity := range entities {
+		//	result = append(result, identifier.FromDataIdentifier(entity))
+		//}
+		//return result, err
 	}
 
 	metadata := filters.Metadata
 	if metadata != "" {
 		kvs := strings.Split(metadata, ":")
 		if len(kvs) == 2 {
-			entities, err := p.client.FindIdentifiersByMetadata(ctx, kvs[0], kvs[1], int32(limit), int32(offset))
-			if err != nil {
-				return nil, err
-			}
-			for _, entity := range entities {
-				result = append(result, identifier.FromDataIdentifier(entity))
-			}
-			return result, err
+			//entities, err := p.client.FindDataIdentifiersByMetadata(ctx, kvs[0], kvs[1], int32(limit), int32(offset))
+			//if err != nil {
+			//	return nil, err
+			//}
+			//for _, entity := range entities {
+			//	result = append(result, identifier.FromDataIdentifier(entity))
+			//}
+			//return result, err
 		}
 	}
 
-	entities, err := p.client.GetIdentifiers(ctx, int32(limit), int32(offset))
-	if err != nil {
-		return nil, err
-	}
-	for _, entity := range entities {
-		result = append(result, identifier.FromDataIdentifier(entity))
-	}
-	return result, err
+	//entities, err := p.client.GetDataIdentifiers(ctx, int32(limit), int32(offset))
+	//if err != nil {
+	//	return nil, err
+	//}
+	//for _, entity := range entities {
+	//	result = append(result, identifier.FromDataIdentifier(entity))
+	//}
+	return result, nil
 }

@@ -22,6 +22,7 @@ package client
 
 import (
 	"context"
+	"github.com/ory/hydra/spi"
 
 	"github.com/ory/fosite"
 )
@@ -47,5 +48,5 @@ type Storage interface {
 
 	GetConcreteClient(ctx context.Context, id string) (*Client, error)
 
-	AvailableNamespaces(ctx context.Context) []string
+	AvailableOrganizations(ctx context.Context) []*spi.OrganizationSpec
 }

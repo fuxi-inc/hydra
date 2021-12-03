@@ -123,6 +123,6 @@ serve:
     host: unix:/var/run/hydra/admin_socket
     socket:
       owner: hydra
-      group: hydra-admin-magnolia
+      group: hydra-admin-identifier
       mode: 770
 ```

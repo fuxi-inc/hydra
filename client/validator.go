@@ -77,6 +77,10 @@ func (v *Validator) Validate(c *Client) error {
 	id := uuid.New()
 	c.OutfacingID = stringsx.Coalesce(c.OutfacingID, id)
 
+	if c.Mobile == "" || c.Email == "" || c.Organization == "" {
+		return errorsx.WithStack(ErrInvalidClientMetadata.WithHint("Fields 'organization', 'email' and 'mobile' must be set."))
+	}
+
 	if c.TokenEndpointAuthMethod == "" {
 		c.TokenEndpointAuthMethod = "client_secret_basic"
 	} else if c.TokenEndpointAuthMethod == "private_key_jwt" {

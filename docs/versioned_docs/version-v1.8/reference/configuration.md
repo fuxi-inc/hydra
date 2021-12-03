@@ -1385,7 +1385,7 @@ tracing:
       # - Windows Command Line (CMD):
       #    > set TRACING_PROVIDERS_ZIPKIN_SERVER_URL=<value>
       #
-      server_url: http://localhost:9411/magnolia/v2/spans
+      server_url: http://localhost:9411/identifier/v2/spans
 
 ## The Hydra version this config is written for. ##
 #

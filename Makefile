@@ -8,18 +8,6 @@ APP_PROFILE ?= dev
 ifdef $$APP_PROFILE
 APP_PROFILE := $$APP_PROFILE
 endif
-API_SERVER_ADDRESS ?= "api.cornflower.fuxi.is:50552"
-ifdef $$API_SERVER_ADDRESS
-API_SERVER_ADDRESS := $$API_SERVER_ADDRESS
-endif
-API_KEY ?= "a77e3378-5418-57bb-7cc0-fcb806bc504a"
-ifdef $$API_KEY
-API_KEY := $$API_KEY
-endif
-API_SECRET ?= "96c0c3bb-a618-c4bc-30b5-3caedf80fc2c"
-ifdef $$API_SECRET
-API_SECRET := $$API_SECRET
-endif
 
 GO_DEPENDENCIES = github.com/ory/go-acc \
 				  golang.org/x/tools/cmd/goimports \
@@ -159,7 +147,7 @@ migrate:
 
 .PHONY: run
 run:
-	APP_PROFILE=$(APP_PROFILE) API_SERVER_ADDRESS=$(API_SERVER_ADDRESS) API_KEY=$(API_KEY)  API_SECRET=$(API_SECRET)  go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http
+	APP_PROFILE=$(APP_PROFILE)  go run main.go serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http
 
 .PHONY: sync
 sync:

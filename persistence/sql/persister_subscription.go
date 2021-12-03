@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/subscription"
-	"github.com/ory/x/errorsx"
-
 	"github.com/ory/x/sqlcon"
 )
 
@@ -16,13 +14,13 @@ func (p *Persister) GetSubscription(ctx context.Context, id string) (*subscripti
 
 func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.Subscription, audit *subscription.ApproveResult) error {
 	// Create sub data identifier for the subscription
-	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
-	if err != nil {
-		return err
-	}
-	entity.Metadata["relatedDomainResourceRecordId"] = rrId
+	//rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
+	//if err != nil {
+	//	return err
+	//}
+	//entity.Metadata["relatedDomainResourceRecordId"] = rrId
 	// Change database record's status
-	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		entity.Status = audit.Status
 		return sqlcon.HandleError(c.Update(entity))
 	})
@@ -30,11 +28,11 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
-	identifier, err := p.client.GetIdentifier(ctx, entity.Identifier)
-	if err != nil {
-		return errorsx.WithStack(err)
-	}
-	entity.Owner = identifier.Owner
+	//identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
+	//if err != nil {
+	//return errorsx.WithStack(err)
+	//}
+	//entity.Owner = identifier.Owner
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity, "pk"))
 }
 
@@ -44,7 +42,7 @@ func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {
 		return err
 	}
 	if entity.Metadata != nil && entity.Metadata["relatedDomainResourceRecordId"] != "" {
-		err = p.client.DeleteSubscriptionRecord(ctx, entity.Metadata["relatedDomainResourceRecordId"])
+		//err = p.client.DeleteSubscriptionRecord(ctx, entity.Metadata["relatedDomainResourceRecordId"])
 		if err != nil {
 			return err
 		}

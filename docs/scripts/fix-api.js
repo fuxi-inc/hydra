@@ -20,7 +20,7 @@ fs.readFile(file, (err, b) => {
   const t = b
     .toString()
     .replace(/^id: api/gim, '')
-    .replace(/^title:(.*)/im, 'title: REST API\nid: magnolia') // improve title, add docusaurus id
+    .replace(/^title:(.*)/im, 'title: REST API\nid: identifier') // improve title, add docusaurus id
     .replace(/^language_tabs:.*\n/im, '') // not supported by docusaurus
     .replace(/^toc_footers.*\n/im, '') // not supported by docusaurus
     .replace(/^includes.*\n/im, '') // not supported by docusaurus

@@ -20,7 +20,10 @@
 
 package oauth2
 
-import "time"
+import (
+	"github.com/ory/hydra/spi"
+	"time"
+)
 
 // WellKnown represents important OpenID Connect discovery metadata
 //
@@ -152,8 +155,8 @@ type WellKnown struct {
 
 	// JSON array containing a list of Proof Key for Code Exchange (PKCE) [RFC7636] code challenge methods supported
 	// by this authorization server.
-	CodeChallengeMethodsSupported []string `json:"code_challenge_methods_supported"`
-	AvailableNamespaces           []string `json:"available_namespaces"`
+	CodeChallengeMethodsSupported []string                `json:"code_challenge_methods_supported"`
+	AvailableOrganizations        []*spi.OrganizationSpec `json:"available_organizations"`
 }
 
 // swagger:parameters deleteOAuth2Token

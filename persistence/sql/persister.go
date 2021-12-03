@@ -3,10 +3,9 @@ package sql
 import (
 	"context"
 	"database/sql"
-	"github.com/ory/hydra/pkg/magnolia"
-
 	"github.com/gobuffalo/pop/v5"
 	"github.com/gobuffalo/x/randx"
+	"github.com/ory/hydra/spi"
 	"github.com/pkg/errors"
 
 	"github.com/ory/fosite"
@@ -37,7 +36,7 @@ type (
 		r      Dependencies
 		config *config.Provider
 		l      *logrusx.Logger
-		client *magnolia.Client
+		client *spi.Client
 	}
 	Dependencies interface {
 		ClientHasher() fosite.Hasher
@@ -90,8 +89,8 @@ func NewPersister(ctx context.Context, c *pop.Connection, r Dependencies, config
 	if err != nil {
 		return nil, errorsx.WithStack(err)
 	}
-	client := magnolia.NewMagnoliaClient()
 
+	client := spi.NewClient(config)
 	return &Persister{
 		conn:   c,
 		mb:     mb,

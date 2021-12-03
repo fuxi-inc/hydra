@@ -66,6 +66,9 @@ const (
 	KeyExcludeNotBeforeClaim                     = "oauth2.exclude_not_before_claim"
 	KeyAllowedTopLevelClaims                     = "oauth2.allowed_top_level_claims"
 	KeyRefreshTokenHookURL                       = "oauth2.refresh_token_hook" // #nosec G101
+	MagnoliaServerAddress                        = "magnolia.address"
+	MagnoliaServerInsecurePort                   = "magnolia.insecure_port"
+	MagnoliaServerSecurePort                     = "magnolia.secure_port"
 )
 
 const DSNMemory = "memory"
@@ -432,4 +435,11 @@ func (p *Provider) CGroupsV1AutoMaxProcsEnabled() bool {
 
 func (p *Provider) GrantAllClientCredentialsScopesPerDefault() bool {
 	return p.p.Bool(KeyGrantAllClientCredentialsScopesPerDefault)
+}
+
+func (p *Provider) SecureMagnoliaServerAddress() string {
+	return fmt.Sprintf("%s:%d", p.p.String(MagnoliaServerAddress), p.p.Int(MagnoliaServerSecurePort))
+}
+func (p *Provider) InsecureMagnoliaServerAddress() string {
+	return fmt.Sprintf("%s:%d", p.p.String(MagnoliaServerAddress), p.p.Int(MagnoliaServerInsecurePort))
 }

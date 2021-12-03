@@ -232,7 +232,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request, ps httpr
 //       401: jsonError
 //       500: jsonError
 func (h *Handler) WellKnownHandler(w http.ResponseWriter, r *http.Request) {
-	availableNamespaces := h.r.ClientManager().AvailableNamespaces(r.Context())
+	availableOrganizations := h.r.ClientManager().AvailableOrganizations(r.Context())
 	h.r.Writer().Write(w, r, &WellKnown{
 		Issuer:                                 strings.TrimRight(h.c.IssuerURL().String(), "/") + "/",
 		AuthURL:                                h.c.OAuth2AuthURL().String(),
@@ -260,7 +260,7 @@ func (h *Handler) WellKnownHandler(w http.ResponseWriter, r *http.Request) {
 		EndSessionEndpoint:                     urlx.AppendPaths(h.c.IssuerURL(), LogoutPath).String(),
 		RequestObjectSigningAlgValuesSupported: []string{"RS256", "none"},
 		CodeChallengeMethodsSupported:          []string{"plain", "S256"},
-		AvailableNamespaces:                    availableNamespaces,
+		AvailableOrganizations:                 availableOrganizations,
 	})
 }
 
