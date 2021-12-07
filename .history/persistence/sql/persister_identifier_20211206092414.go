@@ -2,9 +2,8 @@ package sql
 
 import (
 	"context"
-	"strings"
-
 	"github.com/ory/hydra/identifier"
+	"strings"
 )
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {

@@ -2,12 +2,10 @@ package driver
 
 import (
 	"context"
+	"github.com/ory/hydra/identifier"
+	"github.com/ory/hydra/subscription"
 	"strings"
 	"time"
-
-	"github.com/ory/hydra/identifier"
-	"github.com/ory/hydra/identity"
-	"github.com/ory/hydra/subscription"
 
 	"github.com/ory/x/errorsx"
 
@@ -133,9 +131,5 @@ func (m *RegistrySQL) IdentifierManager() identifier.Manager {
 }
 
 func (m *RegistrySQL) SubscriptionManager() subscription.Manager {
-	return m.Persister()
-}
-
-func (m *RegistrySQL) IdentityManager() identity.Manager {
 	return m.Persister()
 }

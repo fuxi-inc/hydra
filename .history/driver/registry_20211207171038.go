@@ -61,7 +61,6 @@ type Registry interface {
 	HealthHandler() *healthx.Handler
 	IdentifierHandler() *identifier.Handler
 	SubscriptionHandler() *subscription.Handler
-	IdentityHandler() *identity.Handler
 
 	OAuth2HMACStrategy() *foauth2.HMACSHAStrategy
 	WithOAuth2Provider(f fosite.OAuth2Provider)

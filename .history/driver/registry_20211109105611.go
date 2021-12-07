@@ -2,9 +2,7 @@ package driver
 
 import (
 	"context"
-
 	"github.com/ory/hydra/identifier"
-	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/subscription"
 	"github.com/pkg/errors"
 
@@ -50,7 +48,6 @@ type Registry interface {
 	PrometheusManager() *prometheus.MetricsManager
 	x.TracingProvider
 	identifier.Registry
-	identity.Registry
 	subscription.Registry
 
 	RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPublic)
@@ -61,7 +58,6 @@ type Registry interface {
 	HealthHandler() *healthx.Handler
 	IdentifierHandler() *identifier.Handler
 	SubscriptionHandler() *subscription.Handler
-	IdentityHandler() *identity.Handler
 
 	OAuth2HMACStrategy() *foauth2.HMACSHAStrategy
 	WithOAuth2Provider(f fosite.OAuth2Provider)
@@ -109,8 +105,6 @@ func CallRegistry(ctx context.Context, r Registry) {
 	r.Tracer(ctx)
 	r.IdentifierValidator()
 	r.IdentifierManager()
-	r.IdentityValidator()
-	r.IdentityManager()
 	r.SubscriptionValidator()
 	r.SubscriptionManager()
 }

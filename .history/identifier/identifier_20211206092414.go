@@ -20,7 +20,7 @@ type Identifier struct {
 
 func (entity *Identifier) ToDataIdentifier() *api.DataIdentifier {
 	return &api.DataIdentifier{
-		Id:            entity.ID,
+		Id:            entity.Name,
 		Name:          entity.Name,
 		DataAddress:   entity.DataAddress,
 		DataDigest:    entity.DataDigest,

@@ -192,6 +192,20 @@ func (m *RegistryBase) ClientValidator() *client.Validator {
 	return m.cv
 }
 
+func (m *RegistryBase) IdentityHandler() *identity.Handler {
+	if m.ith == nil {
+		m.ith = identity.NewHandler(m.r)
+	}
+	return m.ith
+}
+
+func (m *RegistryBase) IdentityValidator() *identity.Validator {
+	if m.itv == nil {
+		m.itv = identity.NewValidator(m.C)
+	}
+	return m.itv
+}
+
 func (m *RegistryBase) KeyHandler() *jwk.Handler {
 	if m.kh == nil {
 		m.kh = jwk.NewHandler(m.r, m.C)
@@ -500,20 +514,6 @@ func (m *RegistryBase) IdentifierHandler() *identifier.Handler {
 		m.ih = identifier.NewHandler(m.r)
 	}
 	return m.ih
-}
-
-func (m *RegistryBase) IdentityHandler() *identity.Handler {
-	if m.ith == nil {
-		m.ith = identity.NewHandler(m.r)
-	}
-	return m.ith
-}
-
-func (m *RegistryBase) IdentityValidator() *identity.Validator {
-	if m.itv == nil {
-		m.itv = identity.NewValidator()
-	}
-	return m.itv
 }
 
 func (m *RegistryBase) SubscriptionValidator() *subscription.Validator {
