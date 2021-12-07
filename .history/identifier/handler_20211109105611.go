@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
-
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"net/http"
 
 	"github.com/ory/hydra/x"
 
@@ -20,7 +19,7 @@ type Handler struct {
 }
 
 const (
-	IdentifierHandlerPath = "/identity"
+	IdentifierHandlerPath = "/identifiers"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
