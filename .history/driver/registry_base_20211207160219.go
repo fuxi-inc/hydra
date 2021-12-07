@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/ory/hydra/identifier"
-	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/subscription"
 
 	prometheus "github.com/ory/x/prometheusx"

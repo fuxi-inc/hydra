@@ -1,4 +1,4 @@
-package identity
+package identifier
 
 import (
 	"github.com/fuxi-inc/magnolia/pkg/api"

@@ -1,13 +1,12 @@
-package identity
+package identifier
 
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
-
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"net/http"
 
 	"github.com/ory/hydra/x"
 

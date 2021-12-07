@@ -1,6 +1,7 @@
-package identity
+package identifier
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -19,7 +20,7 @@ type Handler struct {
 }
 
 const (
-	IdentityHandlerPath = "/identity"
+	IdentifierHandlerPath = "/identifier"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -29,21 +30,21 @@ func NewHandler(r InternalRegistry) *Handler {
 }
 
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(IdentityHandlerPath, h.Create)
-	public.GET(IdentityHandlerPath+"/:id", h.Get)
-	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
-	public.GET(IdentityHandlerPath, h.List)
+	public.POST(IdentifierHandlerPath, h.Create)
+	public.GET(IdentifierHandlerPath+"/:id", h.Get)
+	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
+	public.GET(IdentifierHandlerPath, h.List)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity Identity
+	var entity Identifier
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	if err := h.r.IdentityValidator().Validate(&entity); err != nil {
+	if err := h.r.IdentifierValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -55,13 +56,29 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	err := h.r.IdentityManager().CreateIdentity(r.Context(), &entity)
+	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+	entity.Owner = subject
+	// TODO should add real auth server address
+	entity.AuthAddress = "http://localhost:4444"
+
+	err = h.r.IdentifierManager().CreateIdentifier(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &entity)
+	h.r.Writer().WriteCreated(w, r, IdentifierHandlerPath+"/"+entity.ID, &entity)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -87,7 +104,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		Metadata: r.URL.Query().Get("metadata"),
 	}
 
-	c, err := h.r.IdentityManager().GetIdentities(r.Context(), filters)
+	c, err := h.r.IdentifierManager().GetIdentifiers(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -97,7 +114,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	pagination.Header(w, r.URL, 10000, limit, offset)
 
 	if c == nil {
-		c = []*Identity{}
+		c = []*Identifier{}
 	}
 
 	h.r.Writer().Write(w, r, c)
@@ -106,7 +123,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
-	entity, err := h.r.IdentityManager().GetIdentity(r.Context(), id)
+	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
 	if err != nil {
 		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
@@ -122,7 +139,15 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-
+	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	if entity == nil {
+		h.r.Writer().WriteError(w, r, errors.New("notfound"))
+		return
+	}
 	accessToken := fosite.AccessTokenFromRequest(r)
 
 	if accessToken == "" {
@@ -130,7 +155,24 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	err := h.r.IdentityManager().DeleteIdentity(r.Context(), id)
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+	if subject != entity.Owner {
+		h.r.Writer().WriteError(w, r, errors.New("no permission"))
+		return
+	}
+
+	err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

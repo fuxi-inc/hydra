@@ -3,14 +3,12 @@ package driver
 import (
 	"context"
 	"fmt"
+	"github.com/ory/hydra/identifier"
+	"github.com/ory/hydra/subscription"
 	"net"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/ory/hydra/identifier"
-	"github.com/ory/hydra/identity"
-	"github.com/ory/hydra/subscription"
 
 	prometheus "github.com/ory/x/prometheusx"
 
@@ -83,8 +81,6 @@ type RegistryBase struct {
 	iv           *identifier.Validator
 	sh           *subscription.Handler
 	sv           *subscription.Validator
-	ith          *identity.Handler
-	itv          *identity.Validator
 }
 
 func (m *RegistryBase) with(r Registry) *RegistryBase {
