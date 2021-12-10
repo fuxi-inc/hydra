@@ -1,5 +1,9 @@
 package identity
 
+import (
+	"github.com/fuxi-inc/magnolia/pkg/api"
+)
+
 // type Identity struct {
 // 	ID               string `json:"-"`
 // 	Name             string `json:"name,omitempty"`
@@ -22,33 +26,33 @@ type Identity struct {
 	LastModifiedTime int64  `json:"lastModifiedTime,omitempty" db:"modified_at"`
 }
 
-// func (entity *Identity) ToIdentityIdentifier() *api.IdentityIdentifier {
-// 	return &api.IdentityIdentifier{
-// 		Id:               entity.ID,
-// 		Name:             entity.Name,
-// 		Email:            entity.Email,
-// 		Owner:            entity.Owner,
-// 		PublicKey:        entity.PublicKey,
-// 		Signature:        entity.Signature,
-// 		CreationTime:     entity.CreationTime,
-// 		LastModifiedTime: entity.LastModifiedTime,
-// 	}
-// }
+func (entity *Identity) ToIdentityIdentifier() *api.IdentityIdentifier {
+	return &api.IdentityIdentifier{
+		Id:               entity.ID,
+		Name:             entity.Name,
+		Email:            entity.Email,
+		Owner:            entity.Owner,
+		PublicKey:        entity.PublicKey,
+		Signature:        entity.Signature,
+		CreationTime:     entity.CreationTime,
+		LastModifiedTime: entity.LastModifiedTime,
+	}
+}
 
-// func FromIdentityIdentifier(source *api.IdentityIdentifier) *Identity {
-// 	if source == nil {
-// 		return nil
-// 	}
+func FromIdentityIdentifier(source *api.IdentityIdentifier) *Identity {
+	if source == nil {
+		return nil
+	}
 
-// 	entity := &Identity{}
-// 	entity.ID = source.GetId()
-// 	entity.Name = source.GetName()
-// 	entity.ClientID = source.GetClientID()
-// 	entity.Email = source.GetEmail()
-// 	entity.PublicKey = source.GetPublicKey()
-// 	entity.Signature = source.GetSignature()
-// 	entity.CreationTime = source.GetCreationTime()
-// 	entity.LastModifiedTime = source.GetLastModifiedTime()
-// 	return entity
+	entity := &Identity{}
+	entity.ID = source.GetId()
+	entity.Name = source.GetName()
+	entity.ClientID = source.GetClientID()
+	entity.Email = source.GetEmail()
+	entity.PublicKey = source.GetPublicKey()
+	entity.Signature = source.GetSignature()
+	entity.CreationTime = source.GetCreationTime()
+	entity.LastModifiedTime = source.GetLastModifiedTime()
+	return entity
 
-// }
+}
