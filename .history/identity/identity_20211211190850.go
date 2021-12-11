@@ -36,8 +36,8 @@ func (entity *Identity) ToIdentityIdentifier() *api.IdentityIdentifier {
 		Email:            entity.Email,
 		PublicKey:        entity.PublicKey,
 		Signature:        nil,
-		CreationTime:     0,
-		LastModifiedTime: 0,
+		CreationTime:     entity.CreationTime,
+		LastModifiedTime: entity.LastModifiedTime,
 	}
 }
 
@@ -64,6 +64,8 @@ func FromIdentityIdentifier(source *api.IdentityIdentifier) *Identity {
 	entity.Name = source.GetName()
 	entity.Email = source.GetEmail()
 	entity.PublicKey = source.GetPublicKey()
+	entity.CreationTime = source.GetCreationTime()
+	entity.LastModifiedTime = source.GetLastModifiedTime()
 	return entity
 
 }
