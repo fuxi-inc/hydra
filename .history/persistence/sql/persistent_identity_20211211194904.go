@@ -12,7 +12,7 @@ import (
 )
 
 func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Identity, error) {
-	source, err := p.client.GetIdentityIdentifier(ctx, id)
+	source, err := p.client.GetIdentityIdentity(ctx, id)
 	//logger.Get().Infow("get identity", zap.Error(err), zap.Any("data identity", source))
 	if err != nil {
 		return nil, err
