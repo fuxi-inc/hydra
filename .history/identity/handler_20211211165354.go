@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ory/fosite"
-	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
 
 	"github.com/ory/hydra/x"
@@ -44,7 +43,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	var entity Identity
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		h.r.Writer().WriteError(w, r, errors.WithStack(err))
 		return
 	}
 
