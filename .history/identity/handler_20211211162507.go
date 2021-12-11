@@ -1,7 +1,6 @@
 package identity
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -40,7 +39,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.GET(IdentityHandlerPath, h.List)
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identity
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
@@ -56,7 +55,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//var clientID = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
+	if accessToken == "" || clientID == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
@@ -89,8 +88,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(ctx, &entity)
+	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

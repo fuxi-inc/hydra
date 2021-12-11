@@ -1,12 +1,12 @@
 package identity
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -43,6 +43,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var entity Identity
 
+	fmt.Println("---0---")
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
@@ -53,10 +54,10 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	//var clientID = ps.ByName("id")
+	var clientID = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
+	if accessToken == "" || clientID == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
@@ -76,7 +77,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	// subject := token.Claims["sub"].(string)
 	// fmt.Println(subject)
 
-	//entity.ClientID = clientID
 	entity.CreationTime = time.Now().Unix()
 	entity.LastModifiedTime = entity.CreationTime
 
@@ -89,8 +89,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(ctx, &entity)
+	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
