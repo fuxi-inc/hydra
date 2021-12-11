@@ -2,6 +2,7 @@ package spi
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
@@ -32,6 +33,7 @@ func (c *Client) Support(ctx context.Context, id string) bool {
 		return false
 	}
 	for _, namespace := range availableNamespaces {
+		fmt.Println(namespace)
 		if strings.HasSuffix(id, namespace) {
 			return true
 		}
