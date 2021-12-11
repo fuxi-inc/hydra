@@ -23,11 +23,10 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"github.com/ory/fosite"
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/ory/fosite"
 
 	"github.com/ory/x/errorsx"
 

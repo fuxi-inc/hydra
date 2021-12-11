@@ -2,13 +2,12 @@ package spi
 
 import (
 	"context"
-	"strings"
-
 	"github.com/fuxi-inc/magnolia/pkg/api"
 	"github.com/jaswdr/faker"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func (c *Client) GetIdentityIdentifier(ctx context.Context, name string) (*api.IdentityIdentifier, error) {
@@ -59,6 +58,7 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		//		PublicKey: entity.GetPublicKey(),
 		//		Signature: entity.GetSignature(),
 	})
+	logger.Get().Infow("pubKey3", zap.Any("pubkey", resp))
 	if err != nil {
 		return nil, err
 	}
@@ -71,24 +71,6 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 }
 
 func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.DeleteIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Id: id})
-	if err != nil {
-		return err
-	}
-
-	if resp.Result.StatusCode != 200 {
-		return errors.New(resp.Result.Message)
-	}
-	logger.Get().Infow("delete identity identifier", zap.Any("data", id))
-	return nil
-}
-
-func (c *Client) GetClientID(ctx context.Context, id string) error {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {
 		return err

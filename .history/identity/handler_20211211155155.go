@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
@@ -75,7 +74,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	// subject := token.Claims["sub"].(string)
 	// fmt.Println(subject)
 
-	entity.CreationTime = time.Now().Unix()
+	entity.CreationTime = 10
 	entity.LastModifiedTime = entity.CreationTime
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)

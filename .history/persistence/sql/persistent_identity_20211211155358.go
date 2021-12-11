@@ -20,8 +20,7 @@ func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Ident
 
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity) error {
 	//clientID := p.client.GetClientID(ctx, apiKey)
-	_, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier())
-	return err
+	return p.client.CreateIdentityIdentity(ctx, entity.ToIdentityIdentity())
 }
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
