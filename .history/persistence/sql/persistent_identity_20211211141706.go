@@ -18,8 +18,8 @@ func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Ident
 	}
 }
 
-func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity) error {
-	//clientID := p.client.GetClientID(ctx, apiKey)
+func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity, apiKey string) error {
+	//p.client.GetClientID(ctx, entity.)
 	//return p.client.CreateDataIdentity(ctx, entity.ToDataIdentity())
 	return nil
 }

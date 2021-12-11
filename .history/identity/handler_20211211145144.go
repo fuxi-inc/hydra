@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
@@ -76,7 +77,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	subject := token.Claims["sub"].(string)
 	fmt.Println(subject)
 
-	entity.CreationTime = 10
+	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -88,7 +89,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity)
+	err := h.r.IdentityManager().CreateIdentity(r.Context(), &entity, accessToken)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

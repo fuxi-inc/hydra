@@ -1,14 +1,13 @@
 package identity
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
@@ -40,7 +39,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.GET(IdentityHandlerPath, h.List)
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identity
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
@@ -56,27 +55,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	var clientID = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" || clientID == "" {
+	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
 
-	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-
-	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-	fmt.Println(token)
-	subject := token.Claims["sub"].(string)
-	fmt.Println(subject)
-
-	entity.CreationTime = 10
+	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -85,10 +69,10 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 	publickey := &privatekey.PublicKey
 
-	//entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
+	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity)
+	err := h.r.IdentityManager().CreateIdentity(r.Context(), &entity, accessToken)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

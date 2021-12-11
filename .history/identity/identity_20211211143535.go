@@ -1,18 +1,20 @@
 package identity
 
 import (
+	"time"
+
 	"github.com/fuxi-inc/magnolia/pkg/api"
 )
 
 type Identity struct {
-	ID               string `json:"id,omitempty"`
-	Name             string `json:"name,omitempty"`
-	ClientID         string `json:"clientID,omitempty"`
-	Email            string `json:"email,omitempty"`
-	PublicKey        []byte `json:"publicKey,omitempty"`
-	Signature        []byte `json:"signature,omitempty"`
-	CreationTime     int64  `json:"creationTime,omitempty"`
-	LastModifiedTime int64  `json:"lastModifiedTime,omitempty"`
+	ID               string    `json:"id,omitempty"`
+	Name             string    `json:"name,omitempty"`
+	ClientID         string    `json:"clientID,omitempty"`
+	Email            string    `json:"email,omitempty"`
+	PublicKey        []byte    `json:"publicKey,omitempty"`
+	Signature        []byte    `json:"signature,omitempty"`
+	CreationTime     time.Time `json:"creationTime,omitempty"`
+	LastModifiedTime time.Time `json:"lastModifiedTime,omitempty"`
 }
 
 // type Identity struct {
