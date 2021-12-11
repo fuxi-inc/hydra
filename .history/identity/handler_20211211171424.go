@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -79,6 +80,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
+
+	fmt.Println("===4===")
 
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &entity)
 }
