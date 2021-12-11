@@ -60,8 +60,10 @@ func FromIdentityIdentifier(source *api.IdentityIdentifier) *Identity {
 	entity := &Identity{}
 	entity.ID = source.GetId()
 	entity.Name = source.GetName()
+	entity.ClientID = source.GetClientID()
 	entity.Email = source.GetEmail()
 	entity.PublicKey = source.GetPublicKey()
+	entity.Signature = source.GetSignature()
 	entity.CreationTime = source.GetCreationTime()
 	entity.LastModifiedTime = source.GetLastModifiedTime()
 	return entity

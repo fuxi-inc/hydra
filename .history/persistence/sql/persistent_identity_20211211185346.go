@@ -5,10 +5,6 @@ import (
 	"strings"
 
 	"github.com/ory/hydra/identity"
-	"github.com/ory/hydra/internal/logger"
-	"github.com/ory/x/errorsx"
-	"github.com/ory/x/sqlcon"
-	"go.uber.org/zap"
 )
 
 func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Identity, error) {
@@ -23,13 +19,9 @@ func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Ident
 }
 
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity) error {
-	_, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier())
-	if err != nil {
-		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
-		return errorsx.WithStack(err)
-	}
-
-	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
+	//clientID := p.client.GetClientID(ctx, apiKey)
+	identity, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier())
+	return err
 }
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
