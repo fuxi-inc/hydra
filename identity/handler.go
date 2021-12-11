@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"fmt"
 
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
@@ -43,15 +44,18 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var entity Identity
 
+	fmt.Println("===0===")
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
+	fmt.Println("===1===")
 
 	if err := h.r.IdentityValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
+	fmt.Println("===2===")
 
 	//var clientID = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
@@ -89,12 +93,16 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
+	fmt.Println("===3===")
+
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	err = h.r.IdentityManager().CreateIdentity(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
+
+	fmt.Println("===4===")
 
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &entity)
 }

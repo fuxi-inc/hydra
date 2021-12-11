@@ -3,6 +3,7 @@ package spi
 import (
 	"context"
 	"strings"
+	"fmt"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
 	"github.com/jaswdr/faker"
@@ -32,6 +33,7 @@ func (c *Client) Support(ctx context.Context, id string) bool {
 		return false
 	}
 	for _, namespace := range availableNamespaces {
+		fmt.Println(namespace)
 		if strings.HasSuffix(id, namespace) {
 			return true
 		}
@@ -45,6 +47,7 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, err
 	}
 
+	fmt.Println(entity.GetId())
 	if !c.Support(ctx, entity.GetId()) {
 		return nil, errors.New("no available namespaces")
 	}
