@@ -37,7 +37,7 @@ func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
 		logger.Get().Warnw("failed to delete identity identifier", zap.Error(err), zap.Any("id", id))
 		return errorsx.WithStack(err)
 	}
-	return sqlcon.HandleError(p.Connection(ctx).Destroy(id))
+
 }
 
 func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) ([]*identity.Identity, error) {
