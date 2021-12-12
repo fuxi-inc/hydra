@@ -33,6 +33,7 @@ func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identit
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
 	return p.client.DeleteIdentityIdentifier(ctx, id)
+	//return nil
 }
 
 func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) ([]*identity.Identity, error) {

@@ -160,6 +160,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
 	if err != nil {
+		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -168,7 +169,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	err = h.r.IdentityManager().DeleteIdentity(ctx, id)
+	err := h.r.IdentityManager().DeleteIdentity(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
