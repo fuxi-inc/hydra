@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
+	"github.com/jaswdr/faker"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -48,12 +49,12 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, errors.New("no available namespaces")
 	}
 
-	//faker := faker.New()
+	faker := faker.New()
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
 		Id:        entity.GetId(),
 		Name:      entity.GetName(),
 		Email:     entity.GetEmail(),
-		Signature: entity.GetSignature(),
+		Signature: []byte(faker.Beer().Name()),
 		PublicKey: entity.GetPublicKey(),
 		//		PublicKey: entity.GetPublicKey(),
 		//		Signature: entity.GetSignature(),
@@ -116,6 +117,6 @@ func (c *Client) GetIdentityIdentifiers(ctx context.Context, id string) ([]*api.
 		return nil, err
 	}
 
-	logger.Get().Infow("get identity identifier", zap.Any("identity", resp.Data))
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }

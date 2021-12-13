@@ -1,6 +1,12 @@
 package identity
 
 import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
@@ -17,14 +23,28 @@ type Identity struct {
 	LastModifiedTime time.Time `json:"lastModifiedTime,omitempty" db:"modified_at"`
 }
 
-func (entity *Identity) ToIdentityIdentifier(signature []byte) *api.IdentityIdentifier {
+func (entity *Identity) ToIdentityIdentifier() *api.IdentityIdentifier {
+
+	rng := rand.Reader
+
+	var s string
+	s = entity.ID + entity.Email
+	var message []byte = []byte(s)
+	hashed := sha256.Sum256(message)
+
+	signature, err := rsa.SignPKCS1v15(rng, entity.PrivateKey, crypto.SHA256, hashed[:])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error from signing: %s\n", err)
+		return
+	}
+
 	return &api.IdentityIdentifier{
 		Id:               entity.ID,
 		Name:             entity.Name,
 		ClientID:         "",
 		Email:            entity.Email,
 		PublicKey:        entity.PublicKey,
-		Signature:        signature,
+		Signature:        nil,
 		CreationTime:     0,
 		LastModifiedTime: 0,
 	}

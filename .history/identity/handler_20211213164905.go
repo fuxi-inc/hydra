@@ -77,17 +77,19 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	rng := rand.Reader
 
-	var message []byte = []byte(entity.ID + entity.Email)
+	var s string
+	s = entity.ID + entity.Email
+	var message []byte = []byte(s)
 	hashed := sha256.Sum256(message)
 
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
+	signature, err := rsa.SignPKCS1v15(rng, entity.PrivateKey, crypto.SHA256, hashed[:])
 	if err != nil {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(ctx, &entity, signature)
+	err = h.r.IdentityManager().CreateIdentity(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

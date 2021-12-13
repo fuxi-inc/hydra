@@ -21,7 +21,7 @@ func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Ident
 }
 
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity, signature []byte) error {
-	_, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier(signature))
+	_, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier())
 	if err != nil {
 		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
 		return errorsx.WithStack(err)

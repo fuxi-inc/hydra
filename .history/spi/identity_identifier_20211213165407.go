@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
+	"github.com/jaswdr/faker"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -48,7 +49,7 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, errors.New("no available namespaces")
 	}
 
-	//faker := faker.New()
+	faker := faker.New()
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
 		Id:        entity.GetId(),
 		Name:      entity.GetName(),

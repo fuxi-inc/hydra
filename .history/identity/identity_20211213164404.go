@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"crypto/sha256"
 	"time"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
@@ -17,14 +18,20 @@ type Identity struct {
 	LastModifiedTime time.Time `json:"lastModifiedTime,omitempty" db:"modified_at"`
 }
 
-func (entity *Identity) ToIdentityIdentifier(signature []byte) *api.IdentityIdentifier {
+func (entity *Identity) ToIdentityIdentifier() *api.IdentityIdentifier {
+
+	var s string
+	s = entity.ID + entity.Email
+	var message []byte = []byte(s)
+	hashed := sha256.Sum256(message)
+
 	return &api.IdentityIdentifier{
 		Id:               entity.ID,
 		Name:             entity.Name,
 		ClientID:         "",
 		Email:            entity.Email,
 		PublicKey:        entity.PublicKey,
-		Signature:        signature,
+		Signature:        nil,
 		CreationTime:     0,
 		LastModifiedTime: 0,
 	}

@@ -2,10 +2,8 @@ package identity
 
 import (
 	"context"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
@@ -75,19 +73,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	rng := rand.Reader
-
-	var message []byte = []byte(entity.ID + entity.Email)
-	hashed := sha256.Sum256(message)
-
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
-
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(ctx, &entity, signature)
+	err = h.r.IdentityManager().CreateIdentity(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -112,8 +99,8 @@ type Filter struct {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	limit, offset := pagination.Parse(r, 100, 0, 500)
 	filters := Filter{
-		Limit:    limit,
-		Offset:   offset,
+		// Limit:    limit,
+		// Offset:   offset,
 		ClientId: r.URL.Query().Get("client_id"),
 		// Tag:      r.URL.Query().Get("tag"),
 		// Metadata: r.URL.Query().Get("metadata"),
