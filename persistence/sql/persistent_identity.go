@@ -89,7 +89,7 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 	// 	}
 	// }
 
-	entities, err := p.client.GetIdentityIdentifiers(ctx)
+	entities, err := p.client.GetIdentityIdentifiers(ctx, owner)
 	if err != nil {
 		return nil, err
 	}
