@@ -126,8 +126,8 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		return
 	}
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	c, err := h.r.IdentityManager().GetIdentities(ctx, filters)
+	//ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	c, err := h.r.IdentityManager().GetIdentities(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -146,15 +146,15 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
-	accessToken := fosite.AccessTokenFromRequest(r)
+	// accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
+	// if accessToken == "" {
+	// 	h.r.Writer().WriteError(w, r, errors.New(""))
+	// 	return
+	// }
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
+	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	entity, err := h.r.IdentityManager().GetIdentity(r.Context(), id)
 	if err != nil {
 		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
