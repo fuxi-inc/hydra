@@ -89,8 +89,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 // swagger:parameters listOAuth2Clients
 type Filter struct {
-	// Limit    int    `json:"limit"`
-	// Offset   int    `json:"offset"`
+	Limit    int    `json:"limit"`
+	Offset   int    `json:"offset"`
 	ClientId string `json:"client_id"`
 	// Tag      string `json:"tag"`
 	// Metadata string `json:"metadata"`
@@ -99,8 +99,8 @@ type Filter struct {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	limit, offset := pagination.Parse(r, 100, 0, 500)
 	filters := Filter{
-		// Limit:    limit,
-		// Offset:   offset,
+		Limit:    limit,
+		Offset:   offset,
 		ClientId: r.URL.Query().Get("client_id"),
 		// Tag:      r.URL.Query().Get("tag"),
 		// Metadata: r.URL.Query().Get("metadata"),

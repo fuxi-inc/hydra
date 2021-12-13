@@ -106,17 +106,17 @@ func (c *Client) GetClientID(ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *Client) GetIdentityIdentifiers(ctx context.Context) ([]*api.IdentityIdentifier, error) {
+func (c *Client) GetIdentityIdentifiers(ctx context.Context, id string) ([]*api.IdentityIdentifier, error) {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := client.GetIdentityIdentifiers(ctx, &api.GetIdentityIdentifiersRequest{})
+	resp, err := client.GetIdentityIdentifiers(ctx, &api.GetIdentityIdentifiersRequest{ClientID: id})
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
+	logger.Get().Infow("get identity identifier", zap.Any("identity", resp.Data))
 	return resp.Data, nil
 }
