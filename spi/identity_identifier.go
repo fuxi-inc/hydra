@@ -11,7 +11,12 @@ import (
 )
 
 func (c *Client) GetIdentityIdentifier(ctx context.Context, name string) (*api.IdentityIdentifier, error) {
-	client := c.constructInsecureEntropyServiceClient()
+	// client := c.constructInsecureEntropyServiceClient()
+
+	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := client.GetIdentityIdentifier(ctx, &api.IdentityIdentifierRequest{Id: name})
 	if err != nil {
