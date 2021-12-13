@@ -23,6 +23,11 @@ func (c *Client) constructEntropyServiceClient(ctx context.Context) (api.Entropy
 	return client, ctx, nil
 }
 
+func (c *Client) constructInsecureEntropyServiceClient() api.EntropyServiceClient {
+	client := api.NewEntropyServiceClient(c.insecureConn)
+	return client
+}
+
 func (c *Client) GetDataIdentifier(ctx context.Context, id string) (*api.DataIdentifier, error) {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {

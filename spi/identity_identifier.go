@@ -39,10 +39,7 @@ func (c *Client) Support(ctx context.Context, id string) bool {
 }
 
 func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
-	if err != nil {
-		return nil, err
-	}
+	client := c.constructInsecureEntropyServiceClient()
 
 	if !c.Support(ctx, entity.GetId()) {
 		return nil, errors.New("no available namespaces")
