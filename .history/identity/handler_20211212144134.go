@@ -92,29 +92,21 @@ type Filter struct {
 	Limit    int    `json:"limit"`
 	Offset   int    `json:"offset"`
 	ClientId string `json:"client_id"`
-	// Tag      string `json:"tag"`
-	// Metadata string `json:"metadata"`
+	Tag      string `json:"tag"`
+	Metadata string `json:"metadata"`
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	limit, offset := pagination.Parse(r, 100, 0, 500)
 	filters := Filter{
-		// Limit:    limit,
-		// Offset:   offset,
+		Limit:    limit,
+		Offset:   offset,
 		ClientId: r.URL.Query().Get("client_id"),
-		// Tag:      r.URL.Query().Get("tag"),
-		// Metadata: r.URL.Query().Get("metadata"),
+		Tag:      r.URL.Query().Get("tag"),
+		Metadata: r.URL.Query().Get("metadata"),
 	}
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	c, err := h.r.IdentityManager().GetIdentities(ctx, filters)
+	c, err := h.r.IdentityManager().GetIdentities(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

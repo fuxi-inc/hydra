@@ -106,7 +106,7 @@ func (c *Client) GetClientID(ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *Client) GetIdentityIdentifiers(ctx context.Context) ([]*api.IdentityIdentifier, error) {
+func (c *Client) GetIdentityIdentifiers(ctx context.Context, limit, offset int32) ([]*api.DataIdentifier, error) {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {
 		return nil, err

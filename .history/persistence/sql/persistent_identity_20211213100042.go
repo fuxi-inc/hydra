@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"strings"
 
 	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
@@ -87,14 +88,14 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 	// 		//}
 	// 		//return result, err
 	// 	}
-	// }
+	}
 
-	entities, err := p.client.GetIdentityIdentifiers(ctx)
+	entities, err := p.client.GetIdentityIdentifiers(ctx, int32(limit), int32(offset))
 	if err != nil {
 		return nil, err
 	}
 	for _, entity := range entities {
-		result = append(result, identity.FromIdentityIdentifier(entity))
+		result = append(result, identity.FromDataIdentity(entity))
 	}
 	return result, nil
 }

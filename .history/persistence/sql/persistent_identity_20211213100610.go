@@ -94,7 +94,7 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 		return nil, err
 	}
 	for _, entity := range entities {
-		result = append(result, identity.FromIdentityIdentifier(entity))
+		result = append(result, identity.FromDataIdentity(entity))
 	}
 	return result, nil
 }

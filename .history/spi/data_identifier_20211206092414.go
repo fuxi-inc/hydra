@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/fuxi-inc/magnolia/pkg/api"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/ory/hydra/internal/logger"
@@ -196,31 +195,3 @@ func (c *Client) FindDataIdentifiersByMetadata(ctx context.Context, key, value s
 	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }
-
-// func (c *Client) FindDataIdentifiersByProperty(ctx context.Context, property_id string, limit int32, offset int32) ([]*api.DataIdentifier, error) {
-// 	client, ctx, err := c.constructEntropyServiceClient(ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	resp, err := client.FindDataIdentifiersByProperty(ctx, &api.FindDataIdentifiersByMetadataRequest{
-// 		Criteria: &api.Criteria{
-// 			LogicalType: api.LogicalOperator_AND,
-// 			Criterions: []*api.Criterion{{
-// 				Key:      key,
-// 				Operator: api.Operator_EQ,
-// 				Value:    value,
-// 			}},
-// 		},
-// 		Pagination: &api.Pagination{
-// 			Limit:  limit,
-// 			Offset: offset,
-// 		},
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
-// 	return resp.Data, nil
-// }

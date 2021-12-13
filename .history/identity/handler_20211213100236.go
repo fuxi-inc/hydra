@@ -106,15 +106,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		// Metadata: r.URL.Query().Get("metadata"),
 	}
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	c, err := h.r.IdentityManager().GetIdentities(ctx, filters)
+	c, err := h.r.IdentityManager().GetIdentities(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
