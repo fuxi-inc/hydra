@@ -114,15 +114,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
-	accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
+	
+	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
 	if err != nil {
 		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
