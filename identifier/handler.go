@@ -9,7 +9,9 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"go.uber.org/zap"
 
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/x"
 
 	"github.com/julienschmidt/httprouter"
@@ -56,24 +58,26 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
+	// _, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
 
-	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-	subject := token.Claims["sub"].(string)
-	entity.Owner = subject
+	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+	// subject := token.Claims["sub"].(string)
+	// entity.Owner = subject
 	// TODO should add real auth server address
 	entity.AuthAddress = "http://localhost:4444"
 
-	err = h.r.IdentifierManager().CreateIdentifier(r.Context(), &entity)
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	err := h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
 	if err != nil {
+		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

@@ -12,7 +12,7 @@ func NewValidator() *Validator {
 }
 
 func (v *Validator) Validate(entity *Identifier) error {
-	if entity.Name == "" || entity.DataAddress == "" {
+	if entity.ID == "" || entity.Name == "" || entity.DataAddress == "" {
 		return errorsx.WithStack(ErrInvalidIdentifierMetadata.WithHint("Id,name, dataAddress must be set."))
 	}
 	return nil

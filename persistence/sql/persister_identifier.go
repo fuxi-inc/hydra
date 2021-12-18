@@ -19,8 +19,7 @@ func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.I
 }
 
 func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Identifier) error {
-	//return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
-	return nil
+	return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
 }
 
 func (p *Persister) DeleteIdentifier(ctx context.Context, id string) error {
