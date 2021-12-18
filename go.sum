@@ -237,8 +237,8 @@ github.com/franela/goreq v0.0.0-20171204163338-bcd34c9993f8/go.mod h1:ZhphrRTfi2
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
-github.com/fuxi-inc/magnolia v0.0.4 h1:P3066tFULUOdVbEqV5pP3dzYKRAqOP6RvPU8X+efqnA=
-github.com/fuxi-inc/magnolia v0.0.4/go.mod h1:AVQ3UkJfmagykyPkJ6Sn42CT9Jq7+QkUHnb6Mo/dvNk=
+github.com/fuxi-inc/magnolia v0.0.5 h1:CzdSr7dGIbPBZHhQ54NYGLAXFLkj1lDFqSGRlJqkOKs=
+github.com/fuxi-inc/magnolia v0.0.5/go.mod h1:AVQ3UkJfmagykyPkJ6Sn42CT9Jq7+QkUHnb6Mo/dvNk=
 github.com/fuxi-inc/magnolia-general-chaincode v0.1.6/go.mod h1:7/qx3p28+E7Cxy7s9JZjfAxMGfaBaIr9JT5+elU0/5g=
 github.com/getsentry/raven-go v0.0.0-20180121060056-563b81fc02b7/go.mod h1:KungGk8q33+aIAZUIVWZDr2OfAEBsO49PX4NzFV5kcQ=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=

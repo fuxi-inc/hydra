@@ -16,7 +16,7 @@ replace (
 require (
 	github.com/cenkalti/backoff/v3 v3.0.0
 	github.com/evanphx/json-patch v0.5.2
-	github.com/fuxi-inc/magnolia v0.0.5
+	github.com/fuxi-inc/magnolia v0.0.4
 	github.com/go-bindata/go-bindata v3.1.1+incompatible
 	github.com/go-openapi/errors v0.20.0
 	github.com/go-openapi/runtime v0.19.26
