@@ -153,11 +153,28 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 	if entity == nil {
-		w.WriteHeader(http.StatusNoContent)
+		h.r.Writer().WriteError(w, r, errors.New("notfound"))
 		return
 	}
 
-	err = h.r.IdentifierManager().DeleteIdentifier(ctx, id)
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+	if subject != entity.Owner {
+		h.r.Writer().WriteError(w, r, errors.New("no permission"))
+		return
+	}
+
+	err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

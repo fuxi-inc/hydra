@@ -145,19 +145,36 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
+	
+	entity, err := h.r.IdentifierManager().GetIdentifier(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	if entity == nil {
-		w.WriteHeader(http.StatusNoContent)
+		h.r.Writer().WriteError(w, r, errors.New("notfound"))
+		return
+	}
+	
+
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	err = h.r.IdentifierManager().DeleteIdentifier(ctx, id)
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
+	if subject != entity.Owner {
+		h.r.Writer().WriteError(w, r, errors.New("no permission"))
+		return
+	}
+
+	err = h.r.IdentifierManager().DeleteIdentifier(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

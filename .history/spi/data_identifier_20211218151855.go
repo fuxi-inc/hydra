@@ -76,7 +76,7 @@ func (c *Client) DeleteDatIdentifier(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := client.DeleteDataIdentifier(ctx, &api.DataIdentifierRequest{Id: id})
+	resp, err = client.DeleteDataIdentifier(ctx, &api.DataIdentifierRequest{Id: id})
 	if err != nil {
 		return err
 	}
@@ -87,6 +87,7 @@ func (c *Client) DeleteDatIdentifier(ctx context.Context, id string) error {
 	logger.Get().Infow("delete data identifier", zap.Any("data", id))
 	return nil
 
+	return nil
 }
 
 func (c *Client) GetDataIdentifiers(ctx context.Context, limit, offset int32) ([]*api.DataIdentifier, error) {

@@ -23,6 +23,7 @@ func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Ide
 
 func (p *Persister) DeleteIdentifier(ctx context.Context, id string) error {
 	return p.client.DeleteDatIdentifier(ctx, id)
+	
 }
 
 func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filter) ([]*identifier.Identifier, error) {
