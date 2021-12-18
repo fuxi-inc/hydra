@@ -49,7 +49,6 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 	}
 
 	resp, err := client.CreateDataIdentifier(ctx, &api.CreateDataIdentifierRequest{
-		Id:            entity.Id,
 		Name:          entity.Name,
 		DataAddress:   entity.DataAddress,
 		DataDigest:    entity.DataDigest,
@@ -64,7 +63,7 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 	}
 
 	if resp.Result.StatusCode != 200 {
-		return errors.New(resp.Result.Message)
+		return nil, errors.New(resp.Result.Message)
 	}
 
 	logger.Get().Infow("create data identifier", zap.Any("data", resp.Data))

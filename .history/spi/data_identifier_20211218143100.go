@@ -49,7 +49,7 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 	}
 
 	resp, err := client.CreateDataIdentifier(ctx, &api.CreateDataIdentifierRequest{
-		Id:            entity.Id,
+		Id:			   entity.Id
 		Name:          entity.Name,
 		DataAddress:   entity.DataAddress,
 		DataDigest:    entity.DataDigest,

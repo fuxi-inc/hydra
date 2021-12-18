@@ -23,11 +23,6 @@ func (c *Client) constructEntropyServiceClient(ctx context.Context) (api.Entropy
 	return client, ctx, nil
 }
 
-func (c *Client) constructInsecureEntropyServiceClient() api.EntropyServiceClient {
-	client := api.NewEntropyServiceClient(c.insecureConn)
-	return client
-}
-
 func (c *Client) GetDataIdentifier(ctx context.Context, id string) (*api.DataIdentifier, error) {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {
@@ -49,7 +44,6 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 	}
 
 	resp, err := client.CreateDataIdentifier(ctx, &api.CreateDataIdentifierRequest{
-		Id:            entity.Id,
 		Name:          entity.Name,
 		DataAddress:   entity.DataAddress,
 		DataDigest:    entity.DataDigest,
@@ -61,10 +55,6 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 	})
 	if err != nil {
 		return err
-	}
-
-	if resp.Result.StatusCode != 200 {
-		return errors.New(resp.Result.Message)
 	}
 
 	logger.Get().Infow("create data identifier", zap.Any("data", resp.Data))
