@@ -6,7 +6,7 @@ import (
 )
 
 type Identifier struct {
-	ID               string                        `json:"-"`
+	ID               string                        `json:"id,omitempty"`
 	Name             string                        `json:"name,omitempty"`
 	DataAddress      string                        `json:"dataAddress,omitempty"`
 	DataDigest       string                        `json:"dataDigest,omitempty"`
