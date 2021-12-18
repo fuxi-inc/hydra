@@ -13,7 +13,7 @@ type Identifier struct {
 	DataSignature    []byte                        `json:"dataSignature,omitempty"`
 	AuthAddress      string                        `json:"authAddress,omitempty"`
 	Owner            string                        `json:"owner,omitempty"`
-	CategoryID       string                        `json:"categoryID,omitempty"`
+	
 	Metadata         map[string]string             `json:"metadata,omitempty"`
 	Tags             []string                      `json:"tags,omitempty"`
 	SubscriptionType subscription.SubscriptionType `json:"subscriptionType,omitempty"`
@@ -28,7 +28,6 @@ func (entity *Identifier) ToDataIdentifier() *api.DataIdentifier {
 		DataSignature: entity.DataSignature,
 		AuthAddress:   entity.AuthAddress,
 		Owner:         entity.Owner,
-		CategoryID:    entity.CategoryID,
 		Metadata:      entity.Metadata,
 		Tags:          entity.Tags,
 	}
@@ -46,7 +45,6 @@ func FromDataIdentifier(source *api.DataIdentifier) *Identifier {
 	entity.DataDigest = source.GetDataDigest()
 	entity.AuthAddress = source.GetAuthAddress()
 	entity.Owner = source.GetOwner()
-	entity.CategoryID = source.GetCategoryID()
 	entity.Metadata = source.GetMetadata()
 	entity.Tags = source.GetTags()
 	entity.SubscriptionType = subscriptionType

@@ -56,7 +56,7 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 		DataSignature: entity.DataSignature,
 		AuthAddress:   entity.AuthAddress,
 		Owner:         entity.Owner,
-		CategoryID:    entity.CategoryID,
+		CategoryID:    entity,
 		Metadata:      entity.Metadata,
 		Tags:          entity.Tags,
 	})

@@ -46,7 +46,6 @@ func FromDataIdentifier(source *api.DataIdentifier) *Identifier {
 	entity.DataDigest = source.GetDataDigest()
 	entity.AuthAddress = source.GetAuthAddress()
 	entity.Owner = source.GetOwner()
-	entity.CategoryID = source.GetCategoryID()
 	entity.Metadata = source.GetMetadata()
 	entity.Tags = source.GetTags()
 	entity.SubscriptionType = subscriptionType
