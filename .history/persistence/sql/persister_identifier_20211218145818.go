@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/ory/hydra/identifier"
+	"github.com/ory/hydra/internal/logger"
+	"go.uber.org/zap"
 )
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {
@@ -13,7 +15,7 @@ func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.I
 	if err != nil {
 		return nil, err
 	} else {
-		return identifier.FromDataIdentifier(source), nil
+		return identifier.FromDataIdentifier(nil), nil
 	}
 }
 

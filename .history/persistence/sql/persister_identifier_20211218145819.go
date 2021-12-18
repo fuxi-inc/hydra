@@ -13,7 +13,7 @@ func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.I
 	if err != nil {
 		return nil, err
 	} else {
-		return identifier.FromDataIdentifier(source), nil
+		return identifier.FromDataIdentifier(nil), nil
 	}
 }
 

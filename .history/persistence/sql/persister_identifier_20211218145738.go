@@ -9,11 +9,12 @@ import (
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {
 	source, err := p.client.GetDataIdentifier(ctx, id)
-	//logger.Get().Infow("get identifier", zap.Error(err), zap.Any("data identifier", source))
+	
 	if err != nil {
+		logger.Get().Infow("get identifier", zap.Error(err), zap.Any("data identifier", source))
 		return nil, err
 	} else {
-		return identifier.FromDataIdentifier(source), nil
+		return identifier.FromDataIdentifier(nil), nil
 	}
 }
 
