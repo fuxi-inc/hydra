@@ -105,6 +105,7 @@ type Filter struct {
 	Limit    int    `json:"limit"`
 	Offset   int    `json:"offset"`
 	ClientId string `json:"client_id"`
+`
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -113,6 +114,8 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		Limit:    limit,
 		Offset:   offset,
 		ClientId: r.URL.Query().Get("client_id"),
+		// Tag:      r.URL.Query().Get("tag"),
+		// Metadata: r.URL.Query().Get("metadata"),
 	}
 
 	accessToken := fosite.AccessTokenFromRequest(r)

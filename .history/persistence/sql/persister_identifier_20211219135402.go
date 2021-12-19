@@ -38,14 +38,14 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 
 	var result []*identifier.Identifier
 	if owner != "" {
-		entities, err := p.client.FindDataIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identifier.FromDataIdentifier(entity))
-		}
-		return result, err
+		//entities, err := p.client.FindDataIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for _, entity := range entities {
+		//	result = append(result, identifier.FromDataIdentifier(entity))
+		//}
+		//return result, err
 	}
 
 	tag := filters.Tag

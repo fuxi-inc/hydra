@@ -38,26 +38,26 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 
 	var result []*identifier.Identifier
 	if owner != "" {
-		entities, err := p.client.FindDataIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identifier.FromDataIdentifier(entity))
-		}
-		return result, err
+		//entities, err := p.client.FindDataIdentifiersByOwner(ctx, owner, int32(limit), int32(offset))
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for _, entity := range entities {
+		//	result = append(result, identifier.FromDataIdentifier(entity))
+		//}
+		//return result, err
 	}
 
 	tag := filters.Tag
 	if tag != "" {
-		entities, err := p.client.FindDataIdentifiersByTags(ctx, tag, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identifier.FromDataIdentifier(entity))
-		}
-		return result, err
+		//entities, err := p.client.FindDataIdentifiersByTags(ctx, tag, int32(limit), int32(offset))
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for _, entity := range entities {
+		//	result = append(result, identifier.FromDataIdentifier(entity))
+		//}
+		//return result, err
 	}
 
 	metadata := filters.Metadata
@@ -65,13 +65,13 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 		kvs := strings.Split(metadata, ":")
 		if len(kvs) == 2 {
 			entities, err := p.client.FindDataIdentifiersByMetadata(ctx, kvs[0], kvs[1], int32(limit), int32(offset))
-			if err != nil {
-				return nil, err
-			}
-			for _, entity := range entities {
-				result = append(result, identifier.FromDataIdentifier(entity))
-			}
-			return result, err
+			//if err != nil {
+			//	return nil, err
+			//}
+			//for _, entity := range entities {
+			//	result = append(result, identifier.FromDataIdentifier(entity))
+			//}
+			//return result, err
 		}
 	}
 
