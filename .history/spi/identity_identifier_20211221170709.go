@@ -24,7 +24,7 @@ func (c *Client) GetIdentityIdentifier(ctx context.Context, name string) (*api.I
 	}
 
 	if resp.Result.StatusCode != 200 {
-		return nil, errors.New(resp.Result.Message)
+		return errors.New(resp.Result.Message)
 	}
 
 	logger.Get().Infow("get identity identifier", zap.Any("data", resp.Data))
