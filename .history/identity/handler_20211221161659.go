@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -150,20 +149,6 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		return
 	}
 
-	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-
-	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-	subject := token.Claims["sub"].(string)
-	fmt.Println(subject)
-
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
 	if err != nil {
@@ -188,6 +173,19 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
+
+	// _, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+
+	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+	// subject := token.Claims["sub"].(string)
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)

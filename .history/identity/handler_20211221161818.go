@@ -189,6 +189,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
+	
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
 	if err != nil {
