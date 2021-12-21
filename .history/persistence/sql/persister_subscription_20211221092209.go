@@ -35,7 +35,7 @@ func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription
 		return errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
+	return sqlcon.HandleError(p.Connection(ctx).Create(entity, "pk"))
 }
 
 func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {

@@ -79,7 +79,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	// entity.init()
 	// logger.Get().Infow("subscription", zap.Any("data", entity))
 
-	err := h.r.SubscriptionManager().CreateSubscription(r.Context(), &entity)
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	err := h.r.SubscriptionManager().CreateSubscription(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -108,7 +109,7 @@ type Filter struct {
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var id = ps.ByName("id")
+	// var id = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
 
 	if accessToken == "" {
@@ -128,10 +129,9 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	// 	return
 	// }
 	// subject := token.Claims["sub"].(string)
-	subject := ""
 
-	//ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	entity, err := h.r.SubscriptionManager().GetSubscription(ctx, filters)
 	if err != nil {
 		err = herodot.ErrUnauthorized.WithReason("The requested subscription does not exist or you did not provide the necessary credentials")
 		h.r.Writer().WriteError(w, r, err)

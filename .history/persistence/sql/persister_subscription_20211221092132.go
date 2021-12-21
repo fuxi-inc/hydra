@@ -2,10 +2,8 @@ package sql
 
 import (
 	"context"
-
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/subscription"
-	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
 )
 
@@ -32,10 +30,10 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
 	identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
 	if err != nil {
-		return errorsx.WithStack(err)
+	return errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
+	return sqlcon.HandleError(p.Connection(ctx).Create(entity, "pk"))
 }
 
 func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {

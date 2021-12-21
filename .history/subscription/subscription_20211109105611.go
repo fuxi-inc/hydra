@@ -68,10 +68,6 @@ type Subscription struct {
 	Metadata   Metadata           `json:"metadata,omitempty" db:"metadata"`
 }
 
-func (Subscription) TableName() string {
-	return "subscriptions"
-}
-
 func (entity *Subscription) init() {
 	if entity.Name == "" {
 		if entity.Requestor != entity.Owner {

@@ -69,7 +69,7 @@ type Subscription struct {
 }
 
 func (Subscription) TableName() string {
-	return "subscriptions"
+	return "hydra_client"
 }
 
 func (entity *Subscription) init() {

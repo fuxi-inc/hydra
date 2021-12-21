@@ -4,10 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/token/jwt"
@@ -18,6 +14,9 @@ import (
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
 	"go.uber.org/zap"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type Handler struct {
@@ -79,6 +78,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	// entity.init()
 	// logger.Get().Infow("subscription", zap.Any("data", entity))
 
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	err := h.r.SubscriptionManager().CreateSubscription(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -116,21 +116,19 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		return
 	}
 
-	// _, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+	_, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	// subject := token.Claims["sub"].(string)
-	subject := ""
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 
-	//ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
 		err = herodot.ErrUnauthorized.WithReason("The requested subscription does not exist or you did not provide the necessary credentials")

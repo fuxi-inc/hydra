@@ -68,8 +68,8 @@ type Subscription struct {
 	Metadata   Metadata           `json:"metadata,omitempty" db:"metadata"`
 }
 
-func (Subscription) TableName() string {
-	return "subscriptions"
+func (Sub) TableName() string {
+	return "hydra_client"
 }
 
 func (entity *Subscription) init() {

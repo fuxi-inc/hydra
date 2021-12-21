@@ -131,7 +131,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	subject := ""
 
 	//ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
+	entity, err := h.r.SubscriptionManager().GetSubscription(ctx, id)
 	if err != nil {
 		err = herodot.ErrUnauthorized.WithReason("The requested subscription does not exist or you did not provide the necessary credentials")
 		h.r.Writer().WriteError(w, r, err)
