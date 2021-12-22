@@ -303,7 +303,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	h.r.Writer().Write(w, r, c)
 }
 
-// swagger:route GET /clients/{id} admin getOAuth2Client
+// swagger:route GET /clients/{id}/ admin getOAuth2Client
 //
 // Get an OAuth 2.0 Client.
 //
@@ -371,6 +371,45 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// swagger:parameters licenseParams
+type licenseParams struct {
+	// in: path
+	Id string `json:"id"`
+	// in: body
+	Body struct {
+		Authorization string `json:"Authorization"`
+	}
+}
+
+// swagger:response licenseResp
+type licenseResp struct {
+	// in: body
+	Body struct {
+		Id       string `json:"id,omitempty"`
+		ApiKey   string `json:"apiKey,omitempty"`
+		ClientID string `json:"clientID,omitempty"`
+	}
+}
+
+// swagger:route POST /clients/{id}/licenses admin licenseParams
+//
+// Create a license
+//
+// Create a license with the client_id if you have the valid client_secret.
+//
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: licenseResp
+//       400: jsonError
+//       500: jsonError
 func (h *Handler) CreateLicense(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	clientID := ps.ByName("id")
 
@@ -389,6 +428,29 @@ func (h *Handler) CreateLicense(w http.ResponseWriter, r *http.Request, ps httpr
 	h.r.Writer().WriteCode(w, r, 200, entity)
 }
 
+// swagger:response getLicensesResp
+type getLicensesResp struct {
+	Body []licenseResp
+}
+
+// swagger:route GET /clients/{id}/licenses admin licenseParams
+//
+// Get the licenses
+//
+// Get the licenses with the client_id if you have the valid client_secret.
+//
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: getLicensesResp
+//       500: jsonError
 func (h *Handler) GetLicenses(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var clientID = ps.ByName("id")
 	clientSecret := fosite.AccessTokenFromRequest(r)
@@ -407,6 +469,29 @@ func (h *Handler) GetLicenses(w http.ResponseWriter, r *http.Request, ps httprou
 	h.r.Writer().Write(w, r, entities)
 }
 
+// swagger:response getNamespacesResp
+type getNamespacesResp struct {
+	Resp []string
+}
+
+// swagger:route GET /clients/{id}/namespaces admin licenseParams
+//
+// Get the namespaces
+//
+// Get the namespaces with ID.
+//
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: getNamespacesResp
+//       500: jsonError
 func (h *Handler) GetNamespaces(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var clientID = ps.ByName("id")
 	apiKey := fosite.AccessTokenFromRequest(r)

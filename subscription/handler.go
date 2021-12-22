@@ -44,6 +44,45 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.GET(SubscriptionHandlerPath, h.List)
 }
 
+// swagger:parameters createSubscription
+type createSubscription struct {
+	// in:body
+	Body struct {
+		Apikey     string `json:"Authorization"`
+		Identifier string `json:"identifier"`
+		Recipient  string `json:"recipient"`
+	}
+}
+
+// Subscription information response are sent when the operation succeeds.
+// swagger:response subscriptionResp
+type subscriptionResp struct {
+	// in:body
+	Body Subscription
+}
+
+// swagger:route POST /subscriptions subscription createSubscription
+//
+// Create a data identifier subscription
+//
+// Create a new data identifier subscription if you have the valid license(apiKey). The privateKey and publicKey are returned in response.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: subscriptionResp
+// 		 400: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Subscription
 
@@ -107,6 +146,35 @@ type Filter struct {
 	Role      string `json:"role"`
 }
 
+// the ID of data subscription
+// swagger:parameters dataIdentifierID
+type dataSubscriptionID struct {
+	// in: path
+	Id string `json:"id"`
+}
+
+// swagger:route GET /subscriptions/{id} subscription dataSubscriptionID
+//
+// Get the data identifier subscription
+//
+// Get the data identifier subscription with the subscriptionID.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: subscriptionResp
+// 		 400: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 	accessToken := fosite.AccessTokenFromRequest(r)
@@ -150,6 +218,28 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	w.WriteHeader(http.StatusUnauthorized)
 }
 
+// swagger:route DELETE /subscriptions/{id} subscription dataSubscriptionID
+//
+// Delete the data identifier subscription
+//
+// Delete the data identifier subscription with the subscriptionID.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: jsonError
+// 		 400: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
@@ -318,6 +408,38 @@ func (h *Handler) logOrAudit(err error, r *http.Request) {
 	}
 }
 
+// swagger:parameters auditSubscription
+type auditSubscription struct {
+	// in: path
+	Id string `json:"id"`
+	// in:body
+	Body struct {
+		Status string `json:"status"`
+	}
+}
+
+// swagger:route PATCH /subscriptions/{id} subscription auditSubscription
+//
+// Audit the data identifier subscription
+//
+// Audit the data identifier subscription with the subscriptionID.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: subscriptionResp
+// 		 400: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscription, approveResult *ApproveResult) {
 	// Generate the access token
 	now := time.Now().UTC()

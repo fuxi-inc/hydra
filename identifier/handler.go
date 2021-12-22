@@ -38,6 +38,44 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.GET(IdentifierHandlerPath, h.List)
 }
 
+// the data identifier information
+// swagger:parameters createDataIdentifier
+type createDataIdentifier struct {
+	// in: body
+	Body Identifier
+}
+
+// Data identifier information response are sent when the operation succeeds.
+// swagger:response DataIdentifierResp
+type DataIdentifierResp struct {
+	// in:body
+	Body Identifier
+}
+
+// swagger:route POST /identifier dataIdentifier createDataIdentifier
+//
+// Create a data identifier
+//
+// Create a new data identifier if you have the valid license(apiKey). The privateKey and publicKey are returned in response.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: DataIdentifierResp
+// 		 400: jsonError
+// 		 401: jsonError
+//       403: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identifier
 
@@ -76,15 +114,49 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 }
 
-// swagger:parameters listOAuth2Clients
+// swagger:parameters listDataIdentifiers
 type Filter struct {
-	Limit    int    `json:"limit"`
-	Offset   int    `json:"offset"`
+	// in: query
+	Limit int `json:"limit"`
+	// in: query
+	Offset int `json:"offset"`
+	// required: true
+	// in: query
 	ClientId string `json:"client_id"`
-	Tag      string `json:"tag"`
+	// in: query
+	Tag string `json:"tag"`
+	// in: query
 	Metadata string `json:"metadata"`
 }
 
+// List all the data identifiers information with the given client_id.
+// swagger:response ListIdentityResp
+type ListIdentifiersResp struct {
+	// in:body
+	Body []*Identifier
+}
+
+// swagger:route GET /identifier dataIdentifier listDataIdentifiers
+//
+// List all the data identifiers
+//
+// List all the data identifiers with the client_id.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: ListIdentifiersResp
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	limit, offset := pagination.Parse(r, 100, 0, 500)
 	filters := Filter{
@@ -119,6 +191,35 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	h.r.Writer().Write(w, r, c)
 }
 
+// the ID of data identidier
+// swagger:parameters dataIdentifierID
+type dataIdentifierID struct {
+	// in: path
+	Id string `json:"id"`
+}
+
+// swagger:route GET /identifier/{id} dataIdentifier dataIdentifierID
+//
+// Get a data identifier
+//
+// Get the data identifier with the identifierID.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       200: DataIdentifierResp
+// 		 401: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
@@ -144,6 +245,28 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	h.r.Writer().Write(w, r, entity)
 }
 
+// swagger:route DELETE /identifier/{id} dataIdentifier dataIdentifierID
+//
+// Delete a data identifier
+//
+// Delete the data identifier with the identifierID.
+//
+//
+//     Consumes:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Produces:
+//     - application/json
+//     - application/x-www-form-urlencoded
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       204: jsonError
+// 		 400: jsonError
+//       404: jsonError
+//       500: jsonError
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
 
