@@ -116,7 +116,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 
 	if filters.ClientId == "" {
-		h.r.Writer().WriteError(w, r, errors.New("client_id must be provided"))
+		h.r.Writer().WriteError(w, r, errors.New("clientid must be provided"))
 		return
 	}
 

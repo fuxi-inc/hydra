@@ -137,7 +137,7 @@ func (c *Client) FindIdentityIdentifiersByOwner(ctx context.Context, owner strin
 		return nil, err
 	}
 
-	resp, err := client.FindIdentityIdentifiersByOwner(ctx, &api.FindIdentityIdentifiersByOwnerRequest{Id: owner, Pagination: &api.Pagination{
+	resp, err := client.FindDataIdentifiersByOwner(ctx, &api.FindDataIdentifiersByOwnerRequest{Id: owner, Pagination: &api.Pagination{
 		Limit:  limit,
 		Offset: offset,
 	}})
@@ -145,6 +145,6 @@ func (c *Client) FindIdentityIdentifiersByOwner(ctx context.Context, owner strin
 		return nil, err
 	}
 
-	logger.Get().Infow("get identity identifier", zap.Any("identity", resp.Data))
+	logger.Get().Infow("get data identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }

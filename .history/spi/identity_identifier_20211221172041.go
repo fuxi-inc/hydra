@@ -124,25 +124,7 @@ func (c *Client) GetIdentityIdentifiers(ctx context.Context, id string) ([]*api.
 	}
 
 	if resp.Result.StatusCode != 200 {
-		return nil, errors.New(resp.Result.Message)
-	}
-
-	logger.Get().Infow("get identity identifier", zap.Any("identity", resp.Data))
-	return resp.Data, nil
-}
-
-func (c *Client) FindIdentityIdentifiersByOwner(ctx context.Context, owner string, limit, offset int32) ([]*api.IdentityIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.FindIdentityIdentifiersByOwner(ctx, &api.FindIdentityIdentifiersByOwnerRequest{Id: owner, Pagination: &api.Pagination{
-		Limit:  limit,
-		Offset: offset,
-	}})
-	if err != nil {
-		return nil, err
+		return nil,errors.New(resp.Result.Message)
 	}
 
 	logger.Get().Infow("get identity identifier", zap.Any("identity", resp.Data))

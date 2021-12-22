@@ -53,14 +53,14 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 
 	var result []*identity.Identity
 	if owner != "" {
-		entities, err := p.client.FindDataIdentitysByOwner(ctx, owner, int32(limit), int32(offset))
-		if err != nil {
-			return nil, err
-		}
-		for _, entity := range entities {
-			result = append(result, identity.FromDataIdentity(entity))
-		}
-		return result, err
+		// entities, err := p.client.FindDataIdentitysByOwner(ctx, owner, int32(limit), int32(offset))
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// for _, entity := range entities {
+		// 	result = append(result, identity.FromDataIdentity(entity))
+		// }
+		// return result, err
 	}
 
 	// entities, err := p.client.GetIdentityIdentifiers(ctx, owner)

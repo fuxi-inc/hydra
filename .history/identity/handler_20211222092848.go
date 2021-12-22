@@ -115,10 +115,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		ClientId: r.URL.Query().Get("client_id"),
 	}
 
-	if filters.ClientId == "" {
-		h.r.Writer().WriteError(w, r, errors.New("client_id must be provided"))
-		return
-	}
+	if cl
 
 	accessToken := fosite.AccessTokenFromRequest(r)
 

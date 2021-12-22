@@ -7,7 +7,6 @@ import (
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 

@@ -7,7 +7,6 @@ import (
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -63,6 +62,7 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 		return result, err
 	}
 
+
 	// entities, err := p.client.GetIdentityIdentifiers(ctx, owner)
 	// if err != nil {
 	// 	return nil, err
@@ -70,5 +70,5 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 	// for _, entity := range entities {
 	// 	result = append(result, identity.FromIdentityIdentifier(entity))
 	// }
-	return nil, errors.New("no available namespaces")
+	return result, nil
 }
