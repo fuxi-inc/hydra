@@ -2,11 +2,6 @@ package sql
 
 import (
 	"context"
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
 	"strings"
 
 	"github.com/ory/hydra/identifier"
@@ -27,27 +22,7 @@ func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.I
 func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Identifier) error {
 	var cl identity.Identity
 	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
-	if err != nil {
-		return err
-	}
-
-	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(entity.DataDigest))
-
-	privatekey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
-	if err != nil {
-		return err
-	}
-
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	if err != nil {
-		return err
-	}
-
-	entity.DataSignature = signature
-
 	return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
-
 }
 
 func (p *Persister) DeleteIdentifier(ctx context.Context, id string) error {

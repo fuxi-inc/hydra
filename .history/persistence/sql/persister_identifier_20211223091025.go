@@ -46,7 +46,8 @@ func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Ide
 
 	entity.DataSignature = signature
 
-	return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
+	if err != nil {
+		return p.client.CreateDataIdentifier(ctx, entity.ToDataIdentifier())
 
 }
 
