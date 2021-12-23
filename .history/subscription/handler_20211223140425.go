@@ -102,8 +102,24 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
+	// _, err := h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+
+	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+	// subject := token.Claims["sub"].(string)
+	// entity.Requestor = subject
+	// entity.init()
+	// logger.Get().Infow("subscription", zap.Any("data", entity))
+
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err := h.r.SubscriptionManager().CreateSubscription(ctx, &entity)
+	err := h.r.SubscriptionManager().CreateSubscription(r.Context(), &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
