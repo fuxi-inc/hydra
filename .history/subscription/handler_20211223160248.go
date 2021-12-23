@@ -92,7 +92,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
-	log.Panicln("===1===")
+	log.Panicln("===0===")
 
 	if err := h.r.SubscriptionValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -127,7 +127,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-	log.Panicln("===2===")
 
 	if entity.Recipient == entity.Owner {
 		// if shared subscription
