@@ -127,7 +127,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-	log.Println("===2===")
+	log.Panicln("===2===")
 
 	if entity.Recipient == entity.Owner {
 		// if shared subscription

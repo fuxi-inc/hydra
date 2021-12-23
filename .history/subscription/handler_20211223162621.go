@@ -87,12 +87,12 @@ type subscriptionResp struct {
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Subscription
 
-	log.Println("===0===")
+	log.Pr("===0===")
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
-	log.Println("===1===")
+	log.Panicln("===1===")
 
 	if err := h.r.SubscriptionValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -127,7 +127,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-	log.Println("===2===")
+	log.Panicln("===2===")
 
 	if entity.Recipient == entity.Owner {
 		// if shared subscription
