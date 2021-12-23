@@ -125,7 +125,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	if entity.Recipient == entity.Owner {
+	if entity. == entity.Owner {
 		// if shared subscription
 		approveResult := &ApproveResult{
 			Status: Granted,
