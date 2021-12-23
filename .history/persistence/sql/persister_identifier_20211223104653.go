@@ -104,5 +104,4 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 		}
 	}
 
-	return result, nil
 }

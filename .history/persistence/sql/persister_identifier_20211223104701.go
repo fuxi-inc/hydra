@@ -104,5 +104,13 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 		}
 	}
 
+	// entities, err := p.client.GetDataIdentifiers(ctx, int32(limit), int32(offset))
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// for _, entity := range entities {
+	// 	result = append(result, identifier.FromDataIdentifier(entity))
+	// }
+
 	return result, nil
 }
