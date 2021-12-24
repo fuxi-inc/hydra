@@ -30,10 +30,11 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, entity.Requestor)
+	identifier, err := p.client.GetIdentityIdentifier()(ctx, entity.)
 	if err != nil {
 		return errorsx.WithStack(err)
 	}
+	entity.Owner = identifier.Owner
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 

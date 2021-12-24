@@ -121,12 +121,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
 	err := h.r.SubscriptionManager().CreateSubscriptionOwner(ctx, &entity)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-
-	entity.init()
+	
 
 	err = h.r.SubscriptionManager().CreateSubscription(ctx, &entity)
 	if err != nil {

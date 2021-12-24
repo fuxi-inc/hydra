@@ -126,8 +126,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	entity.init()
-
 	err = h.r.SubscriptionManager().CreateSubscription(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)

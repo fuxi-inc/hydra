@@ -30,20 +30,21 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 }
 
 func (p *Persister) CreateSubscription(ctx context.Context, entity *subscription.Subscription) error {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, entity.Requestor)
-	if err != nil {
-		return errorsx.WithStack(err)
-	}
-	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
-}
-
-func (p *Persister) CreateSubscriptionOwner(ctx context.Context, entity *subscription.Subscription) error {
 	identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
 	if err != nil {
 		return errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	return err
+	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
+}
+
+func (p *Persister) CreateSubscriptionOwner(ctx context.Context, entity *subscription.Subscription) error {
+	, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
+	if err != nil {
+		return errorsx.WithStack(err)
+	}
+	entity.Owner = identifier.Owner
+	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 
 func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {

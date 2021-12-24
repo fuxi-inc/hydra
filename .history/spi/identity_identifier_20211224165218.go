@@ -48,7 +48,7 @@ func (c *Client) GetAuthorizedIdentityIdentifier(ctx context.Context, name strin
 		return nil, errors.New(resp.Result.Message)
 	}
 
-	logger.Get().Infow("get authorized identity identifier", zap.Any("data", resp.Data))
+	logger.Get().Infow("get identity identifier", zap.Any("data", resp.Data))
 	return resp.Data, nil
 }
 
