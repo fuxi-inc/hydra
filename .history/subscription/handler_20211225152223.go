@@ -291,17 +291,16 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		}
 	} else {
 		filters = Filter{
-			Limit:    limit,
-			Offset:   offset,
-			Owner:    subject,
-			Status:   r.URL.Query().Get("status"),
-			Type:     r.URL.Query().Get("type"),
-			Identity: r.URL.Query().Get("identity"),
+			Limit:  limit,
+			Offset: offset,
+			Owner:  subject,
+			Status: r.URL.Query().Get("status"),
+			Type:   r.URL.Query().Get("type"),
+			Identity:  r.URL.Query().Get("identity"),
 		}
 	}
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(ctx, filters)
+	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

@@ -291,12 +291,12 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		}
 	} else {
 		filters = Filter{
-			Limit:    limit,
-			Offset:   offset,
-			Owner:    subject,
-			Status:   r.URL.Query().Get("status"),
-			Type:     r.URL.Query().Get("type"),
-			Identity: r.URL.Query().Get("identity"),
+			Limit:  limit,
+			Offset: offset,
+			Owner:  subject,
+			Status: r.URL.Query().Get("status"),
+			Type:   r.URL.Query().Get("type"),
+			Identity:  r.URL.Query().Get("identity"),
 		}
 	}
 

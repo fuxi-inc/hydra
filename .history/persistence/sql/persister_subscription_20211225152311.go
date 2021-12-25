@@ -66,11 +66,11 @@ func (p *Persister) DeleteSubscription(ctx context.Context, id string, subject s
 }
 
 func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.Filter) (int, []subscription.Subscription, error) {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, filters.Identity)
+	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, subject)
 	if err != nil {
-		return 0, nil, errorsx.WithStack(err)
+		return nil, errorsx.WithStack(err)
 	}
-
+	
 	totalCount, err := p.Connection(ctx).Count(&subscription.Subscription{})
 	if err != nil {
 		return 0, nil, err

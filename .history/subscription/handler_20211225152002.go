@@ -138,7 +138,6 @@ type Filter struct {
 	Status    string `json:"status"`
 	Type      string `json:"type"`
 	Role      string `json:"role"`
-	Identity  string `json:"identity"`
 }
 
 // the ID of data subscription
@@ -270,8 +269,8 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	subject := r.URL.Query().Get("identity")
-
+	
+	
 	role := r.URL.Query().Get("role")
 	if role == "" {
 		h.r.Writer().WriteError(w, r, errors.New("no permission to query data"))
@@ -287,21 +286,18 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 			Requestor: subject,
 			Status:    r.URL.Query().Get("status"),
 			Type:      r.URL.Query().Get("type"),
-			Identity:  r.URL.Query().Get("identity"),
 		}
 	} else {
 		filters = Filter{
-			Limit:    limit,
-			Offset:   offset,
-			Owner:    subject,
-			Status:   r.URL.Query().Get("status"),
-			Type:     r.URL.Query().Get("type"),
-			Identity: r.URL.Query().Get("identity"),
+			Limit:  limit,
+			Offset: offset,
+			Owner:  subject,
+			Status: r.URL.Query().Get("status"),
+			Type:   r.URL.Query().Get("type"),
 		}
 	}
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(ctx, filters)
+	totalCount, c, err := h.r.SubscriptionManager().GetSubscriptions(r.Context(), filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

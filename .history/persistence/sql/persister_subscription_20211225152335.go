@@ -70,7 +70,7 @@ func (p *Persister) GetSubscriptions(ctx context.Context, filters subscription.F
 	if err != nil {
 		return 0, nil, errorsx.WithStack(err)
 	}
-
+	
 	totalCount, err := p.Connection(ctx).Count(&subscription.Subscription{})
 	if err != nil {
 		return 0, nil, err
