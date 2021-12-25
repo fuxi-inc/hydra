@@ -264,8 +264,8 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	subject := r.URL.Query().Get("identity")
-
+	
+	
 	accessToken := fosite.AccessTokenFromRequest(r)
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
@@ -287,7 +287,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 			Requestor: subject,
 			Status:    r.URL.Query().Get("status"),
 			Type:      r.URL.Query().Get("type"),
-			Identity:  subject,
+			Identity:  r.URL.Query().Get("identity"),
 		}
 	} else {
 		filters = Filter{
@@ -296,7 +296,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 			Owner:    subject,
 			Status:   r.URL.Query().Get("status"),
 			Type:     r.URL.Query().Get("type"),
-			Identity: subject,
+			Identity: r.URL.Query().Get("identity"),
 		}
 	}
 
