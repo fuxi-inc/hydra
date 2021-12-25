@@ -278,11 +278,14 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
+	
 	accessToken := fosite.AccessTokenFromRequest(r)
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
 		return
 	}
+
+	
 
 	var filters Filter
 	limit, offset := pagination.Parse(r, 100, 0, 500)

@@ -265,22 +265,22 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println(r)
-
 	subject := r.URL.Query().Get("identity")
-	if subject == "" {
-		h.r.Writer().WriteError(w, r, errors.New("no permission to query data"))
-		return
-	}
-	role := r.URL.Query().Get("role")
 	if role == "" {
 		h.r.Writer().WriteError(w, r, errors.New("no permission to query data"))
 		return
 	}
 
+	log.Println(r)
 	accessToken := fosite.AccessTokenFromRequest(r)
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+		return
+	}
+
+	role := r.URL.Query().Get("role")
+	if role == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no permission to query data"))
 		return
 	}
 
