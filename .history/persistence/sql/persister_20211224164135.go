@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"database/sql"
-
 	"github.com/gobuffalo/pop/v5"
 	"github.com/gobuffalo/x/randx"
 	"github.com/ory/hydra/spi"

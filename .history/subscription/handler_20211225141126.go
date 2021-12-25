@@ -171,7 +171,7 @@ type dataSubscriptionID struct {
 //       500: jsonError
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
+	r.URL.Query().Get("identituy")
 
 	accessToken := fosite.AccessTokenFromRequest(r)
 
@@ -192,10 +192,10 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	// 	return
 	// }
 	// subject := token.Claims["sub"].(string)
-	// subject := ""
+	subject := ""
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.SubscriptionManager().GetSubscription(ctx, id, subject)
+	//ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
 		err = herodot.ErrUnauthorized.WithReason("The requested subscription does not exist or you did not provide the necessary credentials")
 		h.r.Writer().WriteError(w, r, err)
@@ -238,8 +238,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 //       500: jsonError
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id, subject)
+	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
 		return
@@ -255,18 +254,18 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	//subject := token.Claims["sub"].(string)
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 	if subject != entity.Requestor {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return
@@ -277,7 +276,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	if err = h.r.SubscriptionManager().DeleteSubscription(r.Context(), id, subject); err != nil {
+	if err = h.r.SubscriptionManager().DeleteSubscription(r.Context(), id); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -347,8 +346,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id, subject)
+	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
 		logger.Get().Info(zap.Error(err))
 		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
@@ -370,18 +368,18 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		return
 	}
 
-	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	// subject := token.Claims["sub"].(string)
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 	if subject != entity.Owner {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return

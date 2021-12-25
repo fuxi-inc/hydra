@@ -10,11 +10,8 @@ import (
 )
 
 func (p *Persister) GetSubscription(ctx context.Context, id string, subject string) (*subscription.Subscription, error) {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, subject)
-	if err != nil {
-		return nil, errorsx.WithStack(err)
-	}
-
+	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, entity.Requestor)
+	
 	var cl subscription.Subscription
 	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
 }
@@ -51,8 +48,8 @@ func (p *Persister) CreateSubscriptionOwner(ctx context.Context, entity *subscri
 	return err
 }
 
-func (p *Persister) DeleteSubscription(ctx context.Context, id string, subject string) error {
-	entity, err := p.GetSubscription(ctx, id, subject)
+func (p *Persister) DeleteSubscription(ctx context.Context, id string) error {
+	entity, err := p.GetSubscription(ctx, id)
 	if err != nil {
 		return err
 	}

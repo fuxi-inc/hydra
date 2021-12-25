@@ -236,54 +236,53 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 // 		 400: jsonError
 //       404: jsonError
 //       500: jsonError
-func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id, subject)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
-		return
-	}
-	if entity == nil {
-		h.r.Writer().WriteError(w, r, errors.New("no entity exists"))
-		return
-	}
-	accessToken := fosite.AccessTokenFromRequest(r)
+// func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// 	var id = ps.ByName("id")
+// 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
+// 	if err != nil {
+// 		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
+// 		return
+// 	}
+// 	if entity == nil {
+// 		h.r.Writer().WriteError(w, r, errors.New("no entity exists"))
+// 		return
+// 	}
+// 	accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
-		return
-	}
+// 	if accessToken == "" {
+// 		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+// 		return
+// 	}
 
-	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+// 	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+// 	if err != nil {
+// 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+// 		return
+// 	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	//subject := token.Claims["sub"].(string)
-	if subject != entity.Requestor {
-		h.r.Writer().WriteError(w, r, errors.New("no permission"))
-		return
-	}
+// 	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+// 	if err != nil {
+// 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+// 		return
+// 	}
+// 	subject := token.Claims["sub"].(string)
+// 	if subject != entity.Requestor {
+// 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
+// 		return
+// 	}
 
-	if entity.Status != Applied {
-		h.r.Writer().WriteError(w, r, errors.New("illegal status"))
-		return
-	}
+// 	if entity.Status != Applied {
+// 		h.r.Writer().WriteError(w, r, errors.New("illegal status"))
+// 		return
+// 	}
 
-	if err = h.r.SubscriptionManager().DeleteSubscription(r.Context(), id, subject); err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
+// 	if err = h.r.SubscriptionManager().DeleteSubscription(r.Context(), id); err != nil {
+// 		h.r.Writer().WriteError(w, r, err)
+// 		return
+// 	}
 
-	w.WriteHeader(http.StatusNoContent)
-}
+// 	w.WriteHeader(http.StatusNoContent)
+// }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	accessToken := fosite.AccessTokenFromRequest(r)
@@ -347,8 +346,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
-	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id, subject)
+	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id)
 	if err != nil {
 		logger.Get().Info(zap.Error(err))
 		h.r.Writer().WriteError(w, r, errors.New("load entity failed"))
@@ -370,18 +368,18 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		return
 	}
 
-	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	// subject := token.Claims["sub"].(string)
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 	if subject != entity.Owner {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return

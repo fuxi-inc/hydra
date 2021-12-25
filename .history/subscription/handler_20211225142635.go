@@ -347,7 +347,6 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	subject := r.URL.Query().Get("identity")
 	entity, err := h.r.SubscriptionManager().GetSubscription(r.Context(), id, subject)
 	if err != nil {
 		logger.Get().Info(zap.Error(err))
@@ -370,18 +369,18 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		return
 	}
 
-	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
+	_, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
 
-	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-	// 	return
-	// }
-	// subject := token.Claims["sub"].(string)
+	token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	subject := token.Claims["sub"].(string)
 	if subject != entity.Owner {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return

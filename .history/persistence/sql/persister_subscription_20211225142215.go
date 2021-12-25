@@ -52,7 +52,7 @@ func (p *Persister) CreateSubscriptionOwner(ctx context.Context, entity *subscri
 }
 
 func (p *Persister) DeleteSubscription(ctx context.Context, id string, subject string) error {
-	entity, err := p.GetSubscription(ctx, id, subject)
+	entity, err := p.GetSubscription(ctx, id)
 	if err != nil {
 		return err
 	}
