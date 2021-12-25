@@ -123,7 +123,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		approveResult := &ApproveResult{
 			Status: Granted,
 		}
-		h.audit(w, r, &entity, approveResult)
+		h.audit(w, r, accesstoken, &entity, approveResult)
 	} else {
 		h.r.Writer().WriteCreated(w, r, SubscriptionHandlerPath+"/"+entity.ID, &entity)
 	}
@@ -360,7 +360,7 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 
 	logger.Get().Infow("ready to audit the subscription", zap.Any("action", approveResult))
-	h.audit(w, r, entity, &approveResult)
+	h.audit(w, r, accesstoken, entity, &approveResult)
 }
 
 func (h *Handler) logOrAudit(err error, r *http.Request) {
@@ -403,7 +403,7 @@ type auditSubscription struct {
 // 		 400: jsonError
 //       404: jsonError
 //       500: jsonError
-func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscription, approveResult *ApproveResult) {
+func (h *Handler) audit(w http.ResponseWriter, r *http.Request, zentity *Subscription, approveResult *ApproveResult) {
 	// Generate the access token
 	now := time.Now().UTC()
 	claim := &jwt.JWTClaims{
@@ -426,14 +426,8 @@ func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscrip
 
 	entity.Content = rawToken
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
-
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.SubscriptionManager().AuditSubscription(ctx, entity, approveResult)
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
 	if err != nil {
 		logger.Get().Infow("failed to audit subscription", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))

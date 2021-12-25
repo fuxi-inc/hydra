@@ -118,7 +118,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	if entity.Requestor == entity.Owner {
+	if entity.Recipient == entity.Owner {
 		// if shared subscription
 		approveResult := &ApproveResult{
 			Status: Granted,
@@ -324,13 +324,6 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	var id = ps.ByName("id")
 	subject := r.URL.Query().Get("identity")
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
-		return
-	}
-
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 	entity, err := h.r.SubscriptionManager().GetSubscription(ctx, id, subject)
 	if err != nil {
@@ -347,6 +340,25 @@ func (h *Handler) Audit(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		return
 	}
 
+	accessToken := fosite.AccessTokenFromRequest(r)
+
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New("no token provided"))
+		return
+	}
+
+	// _, err = h.r.AccessTokenJWTStrategy().Validate(context.TODO(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+
+	// token, err := h.r.AccessTokenJWTStrategy().Decode(r.Context(), accessToken)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+	// 	return
+	// }
+	// subject := token.Claims["sub"].(string)
 	if subject != entity.Owner {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return
@@ -425,15 +437,7 @@ func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscrip
 	logger.Get().Infow("token", zap.Any("claim", claim.ToMapClaims()), zap.String("token", rawToken))
 
 	entity.Content = rawToken
-
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.SubscriptionManager().AuditSubscription(ctx, entity, approveResult)
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
 	if err != nil {
 		logger.Get().Infow("failed to audit subscription", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))

@@ -433,7 +433,7 @@ func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscrip
 	}
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.SubscriptionManager().AuditSubscription(ctx, entity, approveResult)
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
 	if err != nil {
 		logger.Get().Infow("failed to audit subscription", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))

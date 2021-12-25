@@ -27,7 +27,7 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 	}
 	entity.Metadata["relatedDomainResourceRecordId"] = rrId
 	// Change database record's status
-	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		entity.Status = audit.Status
 		return sqlcon.HandleError(c.Update(entity))
 	})

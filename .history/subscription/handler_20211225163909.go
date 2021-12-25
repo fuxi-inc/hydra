@@ -425,15 +425,7 @@ func (h *Handler) audit(w http.ResponseWriter, r *http.Request, entity *Subscrip
 	logger.Get().Infow("token", zap.Any("claim", claim.ToMapClaims()), zap.String("token", rawToken))
 
 	entity.Content = rawToken
-
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
-
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.SubscriptionManager().AuditSubscription(ctx, entity, approveResult)
+	err = h.r.SubscriptionManager().AuditSubscription(r.Context(), entity, approveResult)
 	if err != nil {
 		logger.Get().Infow("failed to audit subscription", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
