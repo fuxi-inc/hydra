@@ -243,7 +243,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		h.r.Writer().WriteError(w, r, errors.New("no entity exists"))
 		return
 	}
-
+	
 	if subject != entity.Requestor {
 		h.r.Writer().WriteError(w, r, errors.New("no permission"))
 		return
