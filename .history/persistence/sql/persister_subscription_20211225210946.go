@@ -33,7 +33,7 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 	}
 
 	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(entity.Requestor + entity.Identifier))
+	hashed := sha256.Sum256([]byte(entity.Requestor+entity.))
 
 	privatekey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
 	if err != nil {
@@ -46,7 +46,7 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 	}
 
 	// Create sub data identifier for the subscription
-	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.Requestor, entity.Identifier, signature)
+	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.Requestor, entity.Identifier)
 	if err != nil {
 		return err
 	}

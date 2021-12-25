@@ -2,14 +2,8 @@ package sql
 
 import (
 	"context"
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
 
 	"github.com/gobuffalo/pop/v5"
-	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/subscription"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
@@ -26,27 +20,8 @@ func (p *Persister) GetSubscription(ctx context.Context, id string, subject stri
 }
 
 func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.Subscription, audit *subscription.ApproveResult) error {
-	var cl identity.Identity
-	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
-	if err != nil {
-		return err
-	}
-
-	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(entity.Requestor + entity.Identifier))
-
-	privatekey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
-	if err != nil {
-		return err
-	}
-
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	if err != nil {
-		return err
-	}
-
 	// Create sub data identifier for the subscription
-	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.Requestor, entity.Identifier, signature)
+	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Identifier)
 	if err != nil {
 		return err
 	}

@@ -159,6 +159,7 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identi
 		return "", errors.New(resp.Result.Message)
 	}
 
+
 	logger.Get().Infow("create subscription record", zap.Any("Id", resp.Id))
 	return resp.Id, nil
 }

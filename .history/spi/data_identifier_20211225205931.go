@@ -129,7 +129,7 @@ func (c *Client) FindDataIdentifiersByOwner(ctx context.Context, owner string, l
 	return resp.Data, nil
 }
 
-func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identifier string, signature []byte) (string, error) {
+func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, identifier string) (string, error) {
 	client, ctx, err := c.constructEntropyServiceClient(ctx)
 	if err != nil {
 		return "", err
@@ -146,21 +146,10 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identi
 	// 	return "", err
 	// }
 
-	resp, err := client.AuthorizeDataIdentifier(ctx, &api.AuthorizeDataIdentifierRequest{
-		Requester: requestor,
-		Id:        identifier,
-		Signature: []byte(signature),
-	})
-	if err != nil {
-		return "", err
-	}
+	resp, err := client.A
 
-	if resp.Result.StatusCode != 200 {
-		return "", errors.New(resp.Result.Message)
-	}
-
-	logger.Get().Infow("create subscription record", zap.Any("Id", resp.Id))
-	return resp.Id, nil
+	logger.Get().Infow("create subscription record", zap.Any("data", resp.Data))
+	return resp.Data.Id, nil
 }
 
 func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error {

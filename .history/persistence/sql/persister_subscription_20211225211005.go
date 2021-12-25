@@ -33,7 +33,7 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 	}
 
 	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(entity.Requestor + entity.Identifier))
+	hashed := sha256.Sum256([]byte(entity.Requestor+entity.Identifier))
 
 	privatekey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
 	if err != nil {
