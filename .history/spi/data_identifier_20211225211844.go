@@ -170,7 +170,7 @@ func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error 
 	}
 
 	resp, err := client.DeleteDomainResourceRecord(ctx, &api.DomainResourceRecordRequest{
-		Id: id,
+		Id: ,
 	})
 	if err != nil {
 		return err
