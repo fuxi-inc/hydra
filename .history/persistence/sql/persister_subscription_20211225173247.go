@@ -21,7 +21,7 @@ func (p *Persister) GetSubscription(ctx context.Context, id string, subject stri
 
 func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.Subscription, audit *subscription.ApproveResult) error {
 	// Create sub data identifier for the subscription
-	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.Owner)
+	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.ID, entity.O)
 	if err != nil {
 		return err
 	}

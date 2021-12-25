@@ -137,7 +137,7 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, id, owner string)
 
 	resp, err := client.AddDomainResourceRecord(ctx, &api.CreateDomainResourceRecordRequest{
 		Name:   id,
-		Domain: owner,
+		Domain: identifier,
 		Type:   api.DomainResourceRecordType_TXT,
 		Ttl:    3600,
 		Data:   &api.CreateDomainResourceRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
