@@ -152,3 +152,16 @@ run:
 .PHONY: sync
 sync:
 	cp ../magnolia/api/*.go ./pkg/magnolia/magnolia/
+
+.PHONY: build
+build:
+	rm -f hydra
+	GOOS=linux GOARCH=amd64 go build -o hydra main.go
+	chmod +x hydra
+	echo "build done"
+
+
+.PHONY: start
+start:build
+	APP_PROFILE=$(APP_PROFILE) nohup ./hydra serve all --config deployment/$(APP_PROFILE)/application.yml --dangerous-force-http >> /tmp/hydra.log 2>&1 & echo $! > my.pid
+	@echo "server started..."
