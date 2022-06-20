@@ -13,6 +13,8 @@ import (
 )
 
 func (c *Client) constructEntropyServiceClient(ctx context.Context) (api.EntropyServiceClient, context.Context, error) {
+
+	// 全部改成Insecure连接模式
 	client := api.NewEntropyServiceClient(c.secureConn)
 	apiKey := FetchAPIKeyFromContext(ctx)
 	if apiKey == "" {
