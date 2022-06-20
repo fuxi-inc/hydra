@@ -72,9 +72,9 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, err
 	}
 
-	if !c.Support(ctx, entity.GetId()) {
-		return nil, errors.New("no available namespaces")
-	}
+	// if !c.Support(ctx, entity.GetId()) {
+	// 	return nil, errors.New("no available namespaces")
+	// }
 
 	//faker := faker.New()
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{

@@ -107,6 +107,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
+	entity.ID = entity.ID + ".user.fuxi"
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -135,7 +136,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	responseEntity.UserDomainID = entity.ID + ".user.fuxi"
+	responseEntity.UserDomainID = entity.ID 
 	responseEntity.PrivateKey = string(entity.PrivateKey)
 	responseEntity.Token = "100"
 
