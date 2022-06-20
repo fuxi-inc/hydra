@@ -2,11 +2,12 @@ package spi
 
 import (
 	"context"
+
 	"github.com/fuxi-inc/magnolia/pkg/api"
 )
 
 func (c *Client) AvailableNamespaces(ctx context.Context) []string {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil
 	}

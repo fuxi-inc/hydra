@@ -3,30 +3,21 @@ package spi
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/fuxi-inc/magnolia/pkg/api"
-	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/ory/hydra/internal/logger"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/metadata"
 )
 
-func (c *Client) constructEntropyServiceClient(ctx context.Context) (api.EntropyServiceClient, context.Context, error) {
+func (c *Client) constructEntropyServiceClient() (api.EntropyServiceClient, error) {
 
 	// 全部改成Insecure连接模式
-	client := api.NewEntropyServiceClient(c.secureConn)
-	apiKey := FetchAPIKeyFromContext(ctx)
-	if apiKey == "" {
-		return nil, ctx, errors.New("")
-	}
-	md := metadata.Pairs("authorization", fmt.Sprintf("%s %s", "bearer", apiKey))
-	ctx = metautils.NiceMD(md).ToOutgoing(ctx)
-	return client, ctx, nil
+	client := api.NewEntropyServiceClient(c.insecureConn)
+	return client, nil
 }
 
 func (c *Client) GetDataIdentifier(ctx context.Context, id string) (*api.DataIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +35,7 @@ func (c *Client) GetDataIdentifier(ctx context.Context, id string) (*api.DataIde
 }
 
 func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdentifier) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
@@ -74,7 +65,7 @@ func (c *Client) CreateDataIdentifier(ctx context.Context, entity *api.DataIdent
 }
 
 func (c *Client) DeleteDatIdentifier(ctx context.Context, id string) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
@@ -92,7 +83,7 @@ func (c *Client) DeleteDatIdentifier(ctx context.Context, id string) error {
 }
 
 func (c *Client) GetDataIdentifiers(ctx context.Context, limit, offset int32) ([]*api.DataIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +101,7 @@ func (c *Client) GetDataIdentifiers(ctx context.Context, limit, offset int32) ([
 }
 
 func (c *Client) FindDataIdentifiersByOwner(ctx context.Context, owner string, limit, offset int32) ([]*api.DataIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +123,7 @@ func (c *Client) FindDataIdentifiersByOwner(ctx context.Context, owner string, l
 }
 
 func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identifier string, signature []byte) (string, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return "", err
 	}
@@ -166,7 +157,7 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identi
 }
 
 func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
@@ -183,7 +174,7 @@ func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error 
 }
 
 func (c *Client) FindDataIdentifiersByTags(ctx context.Context, tag string, limit, offset int32) ([]*api.DataIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +195,7 @@ func (c *Client) FindDataIdentifiersByTags(ctx context.Context, tag string, limi
 }
 
 func (c *Client) FindDataIdentifiersByMetadata(ctx context.Context, key, value string, limit, offset int32) ([]*api.DataIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}

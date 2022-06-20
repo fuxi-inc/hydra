@@ -2,10 +2,8 @@ package identity
 
 import (
 	"context"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
@@ -87,6 +85,7 @@ type IdentityResp struct {
 //       500: jsonError
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identity
+	var responseEntity responseIdentity
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -99,12 +98,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 
 	//var clientID = ps.ByName("id")
-	accessToken := fosite.AccessTokenFromRequest(r)
+	// accessToken := fosite.AccessTokenFromRequest(r)
 
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
+	// if accessToken == "" {
+	// 	h.r.Writer().WriteError(w, r, errors.New(""))
+	// 	return
+	// }
 
 	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
@@ -118,25 +117,29 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	rng := rand.Reader
+	// rng := rand.Reader
 
-	var message []byte = []byte(entity.ID + entity.Email)
-	hashed := sha256.Sum256(message)
+	// var message []byte = []byte(entity.ID + entity.Email)
+	// hashed := sha256.Sum256(message)
 
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	if err != nil {
-		h.r.Writer().WriteError(w, r, errors.New(""))
-		return
-	}
+	// signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, errors.New(""))
+	// 	return
+	// }
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(ctx, &entity, signature)
+	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity, nil)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &entity)
+	responseEntity.UserDomainID = entity.ID + ".user.fuxi"
+	responseEntity.PrivateKey = string(entity.PrivateKey)
+	responseEntity.Token = "100"
+
+	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

@@ -7,7 +7,7 @@ import (
 )
 
 type Identity struct {
-	ID               string    `json:"id,omitempty" db:"id"`
+	ID               string    `json:"userID,omitempty" db:"id"`
 	Name             string    `json:"name,omitempty" db:"name"`
 	Email            string    `json:"email,omitempty" db:"email"`
 	Owner            string    `json:"owner,omitempty" db:"owner"`
@@ -15,6 +15,12 @@ type Identity struct {
 	PrivateKey       []byte    `json:"privateKey,omitempty" db:"private_key"`
 	CreationTime     time.Time `json:"creationTime,omitempty" db:"created_at"`
 	LastModifiedTime time.Time `json:"lastModifiedTime,omitempty" db:"modified_at"`
+}
+
+type responseIdentity struct {
+	UserDomainID string `json:"userDomainID"`
+	PrivateKey   string `json:"privateKey"`
+	Token        string `json:"token"`
 }
 
 func (entity *Identity) ToIdentityIdentifier(signature []byte) *api.IdentityIdentifier {

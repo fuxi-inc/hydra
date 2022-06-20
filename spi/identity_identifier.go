@@ -13,7 +13,7 @@ import (
 func (c *Client) GetIdentityIdentifier(ctx context.Context, name string) (*api.IdentityIdentifier, error) {
 	// client := c.constructInsecureEntropyServiceClient()
 
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (c *Client) GetIdentityIdentifier(ctx context.Context, name string) (*api.I
 func (c *Client) GetAuthorizedIdentityIdentifier(ctx context.Context, name string) (*api.IdentityIdentifier, error) {
 	// client := c.constructInsecureEntropyServiceClient()
 
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *Client) Support(ctx context.Context, id string) bool {
 
 func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
 
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 }
 
 func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error 
 }
 
 func (c *Client) GetClientID(ctx context.Context, id string) error {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (c *Client) GetClientID(ctx context.Context, id string) error {
 }
 
 func (c *Client) GetIdentityIdentifiers(ctx context.Context, id string) ([]*api.IdentityIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (c *Client) GetIdentityIdentifiers(ctx context.Context, id string) ([]*api.
 }
 
 func (c *Client) FindIdentityIdentifiersByOwner(ctx context.Context, owner string, limit, offset int32) ([]*api.IdentityIdentifier, error) {
-	client, ctx, err := c.constructEntropyServiceClient(ctx)
+	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return nil, err
 	}

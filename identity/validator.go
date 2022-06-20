@@ -12,8 +12,8 @@ func NewValidator() *Validator {
 }
 
 func (v *Validator) Validate(entity *Identity) error {
-	if entity.Name == "" || entity.ID == "" {
-		return errorsx.WithStack(ErrInvalidIdentityMetadata.WithHint("Id,name must be set."))
+	if entity.ID == "" {
+		return errorsx.WithStack(ErrInvalidIdentityMetadata.WithHint("userID must be set."))
 	}
 	return nil
 }
