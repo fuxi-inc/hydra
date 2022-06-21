@@ -123,6 +123,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	// 创建私钥pem文件
 	file, err := os.Create("./files/private.pem")
 	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	// 对私钥信息进行编码，写入到私钥文件中
@@ -132,12 +133,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 	err = pem.Encode(file, block)
 	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
 	// 创建公钥pem文件
 	file, err = os.Create("./files/public.pem")
 	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	// 对公钥信息进行编码，写入公钥文件中
@@ -147,6 +150,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 	err = pem.Encode(file, block)
 	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
