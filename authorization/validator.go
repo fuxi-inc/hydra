@@ -11,12 +11,15 @@ func NewValidator() *Validator {
 	return &Validator{}
 }
 
-func (v *Validator) Validate(entity *Authorization) error {
-	if entity.Identifier == "" {
-		return errorsx.WithStack(ErrInvalidAuthorization.WithHint("identifier must be provided"))
+func (v *Validator) Validate(params *AuthorizationParams) error {
+	if params.Sign == "" {
+		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("Request must be signed"))
 	}
-	if entity.Recipient == "" {
-		return errorsx.WithStack(ErrInvalidAuthorization.WithHint("recipient must be provided"))
+	if params.Identifier == "" {
+		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("Data identifier must be provided"))
+	}
+	if params.Recipient == "" {
+		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("ViewUser identifier must be provided"))
 	}
 	return nil
 }

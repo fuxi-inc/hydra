@@ -87,26 +87,21 @@ type AuthorizationResp struct {
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity Authorization
-
-	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+	var params AuthorizationParams
+	json.NewDecoder(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	if err := h.r.AuthorizationValidator().Validate(&entity); err != nil {
+	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
+	entity := transform(&params)
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-
+	ctx := context.WithValue(context.TODO(), "apiKey", "")
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -155,26 +150,21 @@ func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httproute
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity Authorization
-
-	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+	var params AuthorizationParams
+	json.NewDecoder(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	if err := h.r.AuthorizationValidator().Validate(&entity); err != nil {
+	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
+	entity := transform(&params)
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-
+	ctx := context.WithValue(context.TODO(), "apiKey", "")
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -223,26 +213,21 @@ func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprout
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) Auth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity Authorization
-
-	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+	var params AuthorizationParams
+	json.NewDecoder(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	if err := h.r.AuthorizationValidator().Validate(&entity); err != nil {
+	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	accessToken := fosite.AccessTokenFromRequest(r)
-	if accessToken == "" {
-		h.r.Writer().WriteError(w, r, errors.New("access token must be provided"))
-		return
-	}
+	entity := transform(&params)
 
-	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-
+	ctx := context.WithValue(context.TODO(), "apiKey", "")
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -595,4 +580,12 @@ func (h *Handler) WriteAuditResponse(w http.ResponseWriter, claim jwt.MapClaims)
 
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(js)
+}
+
+func transform(params *AuthorizationParams) Authorization {
+	var entity Authorization
+	entity.Identifier = params.Identifier
+	entity.Owner = params.Owner
+	entity.Recipient = params.Recipient
+	return entity
 }
