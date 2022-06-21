@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"github.com/ory/hydra/authorization"
 	"strings"
 	"time"
 
@@ -133,6 +134,10 @@ func (m *RegistrySQL) IdentifierManager() identifier.Manager {
 }
 
 func (m *RegistrySQL) SubscriptionManager() subscription.Manager {
+	return m.Persister()
+}
+
+func (m *RegistrySQL) AuthorizationManager() authorization.Manager {
 	return m.Persister()
 }
 
