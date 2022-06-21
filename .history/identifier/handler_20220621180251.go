@@ -86,8 +86,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	//validator加在这
-
 	sign := jsonTrans.Sign
 	jsonTrans.Sign = ""
 

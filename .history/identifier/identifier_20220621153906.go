@@ -19,7 +19,7 @@ type Identifier struct {
 	SubscriptionType subscription.SubscriptionType `json:"subscriptionType,omitempty"`
 }
 
-type JSONTrans struct {
+type DataIdentifier struct {
 	DataID      string `json:"dataID"`
 	UserID      string `json:"userID"`
 	DataAddress string `json:"dataAddress"`

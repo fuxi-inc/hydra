@@ -86,8 +86,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	//validator加在这
-
 	sign := jsonTrans.Sign
 	jsonTrans.Sign = ""
 
@@ -102,6 +100,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	verifyHash := hash.Sum(nil)
 
 	accessToken := fosite.AccessTokenFromRequest(r)
+
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return

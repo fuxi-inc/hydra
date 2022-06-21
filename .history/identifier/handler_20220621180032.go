@@ -86,8 +86,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	//validator加在这
-
 	sign := jsonTrans.Sign
 	jsonTrans.Sign = ""
 
@@ -102,6 +100,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	verifyHash := hash.Sum(nil)
 
 	accessToken := fosite.AccessTokenFromRequest(r)
+
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
@@ -115,7 +114,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	// 到此对签名完成验证，继续基于entity的数据标识注册逻辑
+	// 到此对签名完成验证，继续entity的逻辑
 
 	if err := h.r.IdentifierValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)

@@ -86,8 +86,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	//validator加在这
-
 	sign := jsonTrans.Sign
 	jsonTrans.Sign = ""
 
@@ -102,20 +100,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	verifyHash := hash.Sum(nil)
 
 	accessToken := fosite.AccessTokenFromRequest(r)
+
 	if accessToken == "" {
 		h.r.Writer().WriteError(w, r, errors.New(""))
 		return
 	}
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
-	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
-
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-
-	// 到此对签名完成验证，继续基于entity的数据标识注册逻辑
+	err := h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
 	if err := h.r.IdentifierValidator().Validate(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -125,7 +117,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.AuthAddress = "http://localhost:4444"
 	entity.DataSignature = nil
 
-	err = h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
+	err := h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
 	if err != nil {
 		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
 		h.r.Writer().WriteError(w, r, err)

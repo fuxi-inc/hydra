@@ -72,9 +72,26 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, err
 	}
 
+	client2 := c.constructAccountServiceClient()
+	if err != nil {
+		return nil, err
+	}
+
 	// if !c.Support(ctx, entity.GetId()) {
 	// 	return nil, errors.New("no available namespaces")
 	// }
+
+	resp2, err := client2.Register(ctx, &api.UserRegistrationRequest{
+		Organization: "fuxi",
+		Name:         entity.Id,
+		Password:     "abc123",
+		Email:        "xxx",
+		Mobile:       "xxx",
+	})
+	if err != nil {
+		return nil, err
+	}
+	logger.Get().Infow("register user accont done", zap.Any("response", resp2))
 
 	//faker := faker.New()
 	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
