@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/ory/hydra/authorization"
 
 	"github.com/ory/hydra/client"
 	"github.com/ory/hydra/consent"
@@ -30,6 +31,7 @@ type (
 		identifier.Manager
 		identity.Manager
 		subscription.Manager
+		authorization.Manager
 	}
 	Provider interface {
 		Persister() Persister
