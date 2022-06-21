@@ -1,19 +1,18 @@
-package identity
+package identifier
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
+	"crypto"
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"go.uber.org/zap"
 
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/x"
 
 	"github.com/julienschmidt/httprouter"
@@ -24,7 +23,7 @@ type Handler struct {
 }
 
 const (
-	IdentityHandlerPath = "/identity"
+	IdentifierHandlerPath = "/identifier"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -34,36 +33,31 @@ func NewHandler(r InternalRegistry) *Handler {
 }
 
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(IdentityHandlerPath, h.Create)
-	public.GET(IdentityHandlerPath+"/:id", h.Get)
-	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
-	public.GET(IdentityHandlerPath, h.List)
+	public.POST(IdentifierHandlerPath, h.Create)
+	public.GET(IdentifierHandlerPath+"/:id", h.Get)
+	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
+	public.GET(IdentifierHandlerPath, h.List)
 }
 
-// swagger:parameters createIdentity
-type createIdentity struct {
+// the data identifier information
+// swagger:parameters createDataIdentifier
+type createDataIdentifier struct {
+	// in: body
+	Body Identifier
+}
+
+// Data identifier information response are sent when the operation succeeds.
+// swagger:response DataIdentifierResp
+type DataIdentifierResp struct {
 	// in:body
-	Body struct {
-		Apikey string `json:"Authorization"`
-		Id     string `json:"id"`
-		Name   string `json:"name"`
-		Email  string `json:"email"`
-		Owner  string `json:"owner,omitempty"`
-	}
+	Body Identifier
 }
 
-// Identity information response are sent when the operation succeeds.
-// swagger:response IdentityResp
-type IdentityResp struct {
-	// in:body
-	Body Identity
-}
-
-// swagger:route POST /identity identity createIdentity
+// swagger:route POST /identifier dataIdentifier createDataIdentifier
 //
-// Create a Identity
+// Create a data identifier
 //
-// Create a new Identity if you have the valid license(apiKey). The privateKey and publicKey are returned in response.
+// Create a new data identifier if you have the valid license(apiKey). The privateKey and publicKey are returned in response.
 //
 //
 //     Consumes:
@@ -77,98 +71,93 @@ type IdentityResp struct {
 //     Schemes: http, https
 //
 //     Responses:
-//       200: IdentityResp
+//       200: DataIdentifierResp
 // 		 400: jsonError
 // 		 401: jsonError
+//       403: jsonError
 //       404: jsonError
-//       429: jsonError
 //       500: jsonError
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var entity Identity
-	var responseEntity responseIdentity
+	var entity Identifier
+	var jsonTrans JSONTrans
 
-	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&jsonTrans); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
-	if err := h.r.IdentityValidator().Validate(&entity); err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
+	sign := jsonTrans.Sign
+	jsonTrans.Sign = ""
 
-	//var clientID = ps.ByName("id")
-	// accessToken := fosite.AccessTokenFromRequest(r)
-
-	// if accessToken == "" {
-	// 	h.r.Writer().WriteError(w, r, errors.New(""))
-	// 	return
-	// }
-
-	entity.CreationTime = time.Now().UTC().Round(time.Second)
-	entity.LastModifiedTime = entity.CreationTime
-	entity.ID = entity.ID + ".user.fuxi"
-
-	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return
-	}
-	publickey := &privatekey.PublicKey
-
-	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
-	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
-
-	// rng := rand.Reader
-
-	// var message []byte = []byte(entity.ID + entity.Email)
-	// hashed := sha256.Sum256(message)
-
-	// signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, errors.New(""))
-	// 	return
-	// }
-
-	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity, nil)
+	marshalJsonTrans, err := json.Marshal(jsonTrans)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
-	responseEntity.UserDomainID = entity.ID
-	responseEntity.PrivateKey = string(entity.PrivateKey)
-	responseEntity.Token = "100"
+	hash := crypto.SHA1.New()
+	hash.Write(marshalJsonTrans)
+	verifyHash := hash.Sum(nil)
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
+	accessToken := fosite.AccessTokenFromRequest(r)
+
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New(""))
+		return
+	}
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+
+	err := h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
+
+	if err := h.r.IdentifierValidator().Validate(&entity); err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	entity.AuthAddress = "http://localhost:4444"
+	entity.DataSignature = nil
+
+	err := h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
+	if err != nil {
+		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	h.r.Writer().WriteCreated(w, r, IdentifierHandlerPath+"/"+entity.ID, &entity)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 }
 
-// swagger:parameters listIdentities
+// swagger:parameters listDataIdentifiers
 type Filter struct {
-	Limit  int `json:"limit"`
+	// in: query
+	Limit int `json:"limit"`
+	// in: query
 	Offset int `json:"offset"`
-	// The clientID
 	// required: true
 	// in: query
 	ClientId string `json:"client_id"`
+	// in: query
+	Tag string `json:"tag"`
+	// in: query
+	Metadata string `json:"metadata"`
 }
 
-// List all the Identities information with the given clientID.
+// List all the data identifiers information with the given client_id.
 // swagger:response ListIdentityResp
-type ListIdentityResp struct {
+type ListIdentifiersResp struct {
 	// in:body
-	Body []*Identity
+	Body []*Identifier
 }
 
-// swagger:route GET /identity identity listIdentities
+// swagger:route GET /identifier dataIdentifier listDataIdentifiers
 //
-// List all the identities
+// List all the data identifiers
 //
-// List the identities owned by the client which ID is client_id in request.
+// List all the data identifiers with the client_id.
 //
 //
 //     Consumes:
@@ -182,8 +171,7 @@ type ListIdentityResp struct {
 //     Schemes: http, https
 //
 //     Responses:
-//       200: ListIdentityResp
-// 		 400: jsonError
+//       200: ListIdentifiersResp
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -191,12 +179,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	filters := Filter{
 		Limit:    limit,
 		Offset:   offset,
-		ClientId: r.URL.Query().Get("client_id"),
-	}
-
-	if filters.ClientId == "" {
-		h.r.Writer().WriteError(w, r, errors.New("client_id must be provided"))
-		return
+		ClientId: r.URL.Query().Get("owner"),
+		Tag:      r.URL.Query().Get("tag"),
+		Metadata: r.URL.Query().Get("metadata"),
 	}
 
 	accessToken := fosite.AccessTokenFromRequest(r)
@@ -207,7 +192,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	c, err := h.r.IdentityManager().GetIdentities(ctx, filters)
+	c, err := h.r.IdentifierManager().GetIdentifiers(ctx, filters)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -217,25 +202,24 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	pagination.Header(w, r.URL, 10000, limit, offset)
 
 	if c == nil {
-		c = []*Identity{}
+		c = []*Identifier{}
 	}
 
 	h.r.Writer().Write(w, r, c)
 }
 
-// swagger:parameters getIdentity
-type getIdentity struct {
-	// The identity ID
-	// required: true
+// the ID of data identidier
+// swagger:parameters dataIdentifierID
+type dataIdentifierID struct {
 	// in: path
 	Id string `json:"id"`
 }
 
-// swagger:route GET /identity{id} identity getIdentity
+// swagger:route GET /identifier/{id} dataIdentifier dataIdentifierID
 //
-// Get the identities
+// Get a data identifier
 //
-// Get the identity information by querying the identity ID.
+// Get the data identifier with the identifierID.
 //
 //
 //     Consumes:
@@ -249,8 +233,8 @@ type getIdentity struct {
 //     Schemes: http, https
 //
 //     Responses:
-//       200: IdentityResp
-// 		 400: jsonError
+//       200: DataIdentifierResp
+// 		 401: jsonError
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -264,7 +248,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	}
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
+	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
 	if err != nil {
 		//err = herodot.ErrUnauthorized.WithReason("")
 		h.r.Writer().WriteError(w, r, err)
@@ -278,25 +262,11 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	h.r.Writer().Write(w, r, entity)
 }
 
-// swagger:parameters deleteIdentity
-type deleteIdentity struct {
-	// The identity ID
-	// required: true
-	// in: path
-	Id string `json:"id"`
-	// The apiKey
-	// required: true
-	// in: body
-	Body struct {
-		Apikey string `json:"Authorization"`
-	}
-}
-
-// swagger:route DELETE /identity/{id} identity deleteIdentity
+// swagger:route DELETE /identifier/{id} dataIdentifier dataIdentifierID
 //
-// Delete the identity
+// Delete a data identifier
 //
-// Dlete the identity with the identity ID.
+// Delete the data identifier with the identifierID.
 //
 //
 //     Consumes:
@@ -325,7 +295,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	entity, err := h.r.IdentityManager().GetIdentity(ctx, id)
+	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -335,7 +305,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	err = h.r.IdentityManager().DeleteIdentity(ctx, id)
+	err = h.r.IdentifierManager().DeleteIdentifier(ctx, id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

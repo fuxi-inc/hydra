@@ -107,7 +107,7 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 	return result, nil
 }
 
-func (p *Persister) VerifySignature(ctx context.Context, userID string, sign string, hash []byte) error {
+func (p *Persister) VerifySignature(ctx context.Context, userID string, sign string, hash string) error {
 	var cl identity.Identity
 	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", userID).First(&cl))
 	if err != nil {
@@ -116,7 +116,7 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	publicKey, _ := x509.ParsePKCS1PublicKey(cl.PublicKey)
 
-	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, []byte(hash), []byte(sign))
 	if err != nil {
 		return err
 	}

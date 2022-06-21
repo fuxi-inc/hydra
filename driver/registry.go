@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"github.com/ory/hydra/authorization"
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
@@ -52,6 +53,7 @@ type Registry interface {
 	identifier.Registry
 	identity.Registry
 	subscription.Registry
+	authorization.Registry
 
 	RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPublic)
 	ClientHandler() *client.Handler
@@ -61,6 +63,7 @@ type Registry interface {
 	HealthHandler() *healthx.Handler
 	IdentifierHandler() *identifier.Handler
 	SubscriptionHandler() *subscription.Handler
+	AuthorizationHandler() *authorization.Handler
 	IdentityHandler() *identity.Handler
 
 	OAuth2HMACStrategy() *foauth2.HMACSHAStrategy
@@ -113,4 +116,6 @@ func CallRegistry(ctx context.Context, r Registry) {
 	r.IdentityManager()
 	r.SubscriptionValidator()
 	r.SubscriptionManager()
+	r.AuthorizationValidator()
+	r.AuthorizationManager()
 }

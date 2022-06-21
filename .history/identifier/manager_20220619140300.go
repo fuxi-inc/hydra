@@ -16,6 +16,4 @@ type Storage interface {
 	DeleteIdentifier(ctx context.Context, id string) error
 
 	GetIdentifiers(ctx context.Context, filters Filter) ([]*Identifier, error)
-
-	VerifySignature(ctx context.Context, userID string, sign string, hash []byte) error
 }

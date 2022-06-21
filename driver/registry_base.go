@@ -3,6 +3,7 @@ package driver
 import (
 	"context"
 	"fmt"
+	"github.com/ory/hydra/authorization"
 	"net"
 	"net/http"
 	"strings"
@@ -83,6 +84,8 @@ type RegistryBase struct {
 	iv           *identifier.Validator
 	sh           *subscription.Handler
 	sv           *subscription.Validator
+	ah           *authorization.Handler
+	av           *authorization.Validator
 	ith          *identity.Handler
 	itv          *identity.Validator
 }
@@ -121,6 +124,8 @@ func (m *RegistryBase) RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPubl
 	m.IdentifierHandler().SetRoutes(public)
 	m.IdentityHandler().SetRoutes(public)
 	m.SubscriptionHandler().SetRoutes(public)
+	m.AuthorizationHandler().SetRoutes(public)
+
 }
 
 func (m *RegistryBase) BuildVersion() string {
@@ -529,4 +534,18 @@ func (m *RegistryBase) SubscriptionHandler() *subscription.Handler {
 		m.sh = subscription.NewHandler(m.r, m.C)
 	}
 	return m.sh
+}
+
+func (m *RegistryBase) AuthorizationValidator() *authorization.Validator {
+	if m.av == nil {
+		m.av = authorization.NewValidator()
+	}
+	return m.av
+}
+
+func (m *RegistryBase) AuthorizationHandler() *authorization.Handler {
+	if m.ah == nil {
+		m.ah = authorization.NewHandler(m.r, m.C)
+	}
+	return m.ah
 }
