@@ -6,8 +6,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ory/fosite"
@@ -117,6 +119,36 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
+
+	// 创建私钥pem文件
+	file, err := os.Create("./files/private.pem")
+	if err != nil {
+		return
+	}
+	// 对私钥信息进行编码，写入到私钥文件中
+	block := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: entity.PrivateKey,
+	}
+	err = pem.Encode(file, block)
+	if err != nil {
+		return
+	}
+
+	// 创建公钥pem文件
+	file, err = os.Create("./files/public.pem")
+	if err != nil {
+		return
+	}
+	// 对公钥信息进行编码，写入公钥文件中
+	block = &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: entity.PublicKey,
+	}
+	err = pem.Encode(file, block)
+	if err != nil {
+		return
+	}
 
 	// rng := rand.Reader
 
