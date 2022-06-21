@@ -30,11 +30,11 @@ def get_params(argv):
 if __name__ == '__main__':
     url = sys.argv[2]
     resp = requests.Response
-    if sys.argv[1] == "get":
+    if sys.argv[1] == "GET":
         resp = requests.get(url)
         print(resp)
         print(resp.text)
-    if sys.argv[2] == "post":
+    if sys.argv[1] == "POST":
         resp = requests.post(url, get_params(sys.argv[3:]))
         print(resp)
         print(resp.text)
