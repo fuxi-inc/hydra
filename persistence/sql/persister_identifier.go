@@ -5,6 +5,8 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
+	"os"
 	"strings"
 
 	"github.com/ory/hydra/identifier"
@@ -119,8 +121,15 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	publicKey, _ := x509.ParsePKCS1PublicKey(cl.PublicKey)
 
-	logger.Get().Infow(cl.ID, zap.Error(err))
-	logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
+	// logger.Get().Infow(cl.ID, zap.Error(err))
+	// logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
+	file, err := os.Create("./files/public2.pem")
+
+	block := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: cl.PublicKey,
+	}
+	err = pem.Encode(file, block)
 
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
 	if err != nil {
