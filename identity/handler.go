@@ -112,7 +112,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	publickey := &privatekey.PublicKey
 
 	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
-	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
+	entity.PublicKey, _ = x509.MarshalPKIXPublicKey(publickey)
 
 	// 创建私钥pem文件
 	file, err := os.Create("./files/private.pem")
