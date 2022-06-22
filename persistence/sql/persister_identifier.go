@@ -119,6 +119,8 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	pub, _ := x509.ParsePKIXPublicKey(cl.PublicKey)
 
+	logger.Get().Infow(string(cl.PublicKey))
+
 	publicKey := pub.(*rsa.PublicKey)
 
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
