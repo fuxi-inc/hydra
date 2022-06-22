@@ -97,14 +97,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	//var clientID = ps.ByName("id")
-	// accessToken := fosite.AccessTokenFromRequest(r)
-
-	// if accessToken == "" {
-	// 	h.r.Writer().WriteError(w, r, errors.New(""))
-	// 	return
-	// }
-
 	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
 	entity.ID = entity.ID + ".user.fuxi"

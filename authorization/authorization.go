@@ -57,15 +57,22 @@ type Authorization struct {
 	Name       string              `json:"name" db:"name"`
 	Content    string              `json:"content" db:"content"`
 	Requestor  string              `json:"requestor" db:"requestor"`
-	Recipient  string              `json:"recipient" db:"recipient"`
-	Owner      string              `json:"owner" db:"owner"`
-	Identifier string              `json:"identifier" db:"identifier"`
+	Recipient  string              `json:"viewUserDomainID" db:"recipient"`
+	Owner      string              `json:"userDomainID" db:"owner"`
+	Identifier string              `json:"dataDomainID" db:"identifier"`
 	Type       AuthorizationType   `json:"type" db:"type"`
 	Status     AuthorizationStatus `json:"status" db:"status"`
 	CreatedAt  time.Time           `json:"created_at" db:"created_at"`
 	ModifiedAt time.Time           `json:"modified_at" db:"modified_at"`
 	ExpiredAt  time.Time           `json:"expired_at" db:"expired_at"`
 	Metadata   Metadata            `json:"metadata,omitempty" db:"metadata"`
+}
+
+type AuthorizationParams struct {
+	Recipient  string `json:"viewUserDomainID"`
+	Owner      string `json:"userDomainID"`
+	Identifier string `json:"dataDomainID"`
+	Sign       string `json:"Sign"`
 }
 
 func (Authorization) TableName() string {
