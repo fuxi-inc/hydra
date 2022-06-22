@@ -19,7 +19,7 @@ def get_params(argv):
 
     data = "DIS_2020"+json.dumps(params)
     hashdata = SHA1.new()
-    hashdata.update(data)
+    hashdata.update(data.encode("utf8"))
 
     private_key = get_key('files/private.pem')
     signer = PKCS1_signature.new(private_key)
