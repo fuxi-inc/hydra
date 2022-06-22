@@ -171,7 +171,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
 }
 
-
 func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identity
 	var responseEntity responseIdentity
@@ -186,41 +185,13 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
-	err = h.r.IdentityManager().client.constructEntropyServiceClient()
+	err := h.r.IdentityManager().CreateIdentityPod(r.Context(), "nil", "")
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-
-
-	// add cert rr
-	createDomainRRResp, err := srv.AddDomainResourceRecord(ctx, &api.CreateDomainResourceRecordRequest{
-		Name:     entity.Id,
-		Domain:   entity.Id,
-		Type:     api.DomainResourceRecordType_CERT,
-		Category: api.DomainResourceRecordCategory_Identifier,
-		Ttl:      1024,
-		Data: &api.CreateDomainResourceRecordRequest_Cert{Cert: &api.CertData{
-			// fixed value, it should be flexible later
-			Type:      "PKIX",
-			KeyTag:    "1",
-			Algorithm: "RSASHA256",
-			Data:      string(entity.PublicKey),
-		}},
-	})
-	if err != nil || createDomainRRResp.Result.StatusCode != 200 {
-		logger.Get().Warnw("failed to create the domain cert rr related with identity identifier", zap.Error(err))
-		result.StatusCode = 500
-		result.Message = "internal error"
-		return resp, nil
-	}
-
-
-
-	
 
 	responseEntity.UserDomainID = entity.ID
 	responseEntity.PrivateKey = string(entity.PrivateKey)
@@ -228,9 +199,6 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
 }
-
-
-
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 

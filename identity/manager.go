@@ -13,6 +13,8 @@ type Storage interface {
 
 	CreateIdentity(ctx context.Context, entity *Identity, signature []byte) error
 
+	CreateIdentityPod(ctx context.Context, domain string, address string) error
+
 	DeleteIdentity(ctx context.Context, id string) error
 
 	GetIdentities(ctx context.Context, filters Filter) ([]*Identity, error)
