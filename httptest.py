@@ -25,6 +25,7 @@ def get_params(argv):
     signer = PKCS1_signature.new(private_key)
     params["sign"] = signer.sign(hashdata)
     print(params)
+    return params
 
 
 if __name__ == '__main__':
