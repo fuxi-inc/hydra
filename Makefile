@@ -153,7 +153,7 @@ run:
 sync:
 	cp ../magnolia/api/*.go ./pkg/magnolia/magnolia/
 
-.PHONY: build
+.PHONY: buildcat
 build:
 	rm -f hydra
 	GOOS=linux GOARCH=amd64 go build -o hydra main.go

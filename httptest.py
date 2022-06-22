@@ -23,9 +23,9 @@ def get_params(argv):
 
     private_key = get_key('files/private.pem')
     signer = PKCS1_signature.new(private_key)
-    params["sign"] = signer.sign(hashdata)
+    params["sign"] = str(signer.sign(hashdata))
     print(params)
-    return json.dumps(str(params))
+    return json.dumps(params)
 
 
 if __name__ == '__main__':
