@@ -111,48 +111,38 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		return nil, errors.New(resp.Result.Message)
 	}
 	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
+
 	return resp.Data, nil
 }
 
-func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string)  erro {
+func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string) error {
 
 	client, err := c.constructEntropyServiceClient()
 	if err != nil {
 		return err
 	}
 
-
-	resp2, err := client.Register(ctx, &api.UserRegistrationRequest{
-		Organization: "fuxi",
-		Name:         entity.Id,
-		Password:     "abc123",
-		Email:        "xxx",
-		Mobile:       "xxx",
+	// add uri rr
+	createDomainRRResp, err := client.AddDomainResourceRecord(ctx, &api.CreateDomainResourceRecordRequest{
+		Name:     domain,
+		Domain:   domain,
+		Type:     api.DomainResourceRecordType_URI,
+		Category: api.DomainResourceRecordCategory_Identifier,
+		Ttl:      1024,
+		Data: &api.CreateDomainResourceRecordRequest_Uri{Uri: &api.URIData{
+			Priority: 0,
+			Weight:   0,
+			Target:   address,
+		}},
 	})
-	if err != nil {
-		return nil, err
-	}
-	logger.Get().Infow("register user accont done", zap.Any("response", resp2))
 
-	//faker := faker.New()
-	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
-		Id:        entity.GetId(),
-		Name:      entity.GetName(),
-		Email:     entity.GetEmail(),
-		Signature: entity.GetSignature(),
-		PublicKey: entity.GetPublicKey(),
-		//		PublicKey: entity.GetPublicKey(),
-		//		Signature: entity.GetSignature(),
-	})
-	if err != nil {
-		return nil, err
+	if err != nil || createDomainRRResp.Result.StatusCode != 200 {
+		logger.Get().Warnw("failed to create the domain uri rr related with data identifier", zap.Error(err))
+		return errors.New(createDomainRRResp.Result.Message)
 	}
+	logger.Get().Infow("register identity pod done", zap.Any("response", createDomainRRResp))
 
-	if resp.Result.StatusCode != 200 {
-		return nil, errors.New(resp.Result.Message)
-	}
-	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
-	return resp.Data, nil
+	return nil
 }
 
 func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error {

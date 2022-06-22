@@ -32,13 +32,12 @@ func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identit
 }
 
 func (p *Persister) CreateIdentityPod(ctx context.Context, domain string, address string) error {
-	_, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier(signature))
+	err := p.client.CreateIdentityPod(ctx, domain, address)
 	if err != nil {
-		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
+		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("edomain", domain))
 		return errorsx.WithStack(err)
 	}
-
-	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
+	return nil
 }
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
