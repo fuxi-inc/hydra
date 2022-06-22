@@ -76,7 +76,7 @@ type AuthorizationParams struct {
 }
 
 func (Authorization) TableName() string {
-	return "authorizations"
+	return "subscriptions"
 }
 
 func (entity *Authorization) init() {
