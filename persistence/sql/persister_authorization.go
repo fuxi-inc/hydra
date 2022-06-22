@@ -14,7 +14,7 @@ import (
 
 func (p *Persister) GetAuthorization(ctx context.Context, id string, subject string) (*authorization.Authorization, error) {
 	var cl authorization.Authorization
-	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?, recipient=?", id, subject).First(&cl))
+	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("identifier = ?, recipient=?", id, subject).First(&cl))
 }
 
 func (p *Persister) AuditAuthorization(ctx context.Context, entity *authorization.Authorization, audit *authorization.ApproveResult) error {
