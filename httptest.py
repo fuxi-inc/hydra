@@ -24,8 +24,8 @@ def get_params(argv):
 
     private_key = get_key('files/private.pem')
     signer = PKCS1_signature.new(private_key)
-    # params["sign"] = str(signer.sign(hashdata))
-    params["sign"] = signer.sign(hashdata)
+    params["sign"] = str(signer.sign(hashdata))
+    # params["sign"] = signer.sign(hashdata)
 
     public_key = get_key('files/public.pem')
     verifier = PKCS1_signature.new(public_key)
