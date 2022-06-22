@@ -82,11 +82,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	var jsonTrans JSONTrans
 
 	if err := json.NewDecoder(r.Body).Decode(&jsonTrans); err != nil {
+		logger.Get().Infow("failed to decode params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
 	if err := h.r.IdentifierValidator().Validate(&jsonTrans); err != nil {
+		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -96,6 +98,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	marshalJsonTrans, err := json.Marshal(jsonTrans)
 	if err != nil {
+		logger.Get().Infow("failed to Marshal jsonTrans", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
@@ -109,6 +112,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
 	if err != nil {
+		logger.Get().Infow("failed to verify signature", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

@@ -25,6 +25,7 @@ type Handler struct {
 
 const (
 	IdentityHandlerPath = "/identity"
+	PodHandlerPath      = "/pod"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -35,6 +36,7 @@ func NewHandler(r InternalRegistry) *Handler {
 
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(IdentityHandlerPath, h.Create)
+	public.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
 	public.GET(IdentityHandlerPath+"/:id", h.Get)
 	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
 	public.GET(IdentityHandlerPath, h.List)
@@ -168,6 +170,52 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
 }
+
+
+func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var entity Identity
+	var responseEntity responseIdentity
+
+	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	if err := h.r.IdentityValidator().Validate(&entity); err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	entity.CreationTime = time.Now().UTC().Round(time.Second)
+	entity.LastModifiedTime = entity.CreationTime
+	entity.ID = entity.ID + ".user.fuxi"
+
+	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return
+	}
+	publickey := &privatekey.PublicKey
+
+	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
+	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
+
+
+	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
+	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity, nil)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	responseEntity.UserDomainID = entity.ID
+	responseEntity.PrivateKey = string(entity.PrivateKey)
+	responseEntity.Token = "100"
+
+	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
+}
+
+
+
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
