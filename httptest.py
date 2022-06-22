@@ -29,7 +29,7 @@ def get_params(argv):
 
     public_key = get_key('files/public.pem')
     verifier = PKCS1_signature.new(public_key)
-    print(verifier.verify(hashdata, params["sign"].encode("utf-8")))
+    print(verifier.verify(hashdata, params["sign"].encode()))
 
     return json.dumps(params)
 
