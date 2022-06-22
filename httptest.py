@@ -35,6 +35,6 @@ if __name__ == '__main__':
         print(resp)
         print(resp.text)
     if sys.argv[1] == "POST":
-        resp = requests.post(url, get_params(sys.argv[3:]), headers=headers)
+        resp = requests.post(url, data=get_params(sys.argv[3:]), headers=headers)
         print(resp)
         print(resp.text)
