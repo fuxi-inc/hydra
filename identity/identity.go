@@ -17,6 +17,12 @@ type Identity struct {
 	LastModifiedTime time.Time `json:"lastModifiedTime,omitempty" db:"modified_at"`
 }
 
+type IdentityPod struct {
+	UserDomainID string `json:"userDomainID"`
+	PodAddress   string `json:"podAddress"`
+	Sign        string `json:"sign"`
+}
+
 type responseIdentity struct {
 	UserDomainID string `json:"userDomainID"`
 	PrivateKey   string `json:"privateKey"`
