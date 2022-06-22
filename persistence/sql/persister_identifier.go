@@ -119,6 +119,9 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	publicKey, _ := x509.ParsePKCS1PublicKey(cl.PublicKey)
 
+	logger.Get().Infow(cl.ID, zap.Error(err))
+	logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
+
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
 	if err != nil {
 		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
