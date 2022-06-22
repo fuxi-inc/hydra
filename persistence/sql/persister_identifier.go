@@ -9,7 +9,9 @@ import (
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/sqlcon"
+	"go.uber.org/zap"
 )
 
 func (p *Persister) GetIdentifier(ctx context.Context, id string) (*identifier.Identifier, error) {
@@ -109,6 +111,9 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 	var cl identity.Identity
 	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", userID).First(&cl))
 	if err != nil {
+		logger.Get().Infow("failed to get identity from identity_identifier table", zap.Error(err))
+		logger.Get().Infow(cl.ID, zap.Error(err))
+		logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
 		return err
 	}
 
@@ -116,6 +121,7 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
 	if err != nil {
+		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
 		return err
 	}
 	return nil
