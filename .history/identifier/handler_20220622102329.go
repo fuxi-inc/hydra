@@ -101,10 +101,15 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	hash.Write(marshalJsonTrans)
 	verifyHash := hash.Sum(nil)
 
-	ctx := context.Background()
+	accessToken := fosite.AccessTokenFromRequest(r)
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New(""))
+		return
+	}
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
@@ -113,6 +118,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
+	// 到此对签名完成验证，继续基于entity的数据标识注册逻辑
 	entity.ID = jsonTrans.DataID
 	entity.Name = "fuxi"
 	entity.Owner = jsonTrans.UserID
