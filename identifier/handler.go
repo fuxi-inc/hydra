@@ -2,7 +2,6 @@ package identifier
 
 import (
 	"context"
-	"crypto"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -99,29 +98,29 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	sign := jsonTrans.Sign
-	jsonTrans.Sign = ""
+	// sign := jsonTrans.Sign
+	// jsonTrans.Sign = ""
 
-	marshalJsonTrans, err := json.Marshal(jsonTrans)
-	if err != nil {
-		logger.Get().Infow("failed to Marshal jsonTrans", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
+	// marshalJsonTrans, err := json.Marshal(jsonTrans)
+	// if err != nil {
+	// 	logger.Get().Infow("failed to Marshal jsonTrans", zap.Error(err))
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
 
-	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
-	verifyHash := hash.Sum(nil)
+	// hash := crypto.SHA1.New()
+	// hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	// verifyHash := hash.Sum(nil)
 
 	ctx := context.Background()
 
-	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
+	// err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
-	if err != nil {
-		logger.Get().Infow("failed to verify signature", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
+	// if err != nil {
+	// 	logger.Get().Infow("failed to verify signature", zap.Error(err))
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
 
 	entity.ID = jsonTrans.DataID
 	entity.Name = "fuxi"
@@ -135,7 +134,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 	entity.Metadata = dict
 
-	err = h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
+	err := h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
 	if err != nil {
 		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
 		h.r.Writer().WriteError(w, r, err)
