@@ -109,7 +109,8 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to update the data owner", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
+		//h.r.Writer().WriteError(w, r, err)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
