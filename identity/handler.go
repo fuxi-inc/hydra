@@ -15,7 +15,9 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/pagination"
+	"go.uber.org/zap"
 
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/hydra/x"
 
 	"github.com/julienschmidt/httprouter"
@@ -186,9 +188,10 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
+	logger.Get().Infow("parse register pod", zap.Any("IdentityPod", entity))
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
-	err := h.r.IdentityManager().CreateIdentityPod(r.Context(), "nil", "")
+	err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

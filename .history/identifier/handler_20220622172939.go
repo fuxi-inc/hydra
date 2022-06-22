@@ -86,11 +86,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
 
 	if err := h.r.IdentifierValidator().Validate(&jsonTrans); err != nil {
 		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
@@ -136,7 +136,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	err := h.r.IdentifierManager().CreateIdentifier(ctx, &entity)
 	if err != nil {
-		logger.Get().Warnw("failed to create data identifier", zap.Error(err), zap.Any("entity", entity))
+		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

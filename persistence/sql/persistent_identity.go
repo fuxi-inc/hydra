@@ -34,7 +34,7 @@ func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identit
 func (p *Persister) CreateIdentityPod(ctx context.Context, domain string, address string) error {
 	err := p.client.CreateIdentityPod(ctx, domain, address)
 	if err != nil {
-		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("edomain", domain))
+		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("domain", domain))
 		return errorsx.WithStack(err)
 	}
 	return nil
