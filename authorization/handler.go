@@ -248,6 +248,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	ctx := context.Background()
 	entity, err := h.r.AuthorizationManager().GetAuthorization(ctx, id, subject)
 	if err != nil {
+		logger.Get().Infow("unauthorized", zap.String("subject", subject), zap.Any("identifier", id))
 		err = herodot.ErrUnauthorized.WithReason("The requested authorization does not exist")
 		h.r.Writer().WriteError(w, r, err)
 		return
