@@ -114,6 +114,47 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 	return resp.Data, nil
 }
 
+func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string)  erro {
+
+	client, err := c.constructEntropyServiceClient()
+	if err != nil {
+		return err
+	}
+
+
+	resp2, err := client.Register(ctx, &api.UserRegistrationRequest{
+		Organization: "fuxi",
+		Name:         entity.Id,
+		Password:     "abc123",
+		Email:        "xxx",
+		Mobile:       "xxx",
+	})
+	if err != nil {
+		return nil, err
+	}
+	logger.Get().Infow("register user accont done", zap.Any("response", resp2))
+
+	//faker := faker.New()
+	resp, err := client.CreateIdentityIdentifier(ctx, &api.CreateIdentityIdentifierRequest{
+		Id:        entity.GetId(),
+		Name:      entity.GetName(),
+		Email:     entity.GetEmail(),
+		Signature: entity.GetSignature(),
+		PublicKey: entity.GetPublicKey(),
+		//		PublicKey: entity.GetPublicKey(),
+		//		Signature: entity.GetSignature(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Result.StatusCode != 200 {
+		return nil, errors.New(resp.Result.Message)
+	}
+	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
+	return resp.Data, nil
+}
+
 func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error {
 	client, err := c.constructEntropyServiceClient()
 	if err != nil {
