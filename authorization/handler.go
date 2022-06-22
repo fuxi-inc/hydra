@@ -89,12 +89,12 @@ type AuthorizationResp struct {
 func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		logger.Get().Infow("failed to decode authorization params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
 	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
+		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
