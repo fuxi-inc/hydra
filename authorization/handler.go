@@ -259,7 +259,8 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	}
 
 	if entity.Status == Granted {
-		h.r.Writer().Write(w, r, entity)
+		w.WriteHeader(http.StatusCreated)
+		//h.r.Writer().Write(w, r, entity)
 		return
 	}
 	logger.Get().Infow("unauthorized", zap.String("subject", subject), zap.Any("authorization", entity))
