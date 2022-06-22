@@ -102,6 +102,8 @@ func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httproute
 	}
 
 	entity := transform(&params)
+	entity.Requestor = params.Owner
+	entity.Type = Free
 
 	ctx := context.Background()
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
@@ -157,18 +159,22 @@ func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprout
 	var params AuthorizationParams
 	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
 
 	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
+		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 
 	entity := transform(&params)
+	entity.Requestor = params.Recipient
+	entity.Type = Charged
 
-	ctx := context.WithValue(context.TODO(), "apiKey", "")
+	ctx := context.Background()
 	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
@@ -183,15 +189,20 @@ func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprout
 		return
 	}
 
-	if entity.Requestor == entity.Owner {
-		// if shared authorization
-		approveResult := &ApproveResult{
-			Status: Granted,
-		}
-		h.audit(w, r, &entity, approveResult)
-	} else {
-		h.r.Writer().WriteCreated(w, r, AuthorizationHandlerPath+"/"+entity.ID, &entity)
+	/*
+		add transfer token
+	*/
+
+	approveResult := &ApproveResult{
+		Status: Granted,
 	}
+	err = h.r.AuthorizationManager().AuditAuthorization(ctx, &entity, approveResult)
+	if err != nil {
+		logger.Get().Infow("failed to audit authorization", zap.Error(err))
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
 }
 
 // swagger:route POST /authorizations authorization createAuthorization
@@ -588,7 +599,6 @@ func (h *Handler) WriteAuditResponse(w http.ResponseWriter, claim jwt.MapClaims)
 
 func transform(params *AuthorizationParams) Authorization {
 	var entity Authorization
-	entity.Requestor = params.Owner
 	entity.Identifier = params.Identifier
 	entity.Owner = params.Owner
 	entity.Recipient = params.Recipient
