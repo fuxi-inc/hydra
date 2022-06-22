@@ -88,8 +88,8 @@ type AuthorizationResp struct {
 //       500: jsonError
 func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
-	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		logger.Get().Infow("failed to decode authorization params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
