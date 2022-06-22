@@ -37,9 +37,9 @@ func NewHandler(r InternalRegistry, c *config.Provider) *Handler {
 }
 
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(AuthorizationHandlerPath+"/addAuth", h.CreateAuth)
-	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateTrans)
-	public.POST(AuthorizationHandlerPath+"/authentication", h.Auth)
+	public.POST(AuthorizationHandlerPath+"/addAuth", h.CreateAuthorization)
+	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
+	public.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
 
 	//public.GET(AuthorizationHandlerPath+"/:id", h.Get)
 	//public.DELETE(AuthorizationHandlerPath+"/:id", h.Delete)
@@ -86,7 +86,7 @@ type AuthorizationResp struct {
 // 		 400: jsonError
 //       404: jsonError
 //       500: jsonError
-func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -155,7 +155,7 @@ func (h *Handler) CreateAuth(w http.ResponseWriter, r *http.Request, _ httproute
 // 		 400: jsonError
 //       404: jsonError
 //       500: jsonError
-func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
 	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -227,7 +227,7 @@ func (h *Handler) CreateTrans(w http.ResponseWriter, r *http.Request, _ httprout
 // 		 400: jsonError
 //       404: jsonError
 //       500: jsonError
-func (h *Handler) Auth(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
 	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -240,32 +240,28 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	entity := transform(&params)
+	id := params.Identifier
+	subject := params.Recipient
 
-	ctx := context.WithValue(context.TODO(), "apiKey", "")
-	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	ctx := context.Background()
+	entity, err := h.r.AuthorizationManager().GetAuthorization(ctx, id, subject)
 	if err != nil {
+		err = herodot.ErrUnauthorized.WithReason("The requested authorization does not exist")
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-
-	entity.init()
-
-	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
+	if entity == nil {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	if entity.Requestor == entity.Owner {
-		// if shared authorization
-		approveResult := &ApproveResult{
-			Status: Granted,
-		}
-		h.audit(w, r, &entity, approveResult)
-	} else {
-		h.r.Writer().WriteCreated(w, r, AuthorizationHandlerPath+"/"+entity.ID, &entity)
+	if entity.Status == Granted {
+		h.r.Writer().Write(w, r, entity)
+		return
 	}
+	logger.Get().Infow("unauthorized", zap.String("subject", subject), zap.Any("authorization", entity))
+	w.WriteHeader(http.StatusUnauthorized)
+
 }
 
 type Filter struct {
