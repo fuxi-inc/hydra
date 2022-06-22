@@ -117,9 +117,19 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 		return err
 	}
 
-	pub, _ := x509.ParsePKIXPublicKey(cl.PublicKey)
+	pub, err := x509.ParsePKIXPublicKey(cl.PublicKey)
 
-	logger.Get().Infow(string(cl.PublicKey))
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		return err
+	}
+
+	// pri, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
+
+	// if err != nil {
+	// 	logger.Get().Infow("failed to ParsePKCS1PrivateKey", zap.Error(err))
+	// 	return err
+	// }
 
 	publicKey := pub.(*rsa.PublicKey)
 
