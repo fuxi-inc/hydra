@@ -29,12 +29,12 @@ def get_params(argv):
 
 if __name__ == '__main__':
     url = sys.argv[2]
-    resp = requests.Response
+    headers = {'content-type': "application/json"}
     if sys.argv[1] == "GET":
-        resp = requests.get(url)
+        resp = requests.get(url, headers=headers)
         print(resp)
         print(resp.text)
     if sys.argv[1] == "POST":
-        resp = requests.post(url, get_params(sys.argv[3:]))
+        resp = requests.post(url, get_params(sys.argv[3:]), headers=headers)
         print(resp)
         print(resp.text)
