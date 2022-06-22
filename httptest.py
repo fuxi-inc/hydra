@@ -30,7 +30,8 @@ def get_params(argv):
 
     public_key = get_key('files/public.pem')
     verifier = PKCS1_signature.new(public_key)
-    print(verifier.verify(hashdata, params["sign"]))
+    digest = SHA1.new()
+    print(verifier.verify(digest, params["sign"]))
     return json.dumps(params)
 
 
