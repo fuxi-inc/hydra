@@ -25,6 +25,7 @@ def get_params(argv):
     signer = PKCS1_signature.new(private_key)
     params["sign"] = str(signer.sign(hashdata))
     print(params)
+    print(signer.verify(hashdata, params["sign"]))
     return json.dumps(params)
 
 
