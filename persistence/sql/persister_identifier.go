@@ -28,7 +28,7 @@ func (p *Persister) CreateIdentifier(ctx context.Context, entity *identifier.Ide
 	// var cl identity.Identity
 	// err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
 	// if err != nil {
-	// 	return err
+	// 	return err	
 	// }
 
 	// rng := rand.Reader

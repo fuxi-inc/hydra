@@ -40,6 +40,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(IdentityHandlerPath, h.Create)
 	public.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
 	public.GET(IdentityHandlerPath+"/:id", h.Get)
+	public.GET(IdentityHandlerPath+PodHandlerPath+"/:id", h.GetToken)
 	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
 	public.GET(IdentityHandlerPath, h.List)
 }
@@ -104,6 +105,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
 	entity.ID = entity.ID + ".user.fuxi"
+	entity.Email = "100" //存放token值
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -329,6 +331,22 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
+
+	h.r.Writer().Write(w, r, entity)
+}
+
+func (h *Handler) GetToken(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var id = ps.ByName("id")
+	var entity responseIdentityToken
+
+	token, err := h.r.IdentityManager().GetIdentityToken(r.Context(), id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	entity.UserDomainID = id
+	entity.Token = token
 
 	h.r.Writer().Write(w, r, entity)
 }
