@@ -183,6 +183,7 @@ func (c *Client) CreateAuthorizationRecord(ctx context.Context, requestor, ident
 	}
 
 	if resp.Result.StatusCode != 200 {
+		logger.Get().Infow("failed to create authorization rr", zap.Any("magnolia response status", resp.Result.StatusCode))
 		return "", errors.New(resp.Result.Message)
 	}
 

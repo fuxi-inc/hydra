@@ -3,12 +3,13 @@ package sql
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/authorization"
-	"github.com/ory/hydra/identity"
+	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
+
+	"go.uber.org/zap"
 )
 
 func (p *Persister) GetAuthorization(ctx context.Context, id string, subject string) (*authorization.Authorization, error) {
@@ -22,14 +23,9 @@ func (p *Persister) GetAuthorization(ctx context.Context, id string, subject str
 }
 
 func (p *Persister) AuditAuthorization(ctx context.Context, entity *authorization.Authorization, audit *authorization.ApproveResult) error {
-	var cl identity.Identity
-	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
-	if err != nil {
-		return err
-	}
-
 	metadata, err := json.Marshal(entity.Metadata)
 	if err != nil {
+		logger.Get().Infow("failed to get authorization metadata", zap.Error(err))
 		return err
 	}
 	// Create sub data identifier for the authorization
