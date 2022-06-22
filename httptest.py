@@ -3,7 +3,6 @@ import json
 import requests
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
-from Crypto.Signature import PKCS1_v1_5 as PKCS1_verifier
 
 from Crypto.Hash import SHA1
 
@@ -26,11 +25,12 @@ def get_params(argv):
     private_key = get_key('files/private.pem')
     signer = PKCS1_signature.new(private_key)
     params["sign"] = str(signer.sign(hashdata))
-    print(params)
+    # params["sign"] = signer.sign(hashdata)
 
     public_key = get_key('files/public.pem')
     verifier = PKCS1_signature.new(public_key)
-    print(verifier.verify(hashdata, params["sign"]))
+    print(verifier.verify(hashdata, params["sign"].encode()))
+
     return json.dumps(params)
 
 
