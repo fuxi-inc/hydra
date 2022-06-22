@@ -2,11 +2,7 @@ package sql
 
 import (
 	"context"
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
+	"encoding/json"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/authorization"
@@ -32,21 +28,12 @@ func (p *Persister) AuditAuthorization(ctx context.Context, entity *authorizatio
 		return err
 	}
 
-	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(entity.Requestor + entity.Identifier))
-
-	privatekey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
+	metadata, err := json.Marshal(entity.Metadata)
 	if err != nil {
 		return err
 	}
-
-	signature, err := rsa.SignPKCS1v15(rng, privatekey, crypto.SHA256, hashed[:])
-	if err != nil {
-		return err
-	}
-
 	// Create sub data identifier for the authorization
-	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.Requestor, entity.Identifier, signature)
+	rrId, err := p.client.CreateAuthorizationRecord(ctx, entity.Requestor, entity.Identifier, []byte(entity.Recipient+" "+string(metadata[:])))
 	if err != nil {
 		return err
 	}
@@ -60,10 +47,6 @@ func (p *Persister) AuditAuthorization(ctx context.Context, entity *authorizatio
 }
 
 func (p *Persister) CreateAuthorization(ctx context.Context, entity *authorization.Authorization) error {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, entity.Requestor)
-	if err != nil {
-		return errorsx.WithStack(err)
-	}
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 

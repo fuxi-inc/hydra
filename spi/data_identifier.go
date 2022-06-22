@@ -156,6 +156,40 @@ func (c *Client) CreateSubscriptionRecord(ctx context.Context, requestor, identi
 	return resp.Id, nil
 }
 
+func (c *Client) CreateAuthorizationRecord(ctx context.Context, requestor, identifier string, metadata []byte) (string, error) {
+	client, err := c.constructEntropyServiceClient()
+	if err != nil {
+		return "", err
+	}
+
+	// resp, err := client.AddDomainResourceRecord(ctx, &api.CreateDomainResourceRecordRequest{
+	// 	Name:   id,
+	// 	Domain: owner,
+	// 	Type:   api.DomainResourceRecordType_TXT,
+	// 	Ttl:    3600,
+	// 	Data:   &api.CreateDomainResourceRecordRequest_Rr{Rr: &api.RRData{Value: "Somebody subscribed this record"}},
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	resp, err := client.AuthorizeDataIdentifier(ctx, &api.AuthorizeDataIdentifierRequest{
+		Requester: requestor,
+		Id:        identifier,
+		Signature: []byte(metadata),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if resp.Result.StatusCode != 200 {
+		return "", errors.New(resp.Result.Message)
+	}
+
+	logger.Get().Infow("create authorization record", zap.Any("Id", resp.Id))
+	return resp.Id, nil
+}
+
 func (c *Client) DeleteSubscriptionRecord(ctx context.Context, id string) error {
 	client, err := c.constructEntropyServiceClient()
 	if err != nil {
