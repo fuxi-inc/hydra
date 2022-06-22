@@ -23,7 +23,7 @@ func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Ident
 
 func (p *Persister) GetIdentityToken(ctx context.Context, id string) (string, error) {
 	var cl identity.Identity
-	err := sqlcon.HandleError(p.Connection(ctx).Where("email = ?", id).First(&cl))
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
 	if err != nil {
 		logger.Get().Warnw("failed to get identity token", zap.Error(err), zap.Any("id", id))
 		return "", errorsx.WithStack(err)
