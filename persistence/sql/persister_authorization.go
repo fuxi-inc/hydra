@@ -13,13 +13,8 @@ import (
 )
 
 func (p *Persister) GetAuthorization(ctx context.Context, id string, subject string) (*authorization.Authorization, error) {
-	_, err := p.client.GetAuthorizedIdentityIdentifier(ctx, subject)
-	if err != nil {
-		return nil, errorsx.WithStack(err)
-	}
-
 	var cl authorization.Authorization
-	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
+	return &cl, sqlcon.HandleError(p.Connection(ctx).Where("identifier = ? and recipient=?", id, subject).First(&cl))
 }
 
 func (p *Persister) AuditAuthorization(ctx context.Context, entity *authorization.Authorization, audit *authorization.ApproveResult) error {

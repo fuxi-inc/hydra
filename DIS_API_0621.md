@@ -229,7 +229,7 @@ http POST http://localhost:4444/identity/transaction fromID=alice.user.fuxi toID
 
 ## 2、数据标识 API
 
-### 2.1 注册数据标识	
+### 2.1 注册数据标识
 
 **说明**
 
@@ -313,8 +313,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ------ | ------------------------------------------------------------ |
 | 201    | 创建成功<br>无返回内容                                       |
 | 400    | 参数错误                                                     |
-| 401    | license 验证失败（apiKey验证失败）                           |
-| 403    | license 所在的 client 与身份标识所在的 client 不一致<br/>实际身份与验证的身份不同，没有权限申请订阅 |
+| 403    | 签名验证失败 |
 | 404    | 没有找到数据标识的拥有者                                     |
 | 500    | 创建数据标识失败                                             |
 
@@ -405,10 +404,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ------ | ------------------------------------------------------------ |
 | 201    | 验证成功<br>无返回内容                                       |
 | 400    | 参数错误                                                     |
-| 401    | license 验证失败（apiKey验证失败）                           |
-| 403    | license 所在的 client 与身份标识所在的 client 不一致<br/>实际身份与验证的身份不同，没有权限申请订阅 |
-| 404    | 没有找到数据标识的拥有者                                     |
-| 500    | 创建数据标识失败                                             |
+| 401    | 未授权                           |
+| 403    | 签名验证失败 |                                        |
 
 **示例**
 
@@ -423,7 +420,7 @@ http POST http://localhost:4444/subscriptions/authntication dataDomainID=data.al
 （1）使用`rsa`包生成公私钥，参数包括**随机源**（rand.Reader），以及**bit长度**（2048b）
 
 ```go
-privatekey, err := rsa.GenerateKey(rand.Reader, 2048)	
+privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
 publickey := &privatekey.PublicKey
 ```
 
@@ -455,7 +452,7 @@ tokenTransferRequest.Token = 10
 data, _ := json.Marshal(tokenTransferRequest)
 
 // 加上DIS_2020前缀
-data = byte[]("DIS_2020") + data 
+data = byte[]("DIS_2020") + data
 
 // 对内容进行Hash，采用SHA256方法
 hashed := sha256.Sum256(data)
