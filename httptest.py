@@ -17,24 +17,25 @@ def get_params(argv):
         params[arg.split("=")[0]] = arg.split("=")[1]
     params["sign"] = ""
 
-    data = json.dumps(params)
+    data = "DIS_2020"+json.dumps(params)
     hashdata = SHA1.new()
     hashdata.update(data.encode("utf8"))
 
     private_key = get_key('files/private.pem')
     signer = PKCS1_signature.new(private_key)
-    params["sign"] = signer.sign(hashdata)
+    params["sign"] = str(signer.sign(hashdata))
     print(params)
+    return json.dumps(params)
 
 
 if __name__ == '__main__':
     url = sys.argv[2]
-    resp = requests.Response
+    headers = {'content-type': "application/json"}
     if sys.argv[1] == "GET":
-        resp = requests.get(url)
+        resp = requests.get(url, headers=headers)
         print(resp)
         print(resp.text)
     if sys.argv[1] == "POST":
-        resp = requests.post(url, get_params(sys.argv[3:]))
+        resp = requests.post(url, data=get_params(sys.argv[3:]), headers=headers)
         print(resp)
         print(resp.text)

@@ -104,7 +104,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
 	verifyHash := hash.Sum(nil)
 
-	ctx := context.Background()
+	accessToken := fosite.AccessTokenFromRequest(r)
+	if accessToken == "" {
+		h.r.Writer().WriteError(w, r, errors.New(""))
+		return
+	}
+	ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
