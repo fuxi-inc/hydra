@@ -3,14 +3,15 @@ package sql
 import (
 	"context"
 	"encoding/json"
+	"strconv"
+
 	"github.com/gobuffalo/pop/v5"
-	"github.com/ory/hydra/.history/identifier"
 	"github.com/ory/hydra/authorization"
+	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
-	"strconv"
 
 	"go.uber.org/zap"
 )
