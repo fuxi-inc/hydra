@@ -49,7 +49,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
 	public.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
 
-	public.GET(AuthorizationHandlerPath+"/:id", h.Get)
+	//public.GET(AuthorizationHandlerPath+"/:id", h.Get)
 	//public.DELETE(AuthorizationHandlerPath+"/:id", h.Delete)
 	//public.PATCH(AuthorizationHandlerPath+"/:id", h.Audit)
 	//public.GET(AuthorizationHandlerPath, h.List)
@@ -196,6 +196,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	}
 
 	entity.init()
+	entity.Metadata["token"] = "1"
 
 	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
 	if err != nil {
