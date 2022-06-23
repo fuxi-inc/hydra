@@ -23,15 +23,22 @@ type IdentityPod struct {
 	Sign         string `json:"sign"`
 }
 
-type responseIdentity struct {
+type ResponseIdentity struct {
 	UserDomainID string `json:"userDomainID"`
 	PrivateKey   string `json:"privateKey"`
 	Token        string `json:"token"`
 }
 
-type responseIdentityToken struct {
+type ResponseIdentityToken struct {
 	UserDomainID string `json:"userDomainID"`
 	Token        string `json:"token"`
+}
+
+type tokenTrans struct {
+	FromID string `json:"fromUserDomainID"`
+	ToID   string `json:"toUserDomainID"`
+	Sign   string `json:"sign"`
+	Token  string `json:"token"`
 }
 
 func (entity *Identity) ToIdentityIdentifier(signature []byte) *api.IdentityIdentifier {
