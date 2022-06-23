@@ -7,7 +7,6 @@ import (
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/authorization"
-	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
@@ -45,13 +44,15 @@ func (p *Persister) CreateAuthorization(ctx context.Context, entity *authorizati
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 
-func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) error {
+func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) (*identity.Identity, error) {
 	identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
 	if err != nil {
-		return errorsx.WithStack(err)
+		return nil, errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	return nil
+	var cl identity.Identity
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
+	return &cl, err
 }
 
 func (p *Persister) CreateAuthorizationTokenTransfer(ctx context.Context, from *identity.Identity, to *identity.Identity) error {
@@ -125,12 +126,6 @@ func (p *Persister) GetAuthorizations(ctx context.Context, filters authorization
 	}
 
 	return totalCount, result, sqlcon.HandleError(query.All(&result))
-}
-
-func (p *Persister) GetAuthorizationData(ctx context.Context, id string) (*identifier.Identifier, error) {
-	var cl identifier.Identifier
-	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
-	return &cl, err
 }
 
 func (p *Persister) GetAuthorizationIdentity(ctx context.Context, id string) (*identity.Identity, error) {

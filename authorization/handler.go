@@ -111,7 +111,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 
 	ctx := context.Background()
 	//owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
-	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
@@ -194,7 +194,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.Type = Charged
 
 	ctx := context.Background()
-	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -284,17 +284,12 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	id := params.Identifier
 	subject := params.Recipient
 
+	authEntity := transform(&AuthorizationParams{Identifier: id, Owner: "", Recipient: subject, Sign: nil})
 	ctx := context.Background()
-	dataIdentifier, err := h.r.AuthorizationManager().GetAuthorizationData(ctx, subject)
+	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &authEntity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
-		return
-	}
-	owner, err := h.r.AuthorizationManager().GetAuthorizationIdentity(ctx, dataIdentifier.Owner)
-	if err != nil {
-		logger.Get().Infow("failed to get the owner identifier", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the owner identifier"))
 		return
 	}
 	signature := params.Sign
@@ -314,7 +309,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	//	return
 	//}
 	//recipientSignature := params.SignRecipient
-	//authParamsJson, err := transformAuthzParamstoJson(&AuthorizationParams{Identifier:id, Owner: dataIdentifier.Owner,Recipient: subject,Sign:nil})
+	//authParamsJson, err := transformAuthzParamstoJson(&AuthorizationParams{Identifier:id, Owner: owner.ID, Recipient: subject,Sign:nil})
 	//err = verifySignature(recipient, authParamsJson, recipientSignature)
 	//if err != nil{
 	//	logger.Get().Infow("failed to verify the signature of recipient", zap.Error(err))
