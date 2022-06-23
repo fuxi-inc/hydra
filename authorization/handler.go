@@ -111,7 +111,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 
 	ctx := context.Background()
 	//owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
-	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
@@ -194,7 +194,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.Type = Charged
 
 	ctx := context.Background()
-	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
