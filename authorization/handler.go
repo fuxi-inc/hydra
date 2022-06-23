@@ -49,7 +49,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
 	public.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
 
-	public.GET(AuthorizationHandlerPath+"/:id", h.Get)
+	//public.GET(AuthorizationHandlerPath+"/:id", h.Get)
 	//public.DELETE(AuthorizationHandlerPath+"/:id", h.Delete)
 	//public.PATCH(AuthorizationHandlerPath+"/:id", h.Audit)
 	//public.GET(AuthorizationHandlerPath, h.List)
@@ -196,12 +196,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	}
 
 	entity.init()
-
-	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
+	entity.Metadata["token"] = "1"
 
 	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Owner, entity.Recipient)
 	if err != nil {
@@ -219,6 +214,12 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	}
 
 	err = h.r.AuthorizationManager().CreateAuthorizationTokenTransfer(r.Context(), recipient, owner)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

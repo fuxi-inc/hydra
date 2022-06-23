@@ -69,7 +69,10 @@ func (p *Persister) CreateAuthorizationTokenTransfer(ctx context.Context, from *
 	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		return sqlcon.HandleError(c.Update(from))
 	})
-
+	if err != nil {
+		logger.Get().Warnw("failed to transfer recipient token", zap.Error(err), zap.Any("id", from))
+		return err
+	}
 	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		return sqlcon.HandleError(c.Update(to))
 	})
@@ -133,7 +136,7 @@ func (p *Persister) GetAuthorizationToken(ctx context.Context, from string, to s
 	}
 
 	var owner identity.Identity
-	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", from).First(&owner))
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", to).First(&owner))
 	if err != nil {
 		logger.Get().Warnw("failed to get owner identity", zap.Error(err), zap.Any("id", to))
 		return nil, nil, errorsx.WithStack(err)
