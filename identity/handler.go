@@ -168,7 +168,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	// }
 
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
-	err = h.r.IdentityManager().CreateIdentity(r.Context(), &entity, nil)
+	code, err := h.r.IdentityManager().CreateIdentity(r.Context(), &entity, nil)
+	if code == 429 {
+		h.r.Writer().WriteError(w, r, err)
+		w.WriteHeader(http.StatusTooManyRequests)
+	}
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

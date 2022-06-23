@@ -65,16 +65,16 @@ func (c *Client) Support(ctx context.Context, id string) bool {
 	return false
 }
 
-func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.IdentityIdentifier) (*api.IdentityIdentifier, error) {
+func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.IdentityIdentifier) (*api.IdentityIdentifier, int, error) {
 
 	client, err := c.constructEntropyServiceClient()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	client2 := c.constructAccountServiceClient()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// if !c.Support(ctx, entity.GetId()) {
@@ -89,7 +89,7 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		Mobile:       "xxx",
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	logger.Get().Infow("register user accont done", zap.Any("response", resp2))
 
@@ -104,15 +104,19 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 		//		Signature: entity.GetSignature(),
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	if resp.Result.StatusCode == 429 {
+		return nil, 429, errors.New(resp.Result.Message)
 	}
 
 	if resp.Result.StatusCode != 200 {
-		return nil, errors.New(resp.Result.Message)
+		return nil, 0, errors.New(resp.Result.Message)
 	}
 	logger.Get().Infow("create identity identifier", zap.Any("data", resp.Data))
 
-	return resp.Data, nil
+	return resp.Data, 0, nil
 }
 
 func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string) error {
