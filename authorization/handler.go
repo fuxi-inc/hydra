@@ -627,6 +627,11 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	logger.Get().Infow("get the signature from requests", zap.Any("signature", signature))
 	logger.Get().Infow("the signature in byte format", zap.Any("signature", []byte(signature)))
 
+	logger.Get().Infow("params[recipient]", zap.Any("params[recipient]", params.Recipient))
+	logger.Get().Infow("params[owner]", zap.Any("params[owner]", params.Owner))
+	logger.Get().Infow("params[identifier]", zap.Any("params[identifier]", params.Identifier))
+	logger.Get().Infow("params[sign]", zap.Any("params[sign]", params.Sign))
+
 	params.Sign = ""
 
 	paramsJson, err := json.Marshal(params)
@@ -634,11 +639,13 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
 		return err
 	}
+	logger.Get().Infow("params in json format", zap.Any("params", paramsJson))
+
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
 	logger.Get().Infow("params", zap.Any("params", paramsJson))
-	logger.Get().Infow("params after hash", zap.Any("hashdata", hashData))
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hashData))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
