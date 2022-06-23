@@ -51,6 +51,17 @@ func (p *Persister) CreateIdentityPod(ctx context.Context, domain string, addres
 	return nil
 }
 
+func (p *Persister) CreateTokenTrans(ctx context.Context, domain string, address string) error {
+	err := p.client.CreateIdentityPod(ctx, domain, address)
+	if err != nil {
+		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("domain", domain))
+		return errorsx.WithStack(err)
+	}
+	return nil
+}
+
+
+
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
 	err := p.client.DeleteIdentityIdentifier(ctx, id)
 	if err != nil {

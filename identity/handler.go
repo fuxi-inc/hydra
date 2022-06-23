@@ -6,8 +6,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ory/fosite"
@@ -29,6 +31,7 @@ const (
 	IdentityHandlerPath = "/identity"
 	PodHandlerPath      = "/pod"
 	TokenHandlerPath    = "/token"
+	TransHandlerPath    = "/transaction"
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -40,6 +43,7 @@ func NewHandler(r InternalRegistry) *Handler {
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(IdentityHandlerPath, h.Create)
 	public.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
+	public.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
 	// public.GET(IdentityHandlerPath+"/:id", h.Get)
 	public.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
 	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
@@ -91,7 +95,7 @@ type IdentityResp struct {
 //       500: jsonError
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity Identity
-	var responseEntity responseIdentity
+	var responseEntity ResponseIdentity
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -117,39 +121,39 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.PrivateKey = x509.MarshalPKCS1PrivateKey(privatekey)
 	entity.PublicKey = x509.MarshalPKCS1PublicKey(publickey)
 
-	// // 创建私钥pem文件
-	// file, err := os.Create("./files/private.pem")
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
-	// // 对私钥信息进行编码，写入到私钥文件中
-	// block := &pem.Block{
-	// 	Type:  "RSA PRIVATE KEY",
-	// 	Bytes: entity.PrivateKey,
-	// }
-	// err = pem.Encode(file, block)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	// 创建私钥pem文件
+	file, err := os.Create("./files/private.pem")
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	// 对私钥信息进行编码，写入到私钥文件中
+	block := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: entity.PrivateKey,
+	}
+	err = pem.Encode(file, block)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
-	// // 创建公钥pem文件
-	// file, err = os.Create("./files/public.pem")
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
-	// // 对公钥信息进行编码，写入公钥文件中
-	// block = &pem.Block{
-	// 	Type:  "PUBLIC KEY",
-	// 	Bytes: entity.PublicKey,
-	// }
-	// err = pem.Encode(file, block)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	// 创建公钥pem文件
+	file, err = os.Create("./files/public.pem")
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	// 对公钥信息进行编码，写入公钥文件中
+	block = &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: entity.PublicKey,
+	}
+	err = pem.Encode(file, block)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
 	// rng := rand.Reader
 
@@ -199,6 +203,50 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	}
 
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.UserDomainID, nil)
+}
+
+func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var entity tokenTrans
+
+	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+
+	if err := h.r.IdentityValidator().ValidateTokenTrans(&entity); err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	logger.Get().Infow("parse Token Transaction", zap.Any("TokenTrans", entity))
+
+	// fromToken, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.FromID)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
+
+	// toToken, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.ToID)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
+
+	// vFrom, _ := strconv.ParseFloat(fromToken, 64)
+	// v, _ := strconv.ParseFloat(entity.Token, 64)
+	// vTo, _ := strconv.ParseFloat(toToken, 64)
+
+	// if vFrom < v {
+	// 	h.r.Writer().WriteError(w, r, errors.New("Token is not enough"))
+	// }
+
+	// err := h.r.IdentityManager().CreateTokenTrans(r.Context(), entity.UserDomainID, entity.PodAddress)
+	// if err != nil {
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
+
+	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.FromID, nil)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -338,7 +386,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 func (h *Handler) GetToken(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var id = ps.ByName("id")
-	var entity responseIdentityToken
+	var entity ResponseIdentityToken
 
 	token, err := h.r.IdentityManager().GetIdentityToken(r.Context(), id)
 	if err != nil {
