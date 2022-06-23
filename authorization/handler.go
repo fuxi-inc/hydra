@@ -5,7 +5,6 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
@@ -635,7 +634,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
 		return err
 	}
-	hash := sha1.New()
+	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
 	logger.Get().Infow("params", zap.Any("params", paramsJson))
@@ -657,7 +656,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		return err
 	}
 
-	localsign, localSignErr := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, []byte(signature))
+	localsign, localSignErr := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hashData)
 	logger.Get().Infow("localSignErr", zap.Error(localSignErr))
 	logger.Get().Infow("localSign", zap.Any("localsign", localsign))
 	localerr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, localsign)
