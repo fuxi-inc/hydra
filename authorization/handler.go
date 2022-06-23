@@ -633,7 +633,13 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("base64 decode error")
 		return err
 	}
-	logger.Get().Infow("decoded signature", zap.Any("decoded_sign", decoded_sign))
+	logger.Get().Infow("decoded signature first", zap.Any("decoded_sign", decoded_sign))
+	decoded_sign, err = base64.StdEncoding.DecodeString(signature)
+	if err != nil {
+		logger.Get().Infow("base64 decode error")
+		return err
+	}
+	logger.Get().Infow("decoded signature second", zap.Any("decoded_sign", decoded_sign))
 
 	logger.Get().Infow("params[recipient]", zap.Any("params[recipient]", params.Recipient))
 	logger.Get().Infow("params[owner]", zap.Any("params[owner]", params.Owner))
