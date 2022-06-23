@@ -261,7 +261,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 //       404: jsonError
 //       500: jsonError
 func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var params AuthorizationParams
+	var params AuthenticationParams
 	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
@@ -269,7 +269,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 		return
 	}
 
-	if err := h.r.AuthorizationValidator().Validate(&params); err != nil {
+	if err := h.r.AuthorizationValidator().ValidateAuthenticationParam(&params); err != nil {
 		logger.Get().Infow("failed to validate authentication params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
