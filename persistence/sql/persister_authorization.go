@@ -136,7 +136,7 @@ func (p *Persister) GetAuthorizationToken(ctx context.Context, from string, to s
 	}
 
 	var owner identity.Identity
-	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", from).First(&owner))
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", to).First(&owner))
 	if err != nil {
 		logger.Get().Warnw("failed to get owner identity", zap.Error(err), zap.Any("id", to))
 		return nil, nil, errorsx.WithStack(err)

@@ -198,12 +198,6 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.init()
 	entity.Metadata["token"] = "1"
 
-	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-
 	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Owner, entity.Recipient)
 	if err != nil {
 		w.WriteHeader(http.StatusNoContent)
@@ -220,6 +214,12 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	}
 
 	err = h.r.AuthorizationManager().CreateAuthorizationTokenTransfer(r.Context(), recipient, owner)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
