@@ -141,7 +141,7 @@ func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address s
 	})
 	if err != nil || createDomainRRResp.Result.StatusCode == 404 {
 		logger.Get().Warnw("UserDomainID does not exist", zap.Error(err))
-		return 400, errors.New(createDomainRRResp.Result.Message)
+		return 404, errors.New(createDomainRRResp.Result.Message)
 	}
 
 	if err != nil || createDomainRRResp.Result.StatusCode != 200 {
