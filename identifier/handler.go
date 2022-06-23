@@ -36,7 +36,7 @@ func NewHandler(r InternalRegistry) *Handler {
 
 func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(IdentifierHandlerPath, h.Create)
-	public.GET(IdentifierHandlerPath+"/:id", h.Get)
+	// public.GET(IdentifierHandlerPath+"/:id", h.Get)
 	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
 	public.GET(IdentifierHandlerPath, h.List)
 	public.GET(IdentifierHandlerPath+AddressHandlerPath+"/:id", h.GetAddr)
