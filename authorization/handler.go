@@ -198,7 +198,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.init()
 	entity.Metadata["token"] = "1"
 
-	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Owner, entity.Recipient)
+	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Recipient, entity.Owner)
 	if err != nil {
 		w.WriteHeader(http.StatusNoContent)
 		return
