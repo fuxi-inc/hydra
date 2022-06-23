@@ -1,7 +1,6 @@
 import sys
 import json
 import requests
-import base64
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
 
@@ -11,7 +10,6 @@ def get_key(key_file):
   with open(key_file) as f:
     data = f.read()
     key = RSA.importKey(data)
-    print(data)
   return key
 
 def get_params(argv):
@@ -33,16 +31,7 @@ def get_params(argv):
 
   private_key = get_key('files/private30.pem')
   signer = PKCS1_signature.new(private_key)
-  params["sign"] = str(base64.b64encode(signer.sign(hashdata)), encoding="utf-8")
-  # params["sign"] = str(signer.sign(hashdata))
-  print(signer.sign(hashdata))
-  print(base64.b64encode(signer.sign(hashdata)))
-  print(params["sign"])
-  # public_key = get_key('files/public30.pem')
-  # verifier = PKCS1_signature.new(public_key)
-  # print(verifier.verify(hashdata, bytes(params["sign"])))
-
-  # print(verifier.verify(hashdata, base64.b64encode(params["sign"])))
+  params["sign"] = signer.sign(hashdata).hex()
 
   return json.dumps(params)
 
