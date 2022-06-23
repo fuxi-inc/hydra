@@ -119,6 +119,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	ctx := context.Background()
 
 	logger.Get().Infow("output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
+	logger.Get().Infow("output sign", zap.Any("action", sign))
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
