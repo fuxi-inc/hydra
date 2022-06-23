@@ -72,7 +72,7 @@ type AuthorizationParams struct {
 	Recipient  string `json:"viewUserDomainID"`
 	Owner      string `json:"userDomainID"`
 	Identifier string `json:"dataDomainID"`
-	Sign       string `json:"Sign"`
+	Sign       string `json:"sign"`
 }
 
 func (Authorization) TableName() string {
