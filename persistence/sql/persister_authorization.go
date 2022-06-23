@@ -69,7 +69,10 @@ func (p *Persister) CreateAuthorizationTokenTransfer(ctx context.Context, from *
 	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		return sqlcon.HandleError(c.Update(from))
 	})
-
+	if err != nil {
+		logger.Get().Warnw("failed to transfer recipient token", zap.Error(err), zap.Any("id", from))
+		return err
+	}
 	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		return sqlcon.HandleError(c.Update(to))
 	})
