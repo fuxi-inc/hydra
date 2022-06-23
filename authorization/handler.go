@@ -634,13 +634,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("base64 decode error")
 		return err
 	}
-	logger.Get().Infow("decoded signature first", zap.Any("decoded_sign", decoded_sign))
-	decoded_sign, err = base64.StdEncoding.DecodeString(signature)
-	if err != nil {
-		logger.Get().Infow("base64 decode error")
-		return err
-	}
-	logger.Get().Infow("decoded signature second", zap.Any("decoded_sign", decoded_sign))
+	logger.Get().Infow("decoded signature", zap.Any("decoded_sign", decoded_sign))
 
 	logger.Get().Infow("params[recipient]", zap.Any("params[recipient]", params.Recipient))
 	logger.Get().Infow("params[owner]", zap.Any("params[owner]", params.Owner))
@@ -657,8 +651,8 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
 
 	hash := crypto.SHA1.New()
-	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
-	hashData := hash.Sum([]byte("DIS_2020" + string(paramsJson)))
+	hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	hashData := hash.Sum(nil)
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
