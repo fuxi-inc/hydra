@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 
+	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
@@ -12,13 +13,14 @@ import (
 )
 
 func (p *Persister) GetIdentity(ctx context.Context, id string) (*identity.Identity, error) {
-	source, err := p.client.GetIdentityIdentifier(ctx, id)
-	//logger.Get().Infow("get identity", zap.Error(err), zap.Any("data identity", source))
+	var cl identity.Identity
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
 	if err != nil {
-		return nil, err
-	} else {
-		return identity.FromIdentityIdentifier(source), nil
+		logger.Get().Warnw("failed to get identity token", zap.Error(err), zap.Any("id", id))
+		return nil, errorsx.WithStack(err)
 	}
+
+	return &cl, nil
 }
 
 func (p *Persister) GetIdentityToken(ctx context.Context, id string) (string, error) {
@@ -30,6 +32,15 @@ func (p *Persister) GetIdentityToken(ctx context.Context, id string) (string, er
 	}
 
 	return cl.Email, nil
+}
+
+func (p *Persister) UpdateIdentityToken(ctx context.Context, entity *identity.Identity) error {
+	// Change database record's status
+	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+		return sqlcon.HandleError(c.Update(entity))
+	})
+
+	return err
 }
 
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity, signature []byte) error {
@@ -59,8 +70,6 @@ func (p *Persister) CreateTokenTrans(ctx context.Context, domain string, address
 	}
 	return nil
 }
-
-
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
 	err := p.client.DeleteIdentityIdentifier(ctx, id)

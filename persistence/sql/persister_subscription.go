@@ -49,7 +49,7 @@ func (p *Persister) AuditSubscription(ctx context.Context, entity *subscription.
 	rrId, err := p.client.CreateSubscriptionRecord(ctx, entity.Requestor, entity.Identifier, signature)
 	if err != nil {
 		return err
-	}
+	}	
 	entity.Metadata["relatedDomainResourceRecordId"] = rrId
 	// Change database record's status
 	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
