@@ -655,6 +655,11 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	hashData := hash.Sum(nil)
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
+	testHash := crypto.SHA1.New()
+	testHash.Write([]byte("DIS_2020"))
+	testHashData := testHash.Sum(nil)
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(testHashData)))
+
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	logger.Get().Infow("public key after parse", zap.Any("publickey", publicKey))
