@@ -19,5 +19,5 @@ type Storage interface {
 
 	VerifySignature(ctx context.Context, userID string, sign []byte, hash []byte) error
 
-	GetIdentifierAddr(ctx context.Context, id string) (string, error)
+	// GetIdentifierAddr(ctx context.Context, id string) (string, error)
 }
