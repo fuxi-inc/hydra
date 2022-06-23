@@ -3,6 +3,7 @@ package authorization
 import (
 	"context"
 	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
@@ -637,16 +638,30 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	hash := sha1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
+	logger.Get().Infow("params", zap.Any("params", paramsJson))
 	logger.Get().Infow("params after hash", zap.Any("hashdata", hashData))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	logger.Get().Infow("public key after parse", zap.Any("publickey", publicKey))
-
 	if err != nil {
 		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
 		return err
 	}
+
+	logger.Get().Infow("private key get from database", zap.Any("privateKey", owner.PrivateKey))
+	privateKey, err := x509.ParsePKCS1PrivateKey(owner.PrivateKey)
+	logger.Get().Infow("private key after parse", zap.Any("privateKey", privateKey))
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		return err
+	}
+
+	localsign, localSignErr := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, []byte(signature))
+	logger.Get().Infow("localSignErr", zap.Error(localSignErr))
+	logger.Get().Infow("localSign", zap.Any("localsign", localsign))
+	localerr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, localsign)
+	logger.Get().Infow("local sign verify result", zap.Error(localerr))
 
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, []byte(signature))
 
