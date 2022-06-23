@@ -268,6 +268,40 @@ Json参数，以 Json 的格式放在请求体Body中。
 http POST localhost:4444/identifier fileID=data owner=alice.user.fuxi dataAddress="https://example/data/" dataDigest="abc" sign="xxx"
 ```
 
+### 2.2 获取数据地址
+
+**说明**
+
+面向POD宝，接收数据标识，返回数据地址
+
+（后续需要测试多个POD时，POD宝需要根据数据标识动态查询数据地址，而不是到某个固定POD根据数据标识检索）
+
+**请求路径**
+
+`GET`
+
+```
+/identity/{dataID}/address
+```
+
+**请求参数**
+
+| 参数名       | 类型   | 必填 | 说明                                      | 格式            |
+| ------------ | ------ | ---- | ----------------------------------------- | --------------- |
+| dataID | string | 是   | Path参数；<br>数据标识，要以pod.fuxi结尾 | fileID.alice.pod.fuxi |
+
+**响应结果**
+
+| 响应码 | 说明                                            |
+| ------ | ----------------------------------------------- |
+| 200    | 查询成功；<br>返回内容为数据地址 |
+| 500    | 查询失败                                        |
+
+**示例**
+
+```powershell
+http GET http://localhost:4444/identifier/0090cc61-9434-3d95-b436-1f4bb2363e51.alice30.pod.fuxi/address
+```
 
 
 ## 3、授权 API
