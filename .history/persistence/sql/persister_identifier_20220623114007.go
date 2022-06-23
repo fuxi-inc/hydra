@@ -133,17 +133,17 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 
 	// signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hash)
 
-	// err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, signature)
-	// if err != nil {
-	// 	logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
-	// 	return err
-	// }
-	// return nil
-
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
 	if err != nil {
 		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
 		return err
 	}
 	return nil
+
+	// err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
+	// if err != nil {
+	// 	logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
+	// 	return err
+	// }
+	// return nil
 }

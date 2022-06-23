@@ -10,6 +10,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/ory/fosite"
@@ -202,7 +203,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.UserDomainID, nil)
+	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+PodHandlerPath+"/"+entity.UserDomainID, nil)
 }
 
 func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -220,33 +221,54 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 
 	logger.Get().Infow("parse Token Transaction", zap.Any("TokenTrans", entity))
 
-	// fromToken, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.FromID)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	entityFrom, err := h.r.IdentityManager().GetIdentity(r.Context(), entity.FromID)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	entityTo, err := h.r.IdentityManager().GetIdentity(r.Context(), entity.ToID)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
-	// _, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.ToID)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	if entityFrom == nil || entityTo == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 
-	// vFrom, _ := strconv.ParseFloat(fromToken, 64)
-	// v, _ := strconv.ParseFloat(entity.Token, 64)
-	// vTo, _ := strconv.ParseFloat(toToken, 64)
+	if entityFrom.Email == "" || entityTo.Email == "" {
+		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))
+		return
+	}
 
-	// if vFrom < v {
-	// 	h.r.Writer().WriteError(w, r, errors.New("Token is not enough"))
-	// }
+	vFrom, _ := strconv.ParseFloat(entityFrom.Email, 64)
+	v, _ := strconv.ParseFloat(entity.Token, 64)
+	vTo, _ := strconv.ParseFloat(entityTo.Email, 64)
 
-	// err := h.r.IdentityManager().CreateTokenTrans(r.Context(), entity.UserDomainID, entity.PodAddress)
-	// if err != nil {
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	if vFrom < v {
+		h.r.Writer().WriteError(w, r, errors.New("Token is not enough"))
+		return
+	}
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.FromID, nil)
+	stringFrom := strconv.FormatFloat(vFrom-v, 'E', -1, 64)
+	entityFrom.Email = stringFrom
+
+	stringTo := strconv.FormatFloat(vTo+v, 'E', -1, 64)
+	entityTo.Email = stringTo
+
+	err = h.r.IdentityManager().UpdateIdentityToken(r.Context(), entityFrom)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+	err = h.r.IdentityManager().UpdateIdentityToken(r.Context(), entityTo)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+TransHandlerPath, nil)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"strings"
@@ -124,26 +125,26 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 		return err
 	}
 
-	// privateKey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
+	privateKey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
 
-	// if err != nil {
-	// 	logger.Get().Infow("failed to ParsePKCS1PrivateKey", zap.Error(err))
-	// 	return err
-	// }
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKCS1PrivateKey", zap.Error(err))
+		return err
+	}
 
-	// signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hash)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hash)
 
-	// err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, signature)
-	// if err != nil {
-	// 	logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
-	// 	return err
-	// }
-	// return nil
-
-	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
 		return err
 	}
 	return nil
+
+	// err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
+	// if err != nil {
+	// 	logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
+	// 	return err
+	// }
+	// return nil
 }

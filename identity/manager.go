@@ -13,6 +13,8 @@ type Storage interface {
 
 	GetIdentityToken(ctx context.Context, id string) (string, error)
 
+	UpdateIdentityToken(ctx context.Context, entity *Identity) error
+
 	CreateIdentity(ctx context.Context, entity *Identity, signature []byte) error
 
 	CreateIdentityPod(ctx context.Context, domain string, address string) error
