@@ -46,7 +46,7 @@ func (p *Persister) UpdateIdentityToken(ctx context.Context, entity *identity.Id
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity, signature []byte) (int, error) {
 	_, code, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier(signature))
 	if err != nil {
-		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity))
+		logger.Get().Warnw("failed to create identity identifier", zap.Error(err), zap.Any("entity", entity), zap.Any("code", code))
 		return code, errorsx.WithStack(err)
 	}
 
