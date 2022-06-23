@@ -201,7 +201,12 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	logger.Get().Infow("parse register pod", zap.Any("IdentityPod", entity))
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
-	err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
+	code, err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
+	if code == 404 {
+		h.r.Writer().WriteErrorCode(w, r, 204, err)
+		return
+	}
+
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
@@ -236,10 +241,10 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 		return
 	}
 
-	if entityFrom == nil || entityTo == nil {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
+	// if entityFrom == nil || entityTo == nil {
+	// 	w.WriteHeader(http.StatusNoContent)
+	// 	return
+	// }
 
 	if entityFrom.Email == "" || entityTo.Email == "" {
 		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))

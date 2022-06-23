@@ -53,22 +53,13 @@ func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identit
 	return 0, sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 
-func (p *Persister) CreateIdentityPod(ctx context.Context, domain string, address string) error {
-	err := p.client.CreateIdentityPod(ctx, domain, address)
+func (p *Persister) CreateIdentityPod(ctx context.Context, domain string, address string) (int, error) {
+	code, err := p.client.CreateIdentityPod(ctx, domain, address)
 	if err != nil {
 		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("domain", domain))
-		return errorsx.WithStack(err)
+		return code, errorsx.WithStack(err)
 	}
-	return nil
-}
-
-func (p *Persister) CreateTokenTrans(ctx context.Context, domain string, address string) error {
-	err := p.client.CreateIdentityPod(ctx, domain, address)
-	if err != nil {
-		logger.Get().Warnw("failed to register identity pod", zap.Error(err), zap.Any("domain", domain))
-		return errorsx.WithStack(err)
-	}
-	return nil
+	return code, nil
 }
 
 func (p *Persister) DeleteIdentity(ctx context.Context, id string) error {
