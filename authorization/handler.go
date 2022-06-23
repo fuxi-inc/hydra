@@ -721,6 +721,7 @@ func verifySignature(owner *identity.Identity, paramsJson []byte, signature []by
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	if err != nil {
