@@ -127,6 +127,17 @@ func (p *Persister) GetAuthorizations(ctx context.Context, filters authorization
 	return totalCount, result, sqlcon.HandleError(query.All(&result))
 }
 
+func (p *Persister) GetAuthorizationRecipient(ctx context.Context, entity *authorization.Authorization) (bool, error) {
+	identity, err := p.client.GetIdentityIdentifier(ctx, entity.Recipient)
+	if err != nil {
+		return false, errorsx.WithStack(err)
+	}
+	if identity == nil {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (p *Persister) GetAuthorizationToken(ctx context.Context, from string, to string) (*identity.Identity, *identity.Identity, error) {
 	var recipient identity.Identity
 	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", from).First(&recipient))

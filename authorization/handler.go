@@ -116,9 +116,17 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	//owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
-		logger.Get().Infow("failed to get the data owner", zap.Error(err))
+		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
+		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
+		//w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	isRecipientExist, err := h.r.AuthorizationManager().GetAuthorizationRecipient(ctx, &entity)
+	if err != nil || !isRecipientExist {
+		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
 		//h.r.Writer().WriteError(w, r, err)
-		w.WriteHeader(http.StatusNotFound)
+		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the viewUserDomain"))
 		return
 	}
 
