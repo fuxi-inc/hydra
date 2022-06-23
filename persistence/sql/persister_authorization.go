@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gobuffalo/pop/v5"
+	"github.com/ory/hydra/.history/identifier"
 	"github.com/ory/hydra/authorization"
 	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
@@ -43,15 +44,13 @@ func (p *Persister) CreateAuthorization(ctx context.Context, entity *authorizati
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 
-func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) (*identity.Identity, error) {
+func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) error {
 	identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
 	if err != nil {
-		return nil, errorsx.WithStack(err)
+		return errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	var cl identity.Identity
-	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", "alice30.user.fuxi").First(&cl))
-	return &cl, err
+	return nil
 }
 
 func (p *Persister) CreateAuthorizationTokenTransfer(ctx context.Context, from *identity.Identity, to *identity.Identity) error {
@@ -127,15 +126,16 @@ func (p *Persister) GetAuthorizations(ctx context.Context, filters authorization
 	return totalCount, result, sqlcon.HandleError(query.All(&result))
 }
 
-func (p *Persister) GetAuthorizationRecipient(ctx context.Context, entity *authorization.Authorization) (bool, error) {
-	identity, err := p.client.GetIdentityIdentifier(ctx, entity.Recipient)
-	if err != nil {
-		return false, errorsx.WithStack(err)
-	}
-	if identity == nil {
-		return false, nil
-	}
-	return true, nil
+func (p *Persister) GetAuthorizationData(ctx context.Context, id string) (*identifier.Identifier, error) {
+	var cl identifier.Identifier
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
+	return &cl, err
+}
+
+func (p *Persister) GetAuthorizationIdentity(ctx context.Context, id string) (*identity.Identity, error) {
+	var cl identity.Identity
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", id).First(&cl))
+	return &cl, err
 }
 
 func (p *Persister) GetAuthorizationToken(ctx context.Context, from string, to string) (*identity.Identity, *identity.Identity, error) {

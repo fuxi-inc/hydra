@@ -2,6 +2,7 @@ package authorization
 
 import (
 	"context"
+	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
 )
 
@@ -17,6 +18,7 @@ type Storage interface {
 	AuditAuthorization(ctx context.Context, entity *Authorization, audit *ApproveResult) error
 	DeleteAuthorization(ctx context.Context, id string, subject string) error
 	GetAuthorizations(ctx context.Context, filters Filter) (int, []Authorization, error)
-	GetAuthorizationRecipient(ctx context.Context, entity *Authorization) (bool, error)
+	GetAuthorizationData(ctx context.Context, id string) (*identifier.Identifier, error)
+	GetAuthorizationIdentity(ctx context.Context, id string) (*identity.Identity, error)
 	GetAuthorizationToken(ctx context.Context, from string, to string) (*identity.Identity, *identity.Identity, error)
 }
