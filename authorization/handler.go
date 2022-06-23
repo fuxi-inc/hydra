@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"github.com/ory/hydra/identity"
@@ -292,7 +293,12 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
 		return
 	}
-	signature := params.Sign
+	signature, err := hex.DecodeString(params.Sign)
+	if err != nil {
+		logger.Get().Infow("decode signature error", zap.Error(err))
+		return
+	}
+	logger.Get().Infow("signature", zap.Any("signature", signature))
 	paramsJson, err := transformAuthnParamstoJson(&params)
 	err = verifySignature(owner, paramsJson, signature)
 	if err != nil {
@@ -700,7 +706,7 @@ func transformAuthzParamstoJson(params *AuthorizationParams) ([]byte, error) {
 }
 
 func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
-	params.Sign = nil
+	params.Sign = ""
 
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
@@ -718,7 +724,7 @@ func verifySignature(owner *identity.Identity, paramsJson []byte, signature []by
 
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	if err != nil {
-		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		logger.Get().Infow("failed to ParsePKCS1PublicKey", zap.Error(err))
 		return err
 	}
 
