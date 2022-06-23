@@ -11,6 +11,7 @@ def get_key(key_file):
   with open(key_file) as f:
     data = f.read()
     key = RSA.importKey(data)
+    print(data)
   return key
 
 def get_params(argv):
