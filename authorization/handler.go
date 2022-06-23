@@ -657,7 +657,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 
 	testHash := crypto.SHA1.New()
 	testHash.Write([]byte("DIS_2020"))
-	testHashData := hash.Sum(nil)
+	testHashData := testHash.Sum(nil)
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(testHashData)))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
