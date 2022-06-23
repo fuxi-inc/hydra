@@ -3,6 +3,7 @@ package identifier
 import (
 	"context"
 	"crypto"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -112,13 +113,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", string(marshalJsonTrans)))
 
 	hash := crypto.SHA1.New()
-	// hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
-	hash.Write([]byte("weijiuqi"))
+	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
 	verifyHash := hash.Sum(nil)
 
 	ctx := context.Background()
 
-	logger.Get().Infow("output hash", zap.Any("action", verifyHash))
+	logger.Get().Infow("output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
