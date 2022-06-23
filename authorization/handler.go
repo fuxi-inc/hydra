@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"github.com/ory/hydra/identity"
@@ -657,7 +658,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
-	logger.Get().Infow("params  after hash", zap.Any("hashdata", hashData))
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
