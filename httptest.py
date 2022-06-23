@@ -23,12 +23,12 @@ def get_params(argv):
     hashdata = SHA1.new()
     hashdata.update(data.encode("utf8"))
 
-    private_key = get_key('files/private.pem')
+    private_key = get_key('files/private30.pem')
     signer = PKCS1_signature.new(private_key)
     # params["sign"] = base64.b64encode(signer.sign(hashdata))
     params["sign"] = str(signer.sign(hashdata))
 
-    public_key = get_key('files/public.pem')
+    public_key = get_key('files/public30.pem')
     verifier = PKCS1_signature.new(public_key)
     print(verifier.verify(hashdata, params["sign"]))
 

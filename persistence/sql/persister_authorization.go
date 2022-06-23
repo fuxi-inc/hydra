@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/authorization"
+	"github.com/ory/hydra/identity"
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
@@ -41,13 +42,15 @@ func (p *Persister) CreateAuthorization(ctx context.Context, entity *authorizati
 	return sqlcon.HandleError(p.Connection(ctx).Create(entity))
 }
 
-func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) error {
+func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *authorization.Authorization) (*identity.Identity, error) {
 	identifier, err := p.client.GetDataIdentifier(ctx, entity.Identifier)
 	if err != nil {
-		return errorsx.WithStack(err)
+		return nil, errorsx.WithStack(err)
 	}
 	entity.Owner = identifier.Owner
-	return err
+	var cl identity.Identity
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", entity.Owner).First(&cl))
+	return &cl, err
 }
 
 func (p *Persister) DeleteAuthorization(ctx context.Context, id string, subject string) error {
