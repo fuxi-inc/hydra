@@ -251,10 +251,10 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 		return
 	}
 
-	stringFrom := strconv.FormatFloat(vFrom-v, 'E', -1, 64)
+	stringFrom := strconv.FormatFloat(vFrom-v, 'f', 2, 64)
 	entityFrom.Email = stringFrom
 
-	stringTo := strconv.FormatFloat(vTo+v, 'E', -1, 64)
+	stringTo := strconv.FormatFloat(vTo+v, 'f', 2, 64)
 	entityTo.Email = stringTo
 
 	err = h.r.IdentityManager().UpdateIdentityToken(r.Context(), entityFrom)
