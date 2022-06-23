@@ -101,7 +101,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 
 	sign := jsonTrans.Sign
-	jsonTrans.Sign = ""
+	jsonTrans.Sign = nil
 
 	marshalJsonTrans, err := json.Marshal(jsonTrans)
 	if err != nil {
@@ -113,7 +113,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", string(marshalJsonTrans)))
 
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	// hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	hash.Write(marshalJsonTrans)
 	verifyHash := hash.Sum(nil)
 
 	ctx := context.Background()
@@ -133,7 +134,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.Name = "fuxi"
 	entity.Owner = jsonTrans.UserID
 	entity.DataAddress = jsonTrans.DataAddress
-	entity.DataDigest = jsonTrans.DataDigest
+	entity.DataDigest = string(jsonTrans.DataDigest)
 	entity.DataSignature = []byte("test")
 	entity.AuthAddress = "http://localhost:4444"
 	var dict = map[string]string{

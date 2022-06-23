@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"strings"
-	"unsafe"
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
@@ -108,7 +107,7 @@ func (p *Persister) GetIdentifiers(ctx context.Context, filters identifier.Filte
 	return result, nil
 }
 
-func (p *Persister) VerifySignature(ctx context.Context, userID string, sign string, hash []byte) error {
+func (p *Persister) VerifySignature(ctx context.Context, userID string, sign []byte, hash []byte) error {
 	var cl identity.Identity
 	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", userID).First(&cl))
 	if err != nil {
@@ -141,7 +140,7 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 	// }
 	// return nil
 
-	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, *(*[]byte)(unsafe.Pointer(&sign)))
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, sign)
 	if err != nil {
 		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
 		return err

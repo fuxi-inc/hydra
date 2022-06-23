@@ -23,8 +23,8 @@ type JSONTrans struct {
 	DataID      string `json:"dataID"`
 	UserID      string `json:"userID"`
 	DataAddress string `json:"dataAddress"`
-	DataDigest  string `json:"dataDigest"`
-	Sign        string `json:"sign"`
+	DataDigest  []byte `json:"dataDigest"`
+	Sign        []byte `json:"sign"`
 }
 
 func (entity *Identifier) ToDataIdentifier() *api.DataIdentifier {
