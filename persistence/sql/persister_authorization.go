@@ -9,6 +9,7 @@ import (
 	"github.com/ory/hydra/internal/logger"
 	"github.com/ory/x/errorsx"
 	"github.com/ory/x/sqlcon"
+	"strconv"
 
 	"go.uber.org/zap"
 )
@@ -51,6 +52,29 @@ func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *author
 	var cl identity.Identity
 	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", "alice30.user.fuxi").First(&cl))
 	return &cl, err
+}
+
+func (p *Persister) CreateAuthorizationTokenTransfer(ctx context.Context, from *identity.Identity, to *identity.Identity) error {
+	vFrom, _ := strconv.ParseFloat(from.Email, 64)
+	//v, _ := strconv.ParseFloat(entity.Token, 64)
+	v, _ := strconv.ParseFloat("1", 64)
+	vTo, _ := strconv.ParseFloat(to.Email, 64)
+
+	stringFrom := strconv.FormatFloat(vFrom-v, 'f', 2, 64)
+	from.Email = stringFrom
+
+	stringTo := strconv.FormatFloat(vTo+v, 'f', 2, 64)
+	to.Email = stringTo
+
+	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+		return sqlcon.HandleError(c.Update(from))
+	})
+
+	err = p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
+		return sqlcon.HandleError(c.Update(to))
+	})
+
+	return err
 }
 
 func (p *Persister) DeleteAuthorization(ctx context.Context, id string, subject string) error {
@@ -98,4 +122,22 @@ func (p *Persister) GetAuthorizations(ctx context.Context, filters authorization
 	}
 
 	return totalCount, result, sqlcon.HandleError(query.All(&result))
+}
+
+func (p *Persister) GetAuthorizationToken(ctx context.Context, from string, to string) (*identity.Identity, *identity.Identity, error) {
+	var recipient identity.Identity
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", from).First(&recipient))
+	if err != nil {
+		logger.Get().Warnw("failed to get recipient identity", zap.Error(err), zap.Any("id", from))
+		return nil, nil, errorsx.WithStack(err)
+	}
+
+	var owner identity.Identity
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", from).First(&owner))
+	if err != nil {
+		logger.Get().Warnw("failed to get owner identity", zap.Error(err), zap.Any("id", to))
+		return nil, nil, errorsx.WithStack(err)
+	}
+
+	return &recipient, &owner, nil
 }
