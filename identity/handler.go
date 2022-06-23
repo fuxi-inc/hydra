@@ -203,7 +203,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	code, err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
 	if code == 404 {
-		h.r.Writer().WriteErrorCode(w, r, 204, err)
+		h.r.Writer().WriteErrorCode(w, r, 404, err)
 		return
 	}
 

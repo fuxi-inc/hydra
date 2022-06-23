@@ -71,8 +71,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ------ | ------------------------------------------------- |
 | 201    | 注册成功；<br>返回内容为 CreateIdentity，如下所示 |
 | 400    | 参数错误                                          |
-| 429    | 创建失败，该身份标识在domain中已存在              |
-| 500    | 创建失败                                          |
+| 429    | UserID已存在              |
+| 500    | 其他错误                                      |
 
 ```json
 CreateIdentity {
@@ -121,10 +121,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 响应码 | 说明                                 |
 | ------ | ------------------------------------ |
 | 201    | 注册成功；<br>无返回内容             |
-| 400    | 参数错误                             |
-| 401    | license 验证失败（apiKey验证失败）   |
-| 429    | 创建失败，该身份标识在domain中已存在 |
-| 500    | 创建失败                             |
+| 404    | 用户标识不存在 |
+| 500    | 其他错误                             |
 
 **示例**
 
@@ -140,7 +138,7 @@ http POST http://localhost:4444/identity/pod userDomainID=alice.user.fuxi podAdd
 
 面向POD宝，接收用户标识、私钥签名，返回账户token余额
 
-（只需要调用hydra逻辑即可，token值存在hydra中的identity_identifier表中）
+（只需要调用hydra逻辑即可，token值存在hydra中的identity_identifier表的email字段中）
 
 **请求路径**
 
@@ -162,10 +160,7 @@ http POST http://localhost:4444/identity/pod userDomainID=alice.user.fuxi podAdd
 | 响应码 | 说明                                            |
 | ------ | ----------------------------------------------- |
 | 200    | 查询成功；<br>返回内容为IdentityToken，如下所示 |
-| 400    | 参数错误                                        |
-| 401    | license 验证失败（apiKey验证失败）              |
-| 429    | 创建失败，该身份标识在domain中已存在            |
-| 500    | 创建失败                                        |
+| 500    | 查询失败                                        |
 
 ```json
 IdentityToken {
@@ -214,10 +209,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 响应码 | 说明                                 |
 | ------ | ------------------------------------ |
 | 201    | 转账成功；<br>无返回内容             |
-| 400    | 参数错误                             |
-| 401    | license 验证失败（apiKey验证失败）   |
-| 429    | 创建失败，该身份标识在domain中已存在 |
-| 500    | 创建失败                             |
+| 500    | 转账失败                             |
 
 **示例**
 

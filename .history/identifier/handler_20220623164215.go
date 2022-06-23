@@ -39,7 +39,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.GET(IdentifierHandlerPath+"/:id", h.Get)
 	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
 	public.GET(IdentifierHandlerPath, h.List)
-	public.GET(IdentifierHandlerPath+"/:id"+AddressHandlerPath, h.GetAddr)
+	// public.GET(IdentifierHandlerPath+AddressHandlerPath+"/:id", h.GetAddr)
 }
 
 // the data identifier information
@@ -342,20 +342,19 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) GetAddr(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var id = ps.ByName("id")
+// func (h *Handler) GetAddr(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// 	var id = ps.ByName("id")
 
-	ctx := context.Background()
+// 	ctx := context.Background()
+// 	addr, err := h.r.IdentifierManager().GetIdentifierAddr(ctx, id)
+// 	if err != nil {
+// 		h.r.Writer().WriteError(w, r, err)
+// 		return
+// 	}
+// 	if entity == nil {
+// 		w.WriteHeader(http.StatusNoContent)
+// 		return
+// 	}
 
-	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
-	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	if entity == nil {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	h.r.Writer().Write(w, r, entity.DataAddress)
-}
+// 	h.r.Writer().Write(w, r, entity)
+// }
