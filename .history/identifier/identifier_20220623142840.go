@@ -23,7 +23,7 @@ type JSONTrans struct {
 	DataID      string `json:"dataID"`
 	UserID      string `json:"userID"`
 	DataAddress string `json:"dataAddress"`
-	DataDigest  []byte `json:"dataDigest"`
+	DataDigest  string `json:"dataDigest"`
 	Sign        []byte `json:"sign"`
 }
 

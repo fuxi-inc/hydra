@@ -88,11 +88,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
 
 	if err := h.r.IdentifierValidator().Validate(&jsonTrans); err != nil {
 		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
@@ -101,7 +101,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 
 	sign := jsonTrans.Sign
-	jsonTrans.Sign = nil
+	jsonTrans.Sign = ""
 
 	marshalJsonTrans, err := json.Marshal(jsonTrans)
 	if err != nil {
@@ -118,10 +118,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	ctx := context.Background()
 
-	// logger.Get().Infow("output hash", zap.Any("action", verifyHash))
-	// logger.Get().Infow("output sign", zap.Any("action", sign))
-	// logger.Get().Infow("EncodeToString output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
-	// logger.Get().Infow("EncodeToString output sign", zap.Any("action", hex.EncodeToString(sign)))
+	logger.Get().Infow("output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
+	logger.Get().Infow("output sign", zap.Any("action", sign))
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 
@@ -135,7 +133,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.Name = "fuxi"
 	entity.Owner = jsonTrans.UserID
 	entity.DataAddress = jsonTrans.DataAddress
-	entity.DataDigest = hex.EncodeToString(jsonTrans.DataDigest)
+	entity.DataDigest = jsonTrans.DataDigest
 	entity.DataSignature = []byte("test")
 	entity.AuthAddress = "http://localhost:4444"
 	var dict = map[string]string{

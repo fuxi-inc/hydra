@@ -88,11 +88,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
-	// logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.UserID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataID))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataAddress))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.DataDigest))
+	logger.Get().Infow("output jsonTrans", zap.Any("action", jsonTrans.Sign))
 
 	if err := h.r.IdentifierValidator().Validate(&jsonTrans); err != nil {
 		logger.Get().Infow("failed to validate authorization params", zap.Error(err))
@@ -113,15 +113,16 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", string(marshalJsonTrans)))
 
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	// hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	hash.Write(marshalJsonTrans)
 	verifyHash := hash.Sum(nil)
 
 	ctx := context.Background()
 
-	// logger.Get().Infow("output hash", zap.Any("action", verifyHash))
-	// logger.Get().Infow("output sign", zap.Any("action", sign))
-	// logger.Get().Infow("EncodeToString output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
-	// logger.Get().Infow("EncodeToString output sign", zap.Any("action", hex.EncodeToString(sign)))
+	logger.Get().Infow("output hash", zap.Any("action", verifyHash))
+	logger.Get().Infow("output sign", zap.Any("action", sign))
+	logger.Get().Infow("EncodeToString output hash", zap.Any("action", hex.EncodeToString(verifyHash)))
+	logger.Get().Infow("EncodeToString output sign", zap.Any("action", hex.EncodeToString(sign)))
 
 	err = h.r.IdentifierManager().VerifySignature(ctx, jsonTrans.UserID, sign, verifyHash)
 

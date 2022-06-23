@@ -15,7 +15,7 @@ type Storage interface {
 
 	UpdateIdentityToken(ctx context.Context, entity *Identity) error
 
-	CreateIdentity(ctx context.Context, entity *Identity, signature []byte) error
+	CreateIdentity(ctx context.Context, entity *Identity, signature []byte) (int, error)
 
 	CreateIdentityPod(ctx context.Context, domain string, address string) error
 
