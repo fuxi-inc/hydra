@@ -10,7 +10,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/ory/hydra/identity"
 	"net/http"
 	"strings"
@@ -649,11 +648,13 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	logger.Get().Infow("params[sign]", zap.Any("params[sign]", params.Sign))
 
 	params.Sign = ""
+
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
-		fmt.Sprintf("params json: %s", paramsJson)
+		logger.Get().Infow("failed to marshal params to json", zap.Any("paramsJson", paramsJson))
 		return err
 	}
+	logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
 
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
