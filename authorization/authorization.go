@@ -75,6 +75,13 @@ type AuthorizationParams struct {
 	Sign       string `json:"sign"`
 }
 
+type AuthenticationParams struct {
+	Identifier    string `json:"dataDomainID"`
+	Recipient     string `json:"viewUserDomainID"`
+	SignRecipient string `json:"sign"`
+	Sign          string `json:"signPod"`
+}
+
 func (Authorization) TableName() string {
 	return "subscriptions"
 }
