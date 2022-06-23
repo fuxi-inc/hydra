@@ -12,7 +12,7 @@ func NewValidator() *Validator {
 }
 
 func (v *Validator) Validate(params *AuthorizationParams) error {
-	if params.Sign == "" {
+	if params.Sign == nil {
 		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("Request must be signed"))
 	}
 	if params.Identifier == "" {
@@ -25,10 +25,10 @@ func (v *Validator) Validate(params *AuthorizationParams) error {
 }
 
 func (v *Validator) ValidateAuthenticationParam(params *AuthenticationParams) error {
-	if params.Sign == "" {
+	if params.Sign == nil {
 		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("Request must be signed"))
 	}
-	if params.SignRecipient == "" {
+	if params.SignRecipient == nil {
 		return errorsx.WithStack(ErrInvalidAuthorizationParams.WithHint("ViewUser must signed the request"))
 	}
 	if params.Identifier == "" {
