@@ -114,7 +114,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ------------ | ------ | ---- | ------------------------------- | --------------------------- |
 | userDomainID | string | 是   | Json参数；<br>要以user.fuxi结尾 | alice.user.fuxi             |
 | podAddress   | string | 是   | Json参数；<br/>POD地址          | https://pan.baidu.com/index |
-| sign         | []byte | 是   | Json参数<br/>私钥签名           |                             |
+| sign         | string | 是   | Json参数<br/>私钥签名           |                             |
 
 **响应结果**
 
@@ -153,7 +153,7 @@ http POST http://localhost:4444/identity/pod userDomainID=alice.user.fuxi podAdd
 | 参数名       | 类型   | 必填 | 说明                                      | 格式            |
 | ------------ | ------ | ---- | ----------------------------------------- | --------------- |
 | userDomainID | string | 是   | Path参数；<br>用户标识，要以user.fuxi结尾 | alice.user.fuxi |
-| sign         | []byte | 是   | Query参数<br/>私钥签名                    |                 |
+| sign         | string | 是   | Query参数<br/>私钥签名                    |                 |
 
 **响应结果**
 
@@ -201,7 +201,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ---------------- | ------ | ---- | ----------------------------- | --------------- |
 | fromUserDomainID | string | 是   | Json参数；<br>转出方用户标识  | alice.user.fuxi |
 | toUserDomainID   | string | 是   | Json参数；<br/>转入方用户标识 | bob.user.fuxi   |
-| sign             | []byte | 是   | Json参数<br/>私钥签名         |                 |
+| sign             | string | 是   | Json参数<br/>私钥签名         |                 |
 | token            | string | 是   | Json参数<br/>交易token值      | 10              |
 
 **响应结果**
@@ -331,7 +331,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | dataDomainID     | srtring | 是   | Json参数<br/>数据标识        | data.alice.pod.fuxi |
 | userDomainID     | string  | 是   | Json参数<br>所有者标识       | alice.user.fuxi     |
 | viewUserDomainID | string  | 是   | Json参数<br/>访问者标识      | bob.user.fuxi       |
-| sign             | []byte  | 是   | Json参数；<br>所有者私钥签名 |                     |
+| sign             | string  | 是   | Json参数；<br>所有者私钥签名 |                     |
 
 **响应结果**
 
@@ -376,7 +376,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | dataDomainID     | srtring     | 是   | Json参数<br/>数据标识        | data.alice.pod.fuxi |
 | userDomainID     | string      | 是   | Json参数<br>所有者标识       | alice.user.fuxi     |
 | viewUserDomainID | string      | 是   | Json参数<br/>访问者标识      | bob.user.fuxi       |
-| sign             | []byte      | 是   | Json参数；<br>所有者私钥签名 |                     |
+| sign             | stringstrin | 是   | Json参数；<br>所有者私钥签名 |                     |
 
 **响应结果**
 
@@ -421,7 +421,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ---------------- | ------- | ---- | ---------------------------- | ------------------- |
 | dataDomainID     | srtring | 是   | Json参数<br/>数据标识        | data.alice.pod.fuxi |
 | viewUserDomainID | string  | 是   | Json参数<br/>访问者标识      | bob.user.fuxi       |
-| sign             | []byte  | 是   | Json参数；<br>所有者私钥签名 |                     |
+| sign             | string  | 是   | Json参数；<br>所有者私钥签名 |                     |
+|                  |         |      |                              |                     |
 
 **响应结果**
 
@@ -440,17 +441,13 @@ http POST http://localhost:4444/subscriptions/authntication dataDomainID=data.al
 
 
 
-## pod端RSA签名流程
+## RSA签名
 
-以下流程通过`golang`语言作为示意，pod端需要通过对应代码实现类似流程，只要保证算法一致即可
-
-
-
-（1）将用户注册后返回的privateKey（byte[]类型）进行解码，得到rsa格式的私钥
+（1）使用`rsa`包生成公私钥，参数包括**随机源**（rand.Reader），以及**bit长度**（2048b）
 
 ```go
-// x509将数据解析得到RSA私钥
-privateKey, _ := x509.ParsePKCS1PrivateKey(entity.PrivateKey)
+privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
+publickey := &privatekey.PublicKey
 ```
 
 
@@ -467,7 +464,7 @@ type TokenTransferRequest struct {
 	FromID      string `json:"fromUserDomainID"`
 	ToID      	string `json:"toUserDomainID"`
 	Token		string `json:"token"`
-	Sign        byte[] `json:"sign"`
+	Sign        string `json:"sign"`
 }
 
 var tokenTransferRequest TokenTransferRequest
@@ -480,10 +477,12 @@ tokenTransferRequest.Token = 10
 // 序列化，将struct转为json格式的byte[]
 data, _ := json.Marshal(tokenTransferRequest)
 
-// 加上DIS_2020前缀，并且计算hash，Hash算法采用SHA1
-hash := crypto.SHA1.New()
-hash.Write([]byte("DIS_2020" + string(data)))
-verifyHash := hash.Sum(nil)
+// 加上DIS_2020前缀
+data = byte[]("DIS_2020") + data
+
+// 对内容进行Hash，采用SHA256方法
+hashed := sha256.Sum256(data)
+
 ```
 
 
@@ -491,11 +490,11 @@ verifyHash := hash.Sum(nil)
 （3）利用私钥对hash内容进行签名，并记录到body的sign字段中
 
 ```go
-// 对hash内容进行签名，采用SHA1方法
-signature, _ := rsa.SignPKCS1v15(rand.Reader, privatekey, crypto.SHA256, verifyHash)
+// 对hash内容进行签名，采用SHA256方法
+signature, _ := rsa.SignPKCS1v15(rand.Reader, privatekey, crypto.SHA256, hashed[:])
 
 // 将得到的signature存到body的sign字段中
-tokenTransferRequest.Sign = signature
+tokenTransferRequest.Sign = string(signature)
 
 // 发送HTTP请求
 ...
