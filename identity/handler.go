@@ -226,7 +226,7 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 	// 	return
 	// }
 
-	// toToken, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.ToID)
+	// _, err := h.r.IdentityManager().GetIdentityToken(r.Context(), entity.ToID)
 	// if err != nil {
 	// 	h.r.Writer().WriteError(w, r, err)
 	// 	return
