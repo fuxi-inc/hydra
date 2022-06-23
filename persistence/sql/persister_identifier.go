@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"strings"
+	"unsafe"
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
@@ -140,7 +141,7 @@ func (p *Persister) VerifySignature(ctx context.Context, userID string, sign str
 	// }
 	// return nil
 
-	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, []byte(sign))
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, *(*[]byte)(unsafe.Pointer(&sign)))
 	if err != nil {
 		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
 		return err
