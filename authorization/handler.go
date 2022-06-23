@@ -2,8 +2,13 @@ package authorization
 
 import (
 	"context"
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"github.com/ory/hydra/identity"
 	"net/http"
 	"strings"
 	"time"
@@ -106,12 +111,18 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	entity.Type = Free
 
 	ctx := context.Background()
-	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
-		logger.Get().Infow("failed to update the data owner", zap.Error(err))
+		logger.Get().Infow("failed to get the data owner", zap.Error(err))
 		//h.r.Writer().WriteError(w, r, err)
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+
+	err = verifySignature(owner, &params)
+	if err != nil {
+		logger.Get().Infow("verify failed", zap.Error(err))
+		h.r.Writer().WriteError(w, r, err)
 	}
 
 	entity.init()
@@ -176,10 +187,15 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.Type = Charged
 
 	ctx := context.Background()
-	err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
+	}
+	err = verifySignature(owner, &params)
+	if err != nil {
+		logger.Get().Infow("verify failed", zap.Error(err))
+		h.r.Writer().WriteError(w, r, err)
 	}
 
 	entity.init()
@@ -604,4 +620,35 @@ func transform(params *AuthorizationParams) Authorization {
 	entity.Owner = params.Owner
 	entity.Recipient = params.Recipient
 	return entity
+}
+
+func verifySignature(owner *identity.Identity, params *AuthorizationParams) error {
+	signature := params.Sign
+	logger.Get().Infow("get the signature from requests", zap.Any("signature", signature))
+	logger.Get().Infow("the signature in byte format", zap.Any("signature", []byte(signature)))
+
+	params.Sign = ""
+
+	paramsJson, err := json.Marshal(params)
+	if err != nil {
+		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
+		return err
+	}
+	hash := sha1.New()
+	hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	hashData := hash.Sum(nil)
+	logger.Get().Infow("params after hash", zap.Any("hashdata", hashData))
+
+	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
+	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
+	logger.Get().Infow("public key after parse", zap.Any("publickey", publicKey))
+
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		return err
+	}
+
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, []byte(signature))
+
+	return err
 }
