@@ -32,7 +32,7 @@ def get_params(argv):
   private_key = get_key('files/private30.pem')
   signer = PKCS1_signature.new(private_key)
   params["sign"] = signer.sign(hashdata).hex()
-
+  print(params["sign"])
   return json.dumps(params)
 
 
