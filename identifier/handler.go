@@ -113,8 +113,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", string(marshalJsonTrans)))
 
 	hash := crypto.SHA1.New()
-	// hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
-	hash.Write(marshalJsonTrans)
+	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
+	// hash.Write(marshalJsonTrans)
 	verifyHash := hash.Sum(nil)
 
 	ctx := context.Background()
