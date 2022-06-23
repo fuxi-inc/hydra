@@ -172,6 +172,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	if code == 429 {
 		h.r.Writer().WriteError(w, r, err)
 		w.WriteHeader(http.StatusTooManyRequests)
+		return
 	}
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
