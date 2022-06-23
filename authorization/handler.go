@@ -639,12 +639,11 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
 		return err
 	}
-	logger.Get().Infow("params in json format", zap.Any("params", paramsJson))
 
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
-	logger.Get().Infow("params", zap.Any("params", paramsJson))
+	logger.Get().Infow("params in json format", paramsJson)
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hashData))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
