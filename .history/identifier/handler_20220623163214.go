@@ -341,21 +341,3 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
-func (h *Handler) GetAddr(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var id = ps.ByName("id")
-
-	ctx := context.Background()
-	entity, err := h.r.IdentifierManager().GetIdentifier(ctx, id)
-	if err != nil {
-		//err = herodot.ErrUnauthorized.WithReason("")
-		h.r.Writer().WriteError(w, r, err)
-		return
-	}
-	if entity == nil {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	h.r.Writer().Write(w, r, entity)
-}
