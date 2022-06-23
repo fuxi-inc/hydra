@@ -19,10 +19,11 @@ def get_params(argv):
   for arg in argv:
     params[arg.split("=")[0]] = arg.split("=")[1]
   params["sign"] = ""
-
   data = "DIS_2020"+str(json.dumps(params))
   hashdata = SHA1.new()
   hashdata.update(data.encode("utf8"))
+
+  print(str(json.dumps(params)))
 
   private_key = get_key('files/private30.pem')
   signer = PKCS1_signature.new(private_key)
