@@ -49,7 +49,7 @@ func (p *Persister) CreateAuthorizationOwner(ctx context.Context, entity *author
 	}
 	entity.Owner = identifier.Owner
 	var cl identity.Identity
-	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", "alice30.id.fuxi").First(&cl))
+	err = sqlcon.HandleError(p.Connection(ctx).Where("id = ?", "alice30.user.fuxi").First(&cl))
 	return &cl, err
 }
 
