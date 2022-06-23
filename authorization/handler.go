@@ -648,10 +648,9 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	logger.Get().Infow("params[sign]", zap.Any("params[sign]", params.Sign))
 
 	params.Sign = ""
-
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
-		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
+		logger.Get().Infow("params in json format", zap.Any("paramsJson:%s", paramsJson))
 		return err
 	}
 
