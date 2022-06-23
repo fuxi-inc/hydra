@@ -3,9 +3,11 @@ package authorization
 import (
 	"context"
 	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"github.com/ory/hydra/identity"
@@ -627,28 +629,61 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 	logger.Get().Infow("get the signature from requests", zap.Any("signature", signature))
 	logger.Get().Infow("the signature in byte format", zap.Any("signature", []byte(signature)))
 
+	decoded_sign, err := base64.StdEncoding.DecodeString(signature)
+	if err != nil {
+		logger.Get().Infow("base64 decode error")
+		return err
+	}
+	logger.Get().Infow("decoded signature first", zap.Any("decoded_sign", decoded_sign))
+	decoded_sign, err = base64.StdEncoding.DecodeString(signature)
+	if err != nil {
+		logger.Get().Infow("base64 decode error")
+		return err
+	}
+	logger.Get().Infow("decoded signature second", zap.Any("decoded_sign", decoded_sign))
+
+	logger.Get().Infow("params[recipient]", zap.Any("params[recipient]", params.Recipient))
+	logger.Get().Infow("params[owner]", zap.Any("params[owner]", params.Owner))
+	logger.Get().Infow("params[identifier]", zap.Any("params[identifier]", params.Identifier))
+	logger.Get().Infow("params[sign]", zap.Any("params[sign]", params.Sign))
+
 	params.Sign = ""
 
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
-		logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
+		logger.Get().Infow("failed to marshal params to json", zap.Any("paramsJson", paramsJson))
 		return err
 	}
-	hash := sha1.New()
+	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
+
+	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
 	hashData := hash.Sum(nil)
-	logger.Get().Infow("params after hash", zap.Any("hashdata", hashData))
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
 	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	logger.Get().Infow("public key after parse", zap.Any("publickey", publicKey))
-
 	if err != nil {
 		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
 		return err
 	}
 
-	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, []byte(signature))
+	logger.Get().Infow("private key get from database", zap.Any("privateKey", owner.PrivateKey))
+	privateKey, err := x509.ParsePKCS1PrivateKey(owner.PrivateKey)
+	logger.Get().Infow("private key after parse", zap.Any("privateKey", privateKey))
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		return err
+	}
+
+	localsign, localSignErr := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hashData)
+	logger.Get().Infow("localSignErr", zap.Error(localSignErr))
+	logger.Get().Infow("localSign", zap.Any("localsign", localsign))
+	localerr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, localsign)
+	logger.Get().Infow("local sign verify result", zap.Error(localerr))
+
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, decoded_sign)
 
 	return err
 }

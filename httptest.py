@@ -11,6 +11,7 @@ def get_key(key_file):
   with open(key_file) as f:
     data = f.read()
     key = RSA.importKey(data)
+    print(data)
   return key
 
 def get_params(argv):
@@ -25,10 +26,11 @@ def get_params(argv):
 
   private_key = get_key('files/private30.pem')
   signer = PKCS1_signature.new(private_key)
-  # params["sign"] = base64.b64encode(signer.sign(hashdata))
-  params["sign"] = str(signer.sign(hashdata))
+  params["sign"] = str(base64.b64encode(signer.sign(hashdata)), encoding="utf-8")
+  # params["sign"] = str(signer.sign(hashdata))
   print(hashdata.hexdigest())
   print(signer.sign(hashdata))
+  print(base64.b64encode(signer.sign(hashdata)))
   print(params["sign"])
   # public_key = get_key('files/public30.pem')
   # verifier = PKCS1_signature.new(public_key)
