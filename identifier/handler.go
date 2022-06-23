@@ -136,7 +136,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.Name = "fuxi"
 	entity.Owner = jsonTrans.UserID
 	entity.DataAddress = jsonTrans.DataAddress
-	entity.DataDigest = string(jsonTrans.DataDigest)
+	entity.DataDigest = hex.EncodeToString(jsonTrans.DataDigest)
 	entity.DataSignature = []byte("test")
 	entity.AuthAddress = "http://localhost:4444"
 	var dict = map[string]string{
