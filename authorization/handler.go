@@ -11,8 +11,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ory/hydra/identity"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,7 +49,7 @@ func (h *Handler) SetRoutes(public *x.RouterPublic) {
 	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
 	public.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
 
-	//public.GET(AuthorizationHandlerPath+"/:id", h.Get)
+	public.GET(AuthorizationHandlerPath+"/:id", h.Get)
 	//public.DELETE(AuthorizationHandlerPath+"/:id", h.Delete)
 	//public.PATCH(AuthorizationHandlerPath+"/:id", h.Audit)
 	//public.GET(AuthorizationHandlerPath, h.List)
@@ -96,15 +96,6 @@ type AuthorizationResp struct {
 //       500: jsonError
 func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
-
-	bodyStr, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		logger.Get().Infow("failed to read http body")
-		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
-		return
-	}
-	logger.Get().Infow("body data", zap.Any("body", string(bodyStr)))
-
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -122,7 +113,8 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	entity.Type = Free
 
 	ctx := context.Background()
-	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	//owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data owner", zap.Error(err))
 		//h.r.Writer().WriteError(w, r, err)
@@ -130,11 +122,11 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		return
 	}
 
-	err = verifySignature(owner, &params)
-	if err != nil {
-		logger.Get().Infow("verify failed", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
-	}
+	//err = verifySignature(owner, &params)
+	//if err != nil {
+	//	logger.Get().Infow("verify failed", zap.Error(err))
+	//	h.r.Writer().WriteError(w, r, err)
+	//}
 
 	entity.init()
 
@@ -197,15 +189,10 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.Type = Charged
 
 	ctx := context.Background()
-	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
-	}
-	err = verifySignature(owner, &params)
-	if err != nil {
-		logger.Get().Infow("verify failed", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
 	}
 
 	entity.init()
@@ -216,9 +203,26 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
-	/*
-		add transfer token
-	*/
+	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Owner, entity.Recipient)
+	if err != nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	if recipient.Email == "" || owner.Email == "" {
+		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))
+		return
+	}
+
+	if !validateToken(recipient) {
+		h.r.Writer().WriteError(w, r, errors.New("Token is not enough"))
+		return
+	}
+
+	err = h.r.AuthorizationManager().CreateAuthorizationTokenTransfer(r.Context(), recipient, owner)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
 	approveResult := &ApproveResult{
 		Status: Granted,
@@ -229,6 +233,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -630,6 +635,17 @@ func transform(params *AuthorizationParams) Authorization {
 	entity.Owner = params.Owner
 	entity.Recipient = params.Recipient
 	return entity
+}
+
+func validateToken(recipient *identity.Identity) bool {
+	vFrom, _ := strconv.ParseFloat(recipient.Email, 64)
+	//v, _ := strconv.ParseFloat(entity.Token, 64)
+	v, _ := strconv.ParseFloat("1", 64)
+
+	if vFrom < v {
+		return false
+	}
+	return true
 }
 
 func verifySignature(owner *identity.Identity, params *AuthorizationParams) error {
