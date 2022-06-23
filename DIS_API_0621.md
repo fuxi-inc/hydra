@@ -254,8 +254,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 
 | 参数名      | 类型   | 必填 | 说明                                                         | 格式                    |
 | ----------- | ------ | ---- | ------------------------------------------------------------ | ----------------------- |
-| fileID      | string | 是   | Json参数；<br>自定义，用以生成数据标识：fileID.userID.pod.fuxi | data                    |
-| owner       | string | 是   | Json参数；<br/>用户标识：userID.user.fuxi                    | alice.user.fuxi         |
+| dataID      | string | 是   | Json参数；<br>自定义，dataID为完整数据标识，格式为：fileID.userID.pod.fuxi | data                    |
+| userID      | string | 是   | Json参数；<br/>userID为完整用户标识：userLabel.user.fuxi                    | alice.user.fuxi         |
 | dataAddress | string | 是   | Json参数；<br>数据标识所表示的数据的存放地址                 | "https://example/data/" |
 | dataDigest  | string | 是   | Json参数；<br>数据文件Hash                                   |                         |
 | sign        | string | 是   | Json参数；<br>私钥签名                                       |                         |
