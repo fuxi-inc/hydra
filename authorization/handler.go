@@ -262,7 +262,6 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 //       500: jsonError
 func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthenticationParams
-	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -270,6 +269,8 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	}
 
 	if err := h.r.AuthorizationValidator().ValidateAuthenticationParam(&params); err != nil {
+		paramsJson, _ := json.Marshal(params)
+		logger.Get().Infow("failed to marshal params to json", zap.Any("paramsJson", string(paramsJson)))
 		logger.Get().Infow("failed to validate authentication params", zap.Error(err))
 		h.r.Writer().WriteError(w, r, err)
 		return
