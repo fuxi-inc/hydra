@@ -109,7 +109,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		return
 	}
 
-	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", marshalJsonTrans))
+	logger.Get().Infow("output marshalJsonTrans", zap.Any("action", string(marshalJsonTrans)))
 
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(marshalJsonTrans)))
