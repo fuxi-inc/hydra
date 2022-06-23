@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ory/hydra/identity"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -96,6 +97,14 @@ type AuthorizationResp struct {
 func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
 
+	bodyStr, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		logger.Get().Infow("failed to read http body")
+		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
+		return
+	}
+	logger.Get().Infow("body data", zap.Any("body", string(bodyStr)))
+
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -171,7 +180,6 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 //       500: jsonError
 func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
-	json.NewDecoder(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
