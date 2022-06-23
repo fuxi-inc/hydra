@@ -119,11 +119,11 @@ func (c *Client) CreateIdentityIdentifier(ctx context.Context, entity *api.Ident
 	return resp.Data, 0, nil
 }
 
-func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string) error {
+func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address string) (int, error) {
 
 	client, err := c.constructEntropyServiceClient()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// add uri rr
@@ -139,14 +139,18 @@ func (c *Client) CreateIdentityPod(ctx context.Context, domain string, address s
 			Target:   address,
 		}},
 	})
+	if err != nil || createDomainRRResp.Result.StatusCode == 400 {
+		logger.Get().Warnw("UserDomainID does not exist", zap.Error(err))
+		return 400, errors.New(createDomainRRResp.Result.Message)
+	}
 
 	if err != nil || createDomainRRResp.Result.StatusCode != 200 {
 		logger.Get().Warnw("failed to create the domain uri rr related with data identifier", zap.Error(err))
-		return errors.New(createDomainRRResp.Result.Message)
+		return 0, errors.New(createDomainRRResp.Result.Message)
 	}
 	logger.Get().Infow("register identity pod done", zap.Any("response", createDomainRRResp))
 
-	return nil
+	return 0, nil
 }
 
 func (c *Client) DeleteIdentityIdentifier(ctx context.Context, id string) error {

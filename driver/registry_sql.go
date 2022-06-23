@@ -2,9 +2,10 @@ package driver
 
 import (
 	"context"
-	"github.com/ory/hydra/authorization"
 	"strings"
 	"time"
+
+	"github.com/ory/hydra/authorization"
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
