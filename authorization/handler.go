@@ -654,7 +654,7 @@ func verifySignature(owner *identity.Identity, params *AuthorizationParams) erro
 		logger.Get().Infow("failed to marshal params to json", zap.Any("paramsJson", paramsJson))
 		return err
 	}
-	logger.Get().Infow("params in json format", zap.Any("paramsJson", paramsJson))
+	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
 
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
