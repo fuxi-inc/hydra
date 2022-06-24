@@ -300,7 +300,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	//	logger.Get().Infow("decode signature error", zap.Error(err))
 	//	return
 	//}
-	logger.Get().Infow("signature", zap.Any("signature", signature))
+	logger.Get().Infow("signature", zap.Any("signature", hex.EncodeToString(signature)))
 	paramsJson, err := transformAuthnParamstoJson(&params)
 	err = verifySignature(owner, paramsJson, signature)
 	if err != nil {
