@@ -3,11 +3,12 @@ package driver
 import (
 	"context"
 	"fmt"
-	"github.com/ory/hydra/authorization"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/ory/hydra/authorization"
 
 	"github.com/ory/hydra/identifier"
 	"github.com/ory/hydra/identity"
@@ -122,7 +123,7 @@ func (m *RegistryBase) RegisterRoutes(admin *x.RouterAdmin, public *x.RouterPubl
 	m.ClientHandler().SetRoutes(admin)
 	m.OAuth2Handler().SetRoutes(admin, public, m.OAuth2AwareMiddleware())
 	m.IdentifierHandler().SetRoutes(public)
-	m.IdentityHandler().SetRoutes(public)
+	m.IdentityHandler().SetRoutes(admin)
 	m.SubscriptionHandler().SetRoutes(public)
 	m.AuthorizationHandler().SetRoutes(public)
 
