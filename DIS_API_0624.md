@@ -77,7 +77,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 ```json
 CreateIdentity {
     	UserDomainID:     userDomainID,	//string
-    	PrivateKey:       privateKey,	//string
+    	PrivateKey:       privateKey,	//[]byte
 		Token:			  token			//string，暂时默认初始化值为100
 }
 ```
@@ -121,6 +121,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 响应码 | 说明                                 |
 | ------ | ------------------------------------ |
 | 201    | 注册成功；<br>无返回内容             |
+| 403    | 签名验证失败                             |
 | 404    | 用户标识不存在 |
 | 500    | 其他错误                             |
 
