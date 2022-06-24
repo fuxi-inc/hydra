@@ -12,7 +12,7 @@ var ErrInvalidAuthorizationParams = &fosite.RFC6749Error{
 }
 
 var ErrInvalidAuthorizationRequests = &fosite.RFC6749Error{
-	DescriptionField: "The sign is missed or invalid",
-	ErrorField:       "invalid_authorization_request",
-	CodeField:        http.StatusUnauthorized,
+	DescriptionField: "The sign is invalid",
+	ErrorField:       "invalid_signature",
+	CodeField:        http.StatusForbidden,
 }

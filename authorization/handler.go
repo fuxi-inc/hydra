@@ -305,7 +305,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	err = verifySignature(owner, paramsJson, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, errorsx.WithStack(errors.New("failed to verify the signature of pod")))
+		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, ErrInvalidAuthorizationRequests)
 		return
 	}
 
