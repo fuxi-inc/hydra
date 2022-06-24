@@ -12,7 +12,7 @@ func NewValidator() *Validator {
 }
 
 func (v *Validator) ValidatePod(entity *IdentityPod) error {
-	if entity.UserDomainID == "" || entity.PodAddress == "" || entity.Sign == nil {
+	if entity.UserDomainID == "" || entity.PodAddress == "" || entity.Sign == "" {
 		return errorsx.WithStack(ErrInvalidIdentityMetadata.WithHint("UserDomainID, PodAddress, Sign must be set."))
 	}
 	return nil

@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -207,23 +208,29 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	logger.Get().Infow("parse register pod", zap.Any("IdentityPod", entity))
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
-	sign := entity.Sign
-	entity.Sign = nil
-
-	marshalEntity, err := json.Marshal(entity)
+	logger.Get().Infow("Get signature", zap.Any("Signature", entity.Sign))
+	signature, err := hex.DecodeString(entity.Sign)
 	if err != nil {
-		logger.Get().Infow("failed to Marshal identitypod", zap.Error(err))
-		h.r.Writer().WriteError(w, r, err)
+		logger.Get().Infow("decode signature error", zap.Error(err))
 		return
 	}
 
-	logger.Get().Infow("output marshalEntity", zap.Any("action", string(marshalEntity)))
+	// entity.Sign = nil
+
+	// marshalEntity, err := json.Marshal(entity)
+	// if err != nil {
+	// 	logger.Get().Infow("failed to Marshal identitypod", zap.Error(err))
+	// 	h.r.Writer().WriteError(w, r, err)
+	// 	return
+	// }
+
+	// logger.Get().Infow("output marshalEntity", zap.Any("action", string(marshalEntity)))
 
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(marshalEntity)))
+	hash.Write([]byte("DIS_2020" + string(entity.UserDomainID+entity.PodAddress)))
 	verifyHash := hash.Sum(nil)
 
-	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, sign, verifyHash)
+	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, signature, verifyHash)
 	if err != nil {
 		logger.Get().Infow("failed to verify signature", zap.Error(err))
 		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, err)
