@@ -28,7 +28,7 @@ API文档的格式主要包括以下几个部分:
   - Json参数：表示有HTTP请求体的网络请求，会将参数以Json形式放在HTTP请求体中，以`username`和`email`的Json Object参数为例子，就会在请求体中发送内容为：
 
 ```
-http http://localhost:4444/.well-known/openid-configuration
+http http://106.14.192.31:4444/.well-known/openid-configuration
 ```
 
 **注**：
@@ -85,7 +85,7 @@ CreateIdentity {
 **示例**
 
 ```powershell
-http POST http://localhost:4444/identity userID=alice
+http POST http://106.14.192.31:4444/identity userID=alice
 ```
 
 
@@ -127,7 +127,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://localhost:4444/identity/pod userDomainID=alice.user.fuxi podAddress="https://pan.baidu.com/index" sign="xxx"
+http POST http://106.14.192.31:4444/identity/pod userDomainID=alice.user.fuxi podAddress="https://pan.baidu.com/index" sign="xxx"
 ```
 
 
@@ -172,7 +172,7 @@ IdentityToken {
 **示例**
 
 ```powershell
-http GET http://localhost:4444/identity/token/alice.user.fuxi?sign="xxx"
+http GET http://106.14.192.31:4444/identity/token/alice.user.fuxi?sign="xxx"
 ```
 
 
@@ -214,7 +214,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://localhost:4444/identity/transaction fromID=alice.user.fuxi toID=bob.user.id sign="xxx" token="10"
+http POST http://106.14.192.31:4444/identity/transaction fromID=alice.user.fuxi toID=bob.user.id sign="xxx" token="10"
 ```
 
 
@@ -265,7 +265,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST localhost:4444/identifier fileID=data owner=alice.user.fuxi dataAddress="https://example/data/" dataDigest="abc" sign="xxx"
+http POST 106.14.192.31:4444/identifier fileID=data owner=alice.user.fuxi dataAddress="https://example/data/" dataDigest="abc" sign="xxx"
 ```
 
 ### 2.2 获取数据地址
@@ -300,7 +300,7 @@ http POST localhost:4444/identifier fileID=data owner=alice.user.fuxi dataAddres
 **示例**
 
 ```powershell
-http GET http://localhost:4444/identifier/0090cc61-9434-3d95-b436-1f4bb2363e51.alice30.pod.fuxi/address
+http GET http://106.14.192.31:4444/identifier/0090cc61-9434-3d95-b436-1f4bb2363e51.alice30.pod.fuxi/address
 ```
 
 
@@ -346,7 +346,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://localhost:4444/subscriptions/addAuth dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/subscriptions/addAuth dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
 ```
 
 
@@ -392,7 +392,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://localhost:4444/subscriptions/dataTransaction dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/subscriptions/dataTransaction dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
 ```
 
 
@@ -436,7 +436,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://localhost:4444/subscriptions/authntication dataDomainID=data.alice.pod.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/subscriptions/authntication dataDomainID=data.alice.pod.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
 ```
 
 
