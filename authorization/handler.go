@@ -293,11 +293,13 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
 		return
 	}
-	signature, err := hex.DecodeString(params.Sign)
-	if err != nil {
-		logger.Get().Infow("decode signature error", zap.Error(err))
-		return
-	}
+
+	signature := params.Sign
+	//signature, err := hex.DecodeString(params.Sign)
+	//if err != nil {
+	//	logger.Get().Infow("decode signature error", zap.Error(err))
+	//	return
+	//}
 	logger.Get().Infow("signature", zap.Any("signature", signature))
 	paramsJson, err := transformAuthnParamstoJson(&params)
 	err = verifySignature(owner, paramsJson, signature)
@@ -706,7 +708,8 @@ func transformAuthzParamstoJson(params *AuthorizationParams) ([]byte, error) {
 }
 
 func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
-	params.Sign = ""
+	//params.Sign = ""
+	params.Sign = nil
 
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
