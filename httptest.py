@@ -19,10 +19,15 @@ def get_params(argv):
   params["sign"] = ""
   print(json.dumps(params).encode("utf8").hex())
 
-  data = "DIS_2020".encode("utf8")+json.dumps(params).encode("utf8")
+  data = "DIS_2020"
+  for key in params.keys():
+    data += params[key]
+  print(data)
+  print(data.encode("utf-8").hex())
   hashdata = SHA1.new()
-  hashdata.update(data)
+  hashdata.update(data.encode("utf-8"))
   print(hashdata.hexdigest())
+
 
   testdata = str(json.dumps(params))
   hashtestdata = SHA1.new()
