@@ -206,7 +206,7 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.Type = Charged
 
 	ctx := context.Background()
-	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteError(w, r, ErrNotFoundData)
@@ -240,13 +240,6 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	entity.init()
 	entity.Metadata["token"] = "1"
 
-	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Recipient, entity.Owner)
-	if err != nil {
-		logger.Get().Infow("failed to get the identity identifier", zap.Error(err))
-		//h.r.Writer().WriteError(w, r, err)
-		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
-		return
-	}
 	if recipient.Email == "" || owner.Email == "" {
 		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))
 		return
@@ -371,7 +364,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 		return
 	}
 	if entity == nil {
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
