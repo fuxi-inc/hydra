@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"bytes"
 	"context"
 	"crypto"
 	"crypto/rsa"
@@ -742,8 +743,11 @@ func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
 
 func verifySignature(owner *identity.Identity, paramsJson []byte, signature []byte) error {
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	data := bytes.Join([][]byte{[]byte("DIS_2020"), paramsJson}, []byte{})
+	hash.Write(data)
 	hashData := hash.Sum(nil)
+	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
 
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
