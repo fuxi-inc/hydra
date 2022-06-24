@@ -34,12 +34,12 @@ func NewHandler(r InternalRegistry) *Handler {
 	}
 }
 
-func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(IdentifierHandlerPath, h.Create)
-	public.GET(IdentifierHandlerPath+"/:id", h.Get)
-	public.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
-	public.GET(IdentifierHandlerPath, h.List)
-	public.GET(IdentifierHandlerPath+"/:id"+AddressHandlerPath, h.GetAddr)
+func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
+	admin.POST(IdentifierHandlerPath, h.Create)
+	admin.GET(IdentifierHandlerPath+"/:id", h.Get)
+	admin.DELETE(IdentifierHandlerPath+"/:id", h.Delete)
+	admin.GET(IdentifierHandlerPath, h.List)
+	admin.GET(IdentifierHandlerPath+"/:id"+AddressHandlerPath, h.GetAddr)
 }
 
 // the data identifier information
