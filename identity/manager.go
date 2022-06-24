@@ -22,4 +22,6 @@ type Storage interface {
 	DeleteIdentity(ctx context.Context, id string) error
 
 	GetIdentities(ctx context.Context, filters Filter) ([]*Identity, error)
+
+	VerifySignature_CreatePod(ctx context.Context, userID string, sign []byte, hash []byte) error
 }

@@ -2,6 +2,9 @@ package sql
 
 import (
 	"context"
+	"crypto"
+	"crypto/rsa"
+	"crypto/x509"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/identity"
@@ -95,4 +98,45 @@ func (p *Persister) GetIdentities(ctx context.Context, filters identity.Filter) 
 	}
 
 	return nil, errors.New("no owner input")
+}
+
+func (p *Persister) VerifySignature_CreatePod(ctx context.Context, userID string, sign []byte, hash []byte) error {
+	var cl identity.Identity
+	err := sqlcon.HandleError(p.Connection(ctx).Where("id = ?", userID).First(&cl))
+	if err != nil {
+		logger.Get().Infow("failed to get identity from identity_identifier table", zap.Error(err))
+		logger.Get().Infow(cl.ID, zap.Error(err))
+		logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
+		return err
+	}
+
+	publicKey, err := x509.ParsePKCS1PublicKey(cl.PublicKey)
+
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
+		return err
+	}
+
+	// privateKey, err := x509.ParsePKCS1PrivateKey(cl.PrivateKey)
+
+	// if err != nil {
+	// 	logger.Get().Infow("failed to ParsePKCS1PrivateKey", zap.Error(err))
+	// 	return err
+	// }
+
+	// signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hash)
+
+	// err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, signature)
+	// if err != nil {
+	// 	logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
+	// 	return err
+	// }
+	// return nil
+
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hash, sign)
+	if err != nil {
+		logger.Get().Infow("failed to verify hash and sign", zap.Error(err))
+		return err
+	}
+	return nil
 }

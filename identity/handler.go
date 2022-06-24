@@ -2,6 +2,7 @@ package identity
 
 import (
 	"context"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -41,14 +42,14 @@ func NewHandler(r InternalRegistry) *Handler {
 	}
 }
 
-func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(IdentityHandlerPath, h.Create)
-	public.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
-	public.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
+func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
+	admin.POST(IdentityHandlerPath, h.Create)
+	admin.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
+	admin.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
 	// public.GET(IdentityHandlerPath+"/:id", h.Get)
-	public.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
-	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
-	public.GET(IdentityHandlerPath, h.List)
+	admin.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
+	admin.DELETE(IdentityHandlerPath+"/:id", h.Delete)
+	admin.GET(IdentityHandlerPath, h.List)
 }
 
 // swagger:parameters createIdentity
@@ -201,9 +202,32 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	logger.Get().Infow("parse register pod", zap.Any("IdentityPod", entity))
 	// ctx := context.WithValue(context.TODO(), "apiKey", accessToken)
 
+	sign := entity.Sign
+	entity.Sign = nil
+
+	marshalEntity, err := json.Marshal(entity)
+	if err != nil {
+		logger.Get().Infow("failed to Marshal identitypod", zap.Error(err))
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	logger.Get().Infow("output marshalEntity", zap.Any("action", string(marshalEntity)))
+
+	hash := crypto.SHA1.New()
+	hash.Write([]byte("DIS_2020" + string(marshalEntity)))
+	verifyHash := hash.Sum(nil)
+
+	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, sign, verifyHash)
+	if err != nil {
+		logger.Get().Infow("failed to verify signature", zap.Error(err))
+		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, err)
+		return
+	}
+
 	code, err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
-	if code == 404 {
-		h.r.Writer().WriteErrorCode(w, r, 404, err)
+	if code == http.StatusNotFound {
+		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, err)
 		return
 	}
 
@@ -496,3 +520,20 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// func verifySignature(owner *identity.Identity, paramsJson []byte, signature []byte) error {
+// 	hash := crypto.SHA1.New()
+// 	hash.Write([]byte("DIS_2020" + string(paramsJson)))
+// 	hashData := hash.Sum(nil)
+// 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
+
+// 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
+// 	if err != nil {
+// 		logger.Get().Infow("failed to ParsePKCS1PublicKey", zap.Error(err))
+// 		return err
+// 	}
+
+// 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, signature)
+
+// 	return err
+// }

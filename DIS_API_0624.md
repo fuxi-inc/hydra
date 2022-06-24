@@ -77,7 +77,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 ```json
 CreateIdentity {
     	UserDomainID:     userDomainID,	//string
-    	PrivateKey:       privateKey,	//string
+    	PrivateKey:       privateKey,	//[]byte
 		Token:			  token			//string，暂时默认初始化值为100
 }
 ```
@@ -85,7 +85,7 @@ CreateIdentity {
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/identity userID=alice
+http POST http://106.14.192.31:4445/identity userID=alice
 ```
 
 
@@ -121,13 +121,14 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 响应码 | 说明                                 |
 | ------ | ------------------------------------ |
 | 201    | 注册成功；<br>无返回内容             |
+| 403    | 签名验证失败                             |
 | 404    | 用户标识不存在 |
 | 500    | 其他错误                             |
 
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/identity/pod userDomainID=alice.user.fuxi podAddress="https://pan.baidu.com/index" sign="xxx"
+http POST http://106.14.192.31:4445/identity/pod userDomainID=alice.user.fuxi podAddress="https://pan.baidu.com/index" sign="xxx"
 ```
 
 
@@ -172,7 +173,7 @@ IdentityToken {
 **示例**
 
 ```powershell
-http GET http://106.14.192.31:4444/identity/token/alice.user.fuxi?sign="xxx"
+http GET http://106.14.192.31:4445/identity/token/alice.user.fuxi?sign="xxx"
 ```
 
 
@@ -214,7 +215,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/identity/transaction fromID=alice.user.fuxi toID=bob.user.id sign="xxx" token="10"
+http POST http://106.14.192.31:4445/identity/transaction fromID=alice.user.fuxi toID=bob.user.id sign="xxx" token="10"
 ```
 
 
@@ -265,7 +266,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST 106.14.192.31:4444/identifier fileID=data owner=alice.user.fuxi dataAddress="https://example/data/" dataDigest="abc" sign="xxx"
+http POST 106.14.192.31:4445/identifier fileID=data owner=alice.user.fuxi dataAddress="https://example/data/" dataDigest="abc" sign="xxx"
 ```
 
 ### 2.2 获取数据地址
