@@ -72,7 +72,8 @@ type AuthorizationParams struct {
 	Identifier string `json:"dataDomainID"`
 	Owner      string `json:"userDomainID"`
 	Recipient  string `json:"viewUserDomainID"`
-	Sign       []byte `json:"sign"`
+	//Sign       []byte `json:"sign"`
+	Sign string `json:"sign"`
 }
 
 type AuthenticationParams struct {

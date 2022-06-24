@@ -135,6 +135,21 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	// 	h.r.Writer().WriteError(w, r, err)
 	// }
 
+	//signature := params.Sign
+	signature, err := hex.DecodeString(params.Sign)
+	if err != nil {
+		logger.Get().Infow("decode signature error", zap.Error(err))
+		return
+	}
+	logger.Get().Infow("signature", zap.Any("signature", signature))
+	paramsJson, err := transformAuthzParamstoJson(&params)
+	err = verifySignature(recipient, paramsJson, signature)
+	if err != nil {
+		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
+		return
+	}
+
 	entity.init()
 
 	err = h.r.AuthorizationManager().CreateAuthorization(ctx, &entity)
@@ -700,7 +715,8 @@ func validateToken(recipient *identity.Identity) bool {
 }
 
 func transformAuthzParamstoJson(params *AuthorizationParams) ([]byte, error) {
-	params.Sign = nil
+	params.Sign = ""
+	//params.Sign = nil
 
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
