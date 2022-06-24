@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"bytes"
 	"context"
 	"crypto"
 	"crypto/rsa"
@@ -141,9 +142,12 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		logger.Get().Infow("decode signature error", zap.Error(err))
 		return
 	}
+	logger.Get().Infow("signature", zap.Any("signature", params.Sign))
 	logger.Get().Infow("signature", zap.Any("signature", signature))
-	paramsJson, err := transformAuthzParamstoJson(&params)
-	err = verifySignature(recipient, paramsJson, signature)
+	//paramsJson, err := transformAuthzParamstoJson(&params)
+	paramsStr := params.Identifier + params.Owner + params.Recipient
+	err = verifySignatureStr(recipient, paramsStr, signature)
+	//err = verifySignature(recipient, paramsJson, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
 		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
@@ -740,11 +744,40 @@ func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
 	return paramsJson, nil
 }
 
+func verifySignatureStr(owner *identity.Identity, paramStr string, signature []byte) error {
+	hash := crypto.SHA1.New()
+	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	data := []byte(paramStr)
+	hash.Write(data)
+	hashData := hash.Sum(nil)
+	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
+	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
+
+	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
+	if err != nil {
+		logger.Get().Infow("failed to ParsePKCS1PublicKey", zap.Error(err))
+		return err
+	}
+
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, signature)
+
+	return err
+}
+
 func verifySignature(owner *identity.Identity, paramsJson []byte, signature []byte) error {
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
+	data := bytes.Join([][]byte{[]byte("DIS_2020"), paramsJson}, []byte{})
+	hash.Write(data)
 	hashData := hash.Sum(nil)
+	logger.Get().Infow("params json", zap.Any("paramsJson", hex.EncodeToString(paramsJson)))
+	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
+
+	testHash := crypto.SHA1.New()
+	testHash.Write([]byte("DIS_2020"))
+	testhashData := hash.Sum(nil)
+	logger.Get().Infow("string after hash", zap.Any("test hashdata", hex.EncodeToString(testhashData)))
 
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	if err != nil {
