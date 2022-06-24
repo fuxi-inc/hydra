@@ -8,11 +8,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/ory/hydra/identity"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ory/hydra/identity"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/fosite"
@@ -128,11 +129,11 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		return
 	}
 
-	//err = verifySignature(owner, &params)
-	//if err != nil {
-	//	logger.Get().Infow("verify failed", zap.Error(err))
-	//	h.r.Writer().WriteError(w, r, err)
-	//}
+	// err = verifySignature(owner, &params)
+	// if err != nil {
+	// 	logger.Get().Infow("verify failed", zap.Error(err))
+	// 	h.r.Writer().WriteError(w, r, err)
+	// }
 
 	entity.init()
 

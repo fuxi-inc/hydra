@@ -20,7 +20,7 @@ type Identity struct {
 type IdentityPod struct {
 	UserDomainID string `json:"userDomainID"`
 	PodAddress   string `json:"podAddress"`
-	Sign         string `json:"sign"`
+	Sign         []byte `json:"sign"`
 }
 
 type ResponseIdentity struct {
