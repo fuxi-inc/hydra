@@ -185,6 +185,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	responseEntity.PrivateKey = string(entity.PrivateKey)
 	responseEntity.Token = "100"
 
+	logger.Get().Infow("privatekey", zap.Any("privatekey", responseEntity.PrivateKey))
+
 	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
 }
 
