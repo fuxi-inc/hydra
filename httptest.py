@@ -17,10 +17,9 @@ def get_params(argv):
   for arg in argv:
     params[arg.split("=")[0]] = arg.split("=")[1]
   params["sign"] = ""
-  print(str(json.dumps(params)))
+  print(json.dumps(params).hex())
 
   data = "DIS_2020".encode("utf8")+json.dumps(params).encode("utf8")
-  print(data.hex())
   hashdata = SHA1.new()
   hashdata.update(data)
   print(hashdata.hexdigest())
