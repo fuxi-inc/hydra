@@ -747,7 +747,7 @@ func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
 func verifySignatureStr(owner *identity.Identity, paramStr string, signature []byte) error {
 	hash := crypto.SHA1.New()
 	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
-	data := []byte(paramStr)
+	data := []byte("DIS_2020" + paramStr)
 	hash.Write(data)
 	hashData := hash.Sum(nil)
 	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
