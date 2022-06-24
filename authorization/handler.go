@@ -115,7 +115,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
+		h.r.Writer().WriteError(w, r, ErrNotFoundData)
 		//w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -124,7 +124,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	if err != nil || recipient == nil {
 		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
 		//h.r.Writer().WriteError(w, r, err)
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the viewUserDomainID"))
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
 		return
 	}
 
@@ -197,7 +197,8 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	ctx := context.Background()
 	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
+		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrNotFoundData)
 		return
 	}
 
@@ -206,7 +207,9 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 
 	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Recipient, entity.Owner)
 	if err != nil {
-		w.WriteHeader(http.StatusNoContent)
+		logger.Get().Infow("failed to get the identity identifier", zap.Error(err))
+		//h.r.Writer().WriteError(w, r, err)
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
 		return
 	}
 	if recipient.Email == "" || owner.Email == "" {
