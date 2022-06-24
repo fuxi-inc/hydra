@@ -42,14 +42,14 @@ func NewHandler(r InternalRegistry) *Handler {
 	}
 }
 
-func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(IdentityHandlerPath, h.Create)
-	public.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
-	public.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
-	// public.GET(IdentityHandlerPath+"/:id", h.Get)
-	public.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
-	public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
-	public.GET(IdentityHandlerPath, h.List)
+func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
+	// public.POST(IdentityHandlerPath, h.Create)
+	admin.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
+	// public.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
+	// // public.GET(IdentityHandlerPath+"/:id", h.Get)
+	// public.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
+	// public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
+	// public.GET(IdentityHandlerPath, h.List)
 }
 
 // swagger:parameters createIdentity
