@@ -747,8 +747,14 @@ func verifySignature(owner *identity.Identity, paramsJson []byte, signature []by
 	data := bytes.Join([][]byte{[]byte("DIS_2020"), paramsJson}, []byte{})
 	hash.Write(data)
 	hashData := hash.Sum(nil)
+	logger.Get().Infow("params json", zap.Any("paramsJson", hex.EncodeToString(paramsJson)))
 	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
 	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
+
+	testHash := crypto.SHA1.New()
+	testHash.Write([]byte("DIS_2020"))
+	testhashData := hash.Sum(nil)
+	logger.Get().Infow("string after hash", zap.Any("test hashdata", hex.EncodeToString(testhashData)))
 
 	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
 	if err != nil {
