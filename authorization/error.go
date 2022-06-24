@@ -16,3 +16,9 @@ var ErrInvalidAuthorizationRequests = &fosite.RFC6749Error{
 	ErrorField:       "invalid_signature",
 	CodeField:        http.StatusForbidden,
 }
+
+var ErrNotFoundData = &fosite.RFC6749Error{
+	DescriptionField: "Failed to find the data",
+	ErrorField:       "dataDomainID_error",
+	CodeField:        http.StatusNotFound,
+}
