@@ -290,7 +290,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &authEntity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
+		h.r.Writer().WriteError(w, r, ErrNotFoundData)
 		return
 	}
 
@@ -305,7 +305,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	err = verifySignature(owner, paramsJson, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, ErrInvalidAuthorizationRequests)
+		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
 		return
 	}
 
