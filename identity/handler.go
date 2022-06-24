@@ -100,6 +100,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	var entity Identity
 	var responseEntity ResponseIdentity
 
+	setupCORS(&w)
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
@@ -254,6 +255,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity tokenTrans
 
+	setupCORS(&w)
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
@@ -455,6 +457,7 @@ func (h *Handler) GetToken(w http.ResponseWriter, r *http.Request, ps httprouter
 	var id = ps.ByName("id")
 	var entity ResponseIdentityToken
 
+	setupCORS(&w)
 	token, err := h.r.IdentityManager().GetIdentityToken(r.Context(), id)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)

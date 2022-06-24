@@ -96,6 +96,9 @@ type AuthorizationResp struct {
 //       500: jsonError
 func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
+
+	setupCORS(&w)
+
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -189,6 +192,9 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 //       500: jsonError
 func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthorizationParams
+
+	setupCORS(&w)
+
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -299,6 +305,9 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 //       500: jsonError
 func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var params AuthenticationParams
+
+	setupCORS(&w)
+
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		logger.Get().Infow("failed to decode params")
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
@@ -796,4 +805,10 @@ func verifySignature(owner *identity.Identity, paramsJson []byte, signature []by
 	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, signature)
 
 	return err
+}
+
+func setupCORS(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
