@@ -79,7 +79,7 @@ type AuthenticationParams struct {
 	Identifier    string `json:"dataDomainID"`
 	Recipient     string `json:"viewUserDomainID"`
 	SignRecipient []byte `json:"SignAccessAuth"`
-	Sign          []byte `json:"sign"`
+	Sign          []byte `json:"signPod"`
 	//SignRecipient string `json:"SignAccessAuth"`
 	//Sign          string `json:"sign"
 }
