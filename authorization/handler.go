@@ -43,10 +43,10 @@ func NewHandler(r InternalRegistry, c *config.Provider) *Handler {
 	}
 }
 
-func (h *Handler) SetRoutes(public *x.RouterPublic) {
-	public.POST(AuthorizationHandlerPath+"/addAuth", h.CreateAuthorization)
-	public.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
-	public.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
+func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
+	admin.POST(AuthorizationHandlerPath+"/addAuth", h.CreateAuthorization)
+	admin.POST(AuthorizationHandlerPath+"/dataTransaction", h.CreateAuthzTrans)
+	admin.POST(AuthorizationHandlerPath+"/authentication", h.Authenticate)
 
 	//public.GET(AuthorizationHandlerPath+"/:id", h.Get)
 	//public.DELETE(AuthorizationHandlerPath+"/:id", h.Delete)

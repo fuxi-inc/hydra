@@ -43,13 +43,13 @@ func NewHandler(r InternalRegistry) *Handler {
 }
 
 func (h *Handler) SetRoutes(admin *x.RouterAdmin) {
-	// public.POST(IdentityHandlerPath, h.Create)
+	admin.POST(IdentityHandlerPath, h.Create)
 	admin.POST(IdentityHandlerPath+PodHandlerPath, h.CreatePod)
-	// public.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
-	// // public.GET(IdentityHandlerPath+"/:id", h.Get)
-	// public.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
-	// public.DELETE(IdentityHandlerPath+"/:id", h.Delete)
-	// public.GET(IdentityHandlerPath, h.List)
+	admin.POST(IdentityHandlerPath+TransHandlerPath, h.TokenTrans)
+	// public.GET(IdentityHandlerPath+"/:id", h.Get)
+	admin.GET(IdentityHandlerPath+TokenHandlerPath+"/:id", h.GetToken)
+	admin.DELETE(IdentityHandlerPath+"/:id", h.Delete)
+	admin.GET(IdentityHandlerPath, h.List)
 }
 
 // swagger:parameters createIdentity
