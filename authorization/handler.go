@@ -304,7 +304,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	id := params.Identifier
 	subject := params.Recipient
 
-	authEntity := transform(&AuthorizationParams{Identifier: id, Owner: "", Recipient: subject, Sign: nil})
+	authEntity := transform(&AuthorizationParams{Identifier: id, Owner: "", Recipient: subject, Sign: ""})
 	ctx := context.Background()
 	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &authEntity)
 	if err != nil {
