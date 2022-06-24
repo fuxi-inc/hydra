@@ -22,3 +22,9 @@ var ErrNotFoundData = &fosite.RFC6749Error{
 	ErrorField:       "dataDomainID_error",
 	CodeField:        http.StatusNotFound,
 }
+
+var ErrNotFoundIdentifier = &fosite.RFC6749Error{
+	DescriptionField: "Failed to find the identity",
+	ErrorField:       "viewUserID_error",
+	CodeField:        http.StatusNotFound,
+}

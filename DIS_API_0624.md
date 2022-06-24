@@ -313,8 +313,6 @@ http GET http://106.14.192.31:4444/identifier/0090cc61-9434-3d95-b436-1f4bb2363e
 
 面向POD宝，数据所有者主动授权访问者访问，添加授权记录之后，返回响应授权成功通知
 
-（授权记录只需要存在hydra中的subscription表中即可，不需要调用magnolia逻辑）
-
 **请求路径**
 
 `POST`
@@ -341,13 +339,13 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 201    | 创建成功<br>无返回内容                                       |
 | 400    | 参数错误                                                     |
 | 403    | 签名验证失败 |
-| 404    | 没有找到数据标识的拥有者                                     |
-| 500    | 创建数据标识失败                                             |
+| 404    | 数据标识或访问者标识错误                                     |
+| 500    | 授权失败                                             |
 
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/subscriptions/addAuth dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/authorization/addAuth dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
 ```
 
 
@@ -357,8 +355,6 @@ http POST http://106.14.192.31:4444/subscriptions/addAuth dataDomainID=data.alic
 **说明**
 
 面向POD宝，访问者通过消耗token申请访问数据，添加授权记录之后，返回响应授权成功通知
-
-（授权记录只需要存在hydra中的subscription表中即可，不需要调用magnolia逻辑）
 
 **请求路径**
 
@@ -385,15 +381,14 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ------ | ------------------------------------------------------------ |
 | 201    | 创建成功<br>无返回内容                                       |
 | 400    | 参数错误                                                     |
-| 401    | license 验证失败（apiKey验证失败）                           |
-| 403    | license 所在的 client 与身份标识所在的 client 不一致<br/>实际身份与验证的身份不同，没有权限申请订阅 |
-| 404    | 没有找到数据标识的拥有者                                     |
-| 500    | 创建数据标识失败                                             |
+| 403    | 签名验证失败 |
+| 404    | 数据标识或所有者标识、访问者标识错误                                     |
+| 500    | 授权失败                                             |
 
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/subscriptions/dataTransaction dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/authorization/dataTransaction dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
 ```
 
 
@@ -403,8 +398,6 @@ http POST http://106.14.192.31:4444/subscriptions/dataTransaction dataDomainID=d
 **说明**
 
 面向POD，访问者申请访问POD之后，POD请求DIS验证访问者身份及权限，返回验证结果
-
-（授权记录只需要存在hydra中的subscription表中即可，不需要调用magnolia逻辑）
 
 **请求路径**
 
@@ -422,7 +415,8 @@ Json参数，以 Json 的格式放在请求体Body中。
 | ---------------- | ------- | ---- | ---------------------------- | ------------------- |
 | dataDomainID     | srtring | 是   | Json参数<br/>数据标识        | data.alice.pod.fuxi |
 | viewUserDomainID | string  | 是   | Json参数<br/>访问者标识      | bob.user.fuxi       |
-| sign             | []byte  | 是   | Json参数；<br>所有者私钥签名 |                     |
+| SignAccessAuth   | []byte  | 是   | Json参数；<br>访问请求签名   |                     |
+| signPod          | []byte  | 是   | Json参数；<br>所有者私钥签名 |                     |
 
 **响应结果**
 
@@ -431,12 +425,14 @@ Json参数，以 Json 的格式放在请求体Body中。
 | 201    | 验证成功<br>无返回内容                                       |
 | 400    | 参数错误                                                     |
 | 401    | 未授权                           |
-| 403    | 签名验证失败 |                                        |
+| 403    | 签名验证失败 |
+| 404    | 数据标识或访问者标识错误 |
+
 
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/subscriptions/authntication dataDomainID=data.alice.pod.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4444/authorization/authentication dataDomainID=data.alice.pod.fuxi viewUserDomainID=bob.user.fuxi SignAccessAuth="xxx" signPod="xxx"
 ```
 
 

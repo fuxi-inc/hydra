@@ -116,7 +116,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the data identifier"))
+		h.r.Writer().WriteError(w, r, ErrNotFoundData)
 		//w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -125,7 +125,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	if err != nil || recipient == nil {
 		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
 		//h.r.Writer().WriteError(w, r, err)
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the viewUserDomainID"))
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
 		return
 	}
 
@@ -134,6 +134,21 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 	// 	logger.Get().Infow("verify failed", zap.Error(err))
 	// 	h.r.Writer().WriteError(w, r, err)
 	// }
+
+	//signature := params.Sign
+	signature, err := hex.DecodeString(params.Sign)
+	if err != nil {
+		logger.Get().Infow("decode signature error", zap.Error(err))
+		return
+	}
+	logger.Get().Infow("signature", zap.Any("signature", signature))
+	paramsJson, err := transformAuthzParamstoJson(&params)
+	err = verifySignature(recipient, paramsJson, signature)
+	if err != nil {
+		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
+		return
+	}
 
 	entity.init()
 
@@ -198,7 +213,8 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	ctx := context.Background()
 	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
-		h.r.Writer().WriteError(w, r, err)
+		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrNotFoundData)
 		return
 	}
 
@@ -207,7 +223,9 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 
 	recipient, owner, err := h.r.AuthorizationManager().GetAuthorizationToken(r.Context(), entity.Recipient, entity.Owner)
 	if err != nil {
-		w.WriteHeader(http.StatusNoContent)
+		logger.Get().Infow("failed to get the identity identifier", zap.Error(err))
+		//h.r.Writer().WriteError(w, r, err)
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
 		return
 	}
 	if recipient.Email == "" || owner.Email == "" {
@@ -286,7 +304,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	id := params.Identifier
 	subject := params.Recipient
 
-	authEntity := transform(&AuthorizationParams{Identifier: id, Owner: "", Recipient: subject, Sign: nil})
+	authEntity := transform(&AuthorizationParams{Identifier: id, Owner: "", Recipient: subject, Sign: ""})
 	ctx := context.Background()
 	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &authEntity)
 	if err != nil {
@@ -697,7 +715,8 @@ func validateToken(recipient *identity.Identity) bool {
 }
 
 func transformAuthzParamstoJson(params *AuthorizationParams) ([]byte, error) {
-	params.Sign = nil
+	params.Sign = ""
+	//params.Sign = nil
 
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
