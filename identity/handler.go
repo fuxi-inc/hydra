@@ -227,7 +227,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	// logger.Get().Infow("output marshalEntity", zap.Any("action", string(marshalEntity)))
 
 	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(entity.UserDomainID+entity.PodAddress)))
+	hash.Write([]byte(string(entity.UserDomainID + entity.PodAddress)))
 	verifyHash := hash.Sum(nil)
 
 	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, signature, verifyHash)
