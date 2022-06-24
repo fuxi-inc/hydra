@@ -114,27 +114,19 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 
 	ctx := context.Background()
 	//owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
-	_, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
+	owner, err := h.r.AuthorizationManager().CreateAuthorizationOwner(ctx, &entity)
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteError(w, r, ErrNotFoundData)
-		//w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	recipient, err := h.r.AuthorizationManager().GetAuthorizationIdentity(ctx, entity.Recipient)
 	if err != nil || recipient == nil {
 		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
-		//h.r.Writer().WriteError(w, r, err)
 		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
 		return
 	}
-
-	// err = verifySignature(owner, &params)
-	// if err != nil {
-	// 	logger.Get().Infow("verify failed", zap.Error(err))
-	// 	h.r.Writer().WriteError(w, r, err)
-	// }
 
 	//signature := params.Sign
 	signature, err := hex.DecodeString(params.Sign)
@@ -142,11 +134,10 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		logger.Get().Infow("decode signature error", zap.Error(err))
 		return
 	}
-	logger.Get().Infow("signature", zap.Any("signature", params.Sign))
-	logger.Get().Infow("signature", zap.Any("signature", signature))
 	//paramsJson, err := transformAuthzParamstoJson(&params)
 	paramsStr := params.Identifier + params.Owner + params.Recipient
-	err = verifySignatureStr(recipient, paramsStr, signature)
+	logger.Get().Infow("signature string", zap.Any("signature", paramsStr))
+	err = verifySignatureStr(owner, paramsStr, signature)
 	//err = verifySignature(recipient, paramsJson, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
@@ -219,6 +210,30 @@ func (h *Handler) CreateAuthzTrans(w http.ResponseWriter, r *http.Request, _ htt
 	if err != nil {
 		logger.Get().Infow("failed to get the data identifier", zap.Error(err))
 		h.r.Writer().WriteError(w, r, ErrNotFoundData)
+		return
+	}
+
+	recipient, err := h.r.AuthorizationManager().GetAuthorizationIdentity(ctx, entity.Recipient)
+	if err != nil || recipient == nil {
+		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
+		return
+	}
+
+	//signature := params.Sign
+	signature, err := hex.DecodeString(params.Sign)
+	if err != nil {
+		logger.Get().Infow("decode signature error", zap.Error(err))
+		return
+	}
+	//paramsJson, err := transformAuthzParamstoJson(&params)
+	paramsStr := params.Identifier + params.Owner + params.Recipient
+	logger.Get().Infow("signature string", zap.Any("signature", paramsStr))
+	err = verifySignatureStr(recipient, paramsStr, signature)
+	//err = verifySignature(recipient, paramsJson, signature)
+	if err != nil {
+		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
 		return
 	}
 
@@ -747,7 +762,7 @@ func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
 func verifySignatureStr(owner *identity.Identity, paramStr string, signature []byte) error {
 	hash := crypto.SHA1.New()
 	//hash.Write([]byte("DIS_2020" + string(paramsJson)))
-	data := []byte(paramStr)
+	data := []byte("DIS_2020" + paramStr)
 	hash.Write(data)
 	hashData := hash.Sum(nil)
 	logger.Get().Infow("params before hash", zap.Any("data", hex.EncodeToString(data)))
@@ -789,66 +804,3 @@ func verifySignature(owner *identity.Identity, paramsJson []byte, signature []by
 
 	return err
 }
-
-//func verifySignature(owner *identity.Identity, params *AuthorizationParams) error {
-//	signature := params.Sign
-//	logger.Get().Infow("get the signature from requests", zap.Any("signature", signature))
-//	logger.Get().Infow("the signature in byte format", zap.Any("signature", []byte(signature)))
-//
-//	decoded_sign, err := base64.StdEncoding.DecodeString(signature)
-//	if err != nil {
-//		logger.Get().Infow("base64 decode error")
-//		return err
-//	}
-//	logger.Get().Infow("decoded signature", zap.Any("decoded_sign", decoded_sign))
-//
-//	logger.Get().Infow("params[recipient]", zap.Any("params[recipient]", params.Recipient))
-//	logger.Get().Infow("params[owner]", zap.Any("params[owner]", params.Owner))
-//	logger.Get().Infow("params[identifier]", zap.Any("params[identifier]", params.Identifier))
-//	logger.Get().Infow("params[sign]", zap.Any("params[sign]", params.Sign))
-//
-//	params.Sign = ""
-//
-//	paramsJson, err := json.Marshal(params)
-//	if err != nil {
-//		logger.Get().Infow("failed to marshal params to json", zap.Any("paramsJson", paramsJson))
-//		return err
-//	}
-//	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
-//
-//	hash := crypto.SHA1.New()
-//	hash.Write([]byte("DIS_2020" + string(paramsJson)))
-//	hashData := hash.Sum(nil)
-//	logger.Get().Infow("params  after hash", zap.Any("hashdata", hex.EncodeToString(hashData)))
-//
-//	testHash := crypto.SHA1.New()
-//	testHash.Write(paramsJson)
-//	testHashData := testHash.Sum(nil)
-//	logger.Get().Infow("test params  after hash", zap.Any("hashdata", hex.EncodeToString(testHashData)))
-//
-//	logger.Get().Infow("public key get from database", zap.Any("publickey", owner.PublicKey))
-//	publicKey, err := x509.ParsePKCS1PublicKey(owner.PublicKey)
-//	logger.Get().Infow("public key after parse", zap.Any("publickey", publicKey))
-//	if err != nil {
-//		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
-//		return err
-//	}
-//
-//	logger.Get().Infow("private key get from database", zap.Any("privateKey", owner.PrivateKey))
-//	privateKey, err := x509.ParsePKCS1PrivateKey(owner.PrivateKey)
-//	logger.Get().Infow("private key after parse", zap.Any("privateKey", privateKey))
-//	if err != nil {
-//		logger.Get().Infow("failed to ParsePKIXPublicKey", zap.Error(err))
-//		return err
-//	}
-//
-//	localsign, localSignErr := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA1, hashData)
-//	logger.Get().Infow("localSignErr", zap.Error(localSignErr))
-//	logger.Get().Infow("localSign", zap.Any("localsign", localsign))
-//	localerr := rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, localsign)
-//	logger.Get().Infow("local sign verify result", zap.Error(localerr))
-//
-//	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA1, hashData, decoded_sign)
-//
-//	return err
-//}
