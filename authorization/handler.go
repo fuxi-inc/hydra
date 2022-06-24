@@ -142,10 +142,10 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		logger.Get().Infow("decode signature error", zap.Error(err))
 		return
 	}
-	logger.Get().Infow("signature", zap.Any("signature", params.Sign))
 	logger.Get().Infow("signature", zap.Any("signature", signature))
 	//paramsJson, err := transformAuthzParamstoJson(&params)
 	paramsStr := params.Identifier + params.Owner + params.Recipient
+	logger.Get().Infow("signature", zap.Any("signature", paramsStr))
 	err = verifySignatureStr(recipient, paramsStr, signature)
 	//err = verifySignature(recipient, paramsJson, signature)
 	if err != nil {
