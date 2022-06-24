@@ -189,6 +189,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity IdentityPod
 
+	setupCORS(&w)
+	if r.Method == "OPTIONS" {
+		return
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
@@ -537,3 +542,9 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 // 	return err
 // }
+
+func setupCORS(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
