@@ -199,7 +199,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	r.Body.Read(body)
 
 	// 将字节切片内容写入相应报文
-	logger.Get().Infow("http body", zap.Any("body", entity))
+	logger.Get().Infow("http body", zap.Any("body", body))
 
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
