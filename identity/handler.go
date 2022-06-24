@@ -189,18 +189,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var entity IdentityPod
 
-	// 获取请求报文的内容长度
-	len := r.ContentLength
-
-	// 新建一个字节切片，长度与请求报文的内容长度相同
-	body := make([]byte, len)
-
-	// 读取 r 的请求主体，并将具体内容读入 body 中
-	r.Body.Read(body)
-
-	// 将字节切片内容写入相应报文
-	logger.Get().Infow("http body", zap.Any("body", body))
-
 	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
