@@ -165,7 +165,7 @@ func (h *Handler) CreateAuthorization(w http.ResponseWriter, r *http.Request, _ 
 		h.r.Writer().WriteError(w, r, errorsx.WithStack(err))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 // swagger:route POST /authorizations authorization createAuthorization

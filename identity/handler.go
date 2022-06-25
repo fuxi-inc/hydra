@@ -196,7 +196,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 	logger.Get().Infow("privatekey", zap.Any("privatekey", responseEntity.PrivateKey))
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+"/"+entity.ID, &responseEntity)
+	h.r.Writer().Write(w, r, &responseEntity)
 }
 
 func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -272,7 +272,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	h.r.Writer().WriteCreated(w, r, IdentityHandlerPath+PodHandlerPath+"/"+entity.UserDomainID, nil)
+	h.r.Writer().Write(w, r, nil)
 }
 
 func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
