@@ -114,7 +114,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	entity.CreationTime = time.Now().UTC().Round(time.Second)
 	entity.LastModifiedTime = entity.CreationTime
 	entity.ID = entity.ID + ".user.fuxi"
-	entity.Email = "100" //存放token值
+	entity.Email = "100" // 存放token值
+	entity.Owner = "0"   // 鉴别是否已经注册过POD
 
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -218,16 +219,28 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	// entity.Sign = nil
+	// 获取对应的identity记录
+	entityUpdate, err := h.r.IdentityManager().GetIdentity(r.Context(), entity.UserDomainID)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
-	// marshalEntity, err := json.Marshal(entity)
-	// if err != nil {
-	// 	logger.Get().Infow("failed to Marshal identitypod", zap.Error(err))
-	// 	h.r.Writer().WriteError(w, r, err)
-	// 	return
-	// }
+	// 已经注册过POD
+	if entityUpdate.Owner == "1" {
+		logger.Get().Infow("The pod has been registered")
+		h.r.Writer().WriteErrorCode(w, r, http.StatusTooManyRequests, err)
+		return
+	} else {
+		entityUpdate.Owner = "1"
+	}
 
-	// logger.Get().Infow("output marshalEntity", zap.Any("action", string(marshalEntity)))
+	// 更新owner字段，标记为已注册
+	err = h.r.IdentityManager().UpdateIdentity(r.Context(), entityUpdate)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
 
 	hash := crypto.SHA1.New()
 	hash.Write([]byte("DIS_2020" + string(entity.UserDomainID+entity.PodAddress)))
@@ -281,11 +294,6 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 		return
 	}
 
-	// if entityFrom == nil || entityTo == nil {
-	// 	w.WriteHeader(http.StatusNoContent)
-	// 	return
-	// }
-
 	if entityFrom.Email == "" || entityTo.Email == "" {
 		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))
 		return
@@ -306,12 +314,12 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 	stringTo := strconv.FormatFloat(vTo+v, 'f', 2, 64)
 	entityTo.Email = stringTo
 
-	err = h.r.IdentityManager().UpdateIdentityToken(r.Context(), entityFrom)
+	err = h.r.IdentityManager().UpdateIdentity(r.Context(), entityFrom)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}
-	err = h.r.IdentityManager().UpdateIdentityToken(r.Context(), entityTo)
+	err = h.r.IdentityManager().UpdateIdentity(r.Context(), entityTo)
 	if err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return

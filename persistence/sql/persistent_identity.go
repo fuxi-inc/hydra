@@ -38,7 +38,7 @@ func (p *Persister) GetIdentityToken(ctx context.Context, id string) (string, er
 	return cl.Email, nil
 }
 
-func (p *Persister) UpdateIdentityToken(ctx context.Context, entity *identity.Identity) error {
+func (p *Persister) UpdateIdentity(ctx context.Context, entity *identity.Identity) error {
 	// Change database record's status
 	err := p.transaction(ctx, func(ctx context.Context, c *pop.Connection) error {
 		return sqlcon.HandleError(c.Update(entity))
@@ -46,6 +46,7 @@ func (p *Persister) UpdateIdentityToken(ctx context.Context, entity *identity.Id
 
 	return err
 }
+
 
 func (p *Persister) CreateIdentity(ctx context.Context, entity *identity.Identity, signature []byte) (int, error) {
 	_, code, err := p.client.CreateIdentityIdentifier(ctx, entity.ToIdentityIdentifier(signature))

@@ -13,7 +13,7 @@ type Storage interface {
 
 	GetIdentityToken(ctx context.Context, id string) (string, error)
 
-	UpdateIdentityToken(ctx context.Context, entity *Identity) error
+	UpdateIdentity(ctx context.Context, entity *Identity) error
 
 	CreateIdentity(ctx context.Context, entity *Identity, signature []byte) (int, error)
 
