@@ -182,7 +182,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 
 	responseEntity.UserDomainID = entity.ID
-	responseEntity.PrivateKey = entity.PrivateKey
+	responseEntity.PrivateKey = hex.EncodeToString(entity.PrivateKey)
 	responseEntity.Token = "100"
 
 	logger.Get().Infow("privatekey", zap.Any("privatekey", responseEntity.PrivateKey))

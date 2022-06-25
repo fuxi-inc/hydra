@@ -111,7 +111,6 @@ func (p *Persister) VerifySignature_CreatePod(ctx context.Context, userID string
 		return err
 	}
 
-	log.Println(cl.PrivateKey)
 	log.Printf("%x\n", cl.PrivateKey)
 
 	publicKey, err := x509.ParsePKCS1PublicKey(cl.PublicKey)
