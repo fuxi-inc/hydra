@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
+	"log"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/ory/hydra/identity"
@@ -109,6 +110,9 @@ func (p *Persister) VerifySignature_CreatePod(ctx context.Context, userID string
 		logger.Get().Infow(string(cl.PublicKey), zap.Error(err))
 		return err
 	}
+
+	log.Println(cl.PrivateKey)
+	log.Printf("%x\n", cl.PrivateKey)
 
 	publicKey, err := x509.ParsePKCS1PublicKey(cl.PublicKey)
 
