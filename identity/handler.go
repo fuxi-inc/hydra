@@ -240,7 +240,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 	// 已经注册过POD
 	if entityUpdate.Owner == "1" {
 		logger.Get().Infow("pod has been registered")
-		h.r.Writer().WriteErrorCode(w, r, http.StatusTooManyRequests, err)
+		h.r.Writer().WriteErrorCode(w, r, http.StatusTooManyRequests, errors.New("pod has been registered"))
 		return
 	} else {
 		entityUpdate.Owner = "1"
@@ -255,7 +255,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	code, err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
 	if code == http.StatusNotFound {
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("pod has been registered"))
+		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, err)
 		return
 	}
 
