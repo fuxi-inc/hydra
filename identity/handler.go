@@ -219,6 +219,17 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
+	hash := crypto.SHA1.New()
+	hash.Write([]byte("DIS_2020" + string(entity.UserDomainID+entity.PodAddress)))
+	verifyHash := hash.Sum(nil)
+
+	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, signature, verifyHash)
+	if err != nil {
+		logger.Get().Infow("failed to verify signature", zap.Error(err))
+		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, err)
+		return
+	}
+
 	// 获取对应的identity记录
 	entityUpdate, err := h.r.IdentityManager().GetIdentity(r.Context(), entity.UserDomainID)
 	if err != nil {
@@ -228,7 +239,7 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	// 已经注册过POD
 	if entityUpdate.Owner == "1" {
-		logger.Get().Infow("The pod has been registered")
+		logger.Get().Infow("pod has been registered")
 		h.r.Writer().WriteErrorCode(w, r, http.StatusTooManyRequests, err)
 		return
 	} else {
@@ -242,20 +253,9 @@ func (h *Handler) CreatePod(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	hash := crypto.SHA1.New()
-	hash.Write([]byte("DIS_2020" + string(entity.UserDomainID+entity.PodAddress)))
-	verifyHash := hash.Sum(nil)
-
-	err = h.r.IdentityManager().VerifySignature_CreatePod(r.Context(), entity.UserDomainID, signature, verifyHash)
-	if err != nil {
-		logger.Get().Infow("failed to verify signature", zap.Error(err))
-		h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, err)
-		return
-	}
-
 	code, err := h.r.IdentityManager().CreateIdentityPod(r.Context(), entity.UserDomainID, entity.PodAddress)
 	if code == http.StatusNotFound {
-		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, err)
+		h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("pod has been registered"))
 		return
 	}
 
@@ -295,7 +295,7 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 	}
 
 	if entityFrom.Email == "" || entityTo.Email == "" {
-		h.r.Writer().WriteError(w, r, errors.New("Token is not set"))
+		h.r.Writer().WriteError(w, r, errors.New("token is not set"))
 		return
 	}
 
@@ -304,7 +304,7 @@ func (h *Handler) TokenTrans(w http.ResponseWriter, r *http.Request, _ httproute
 	vTo, _ := strconv.ParseFloat(entityTo.Email, 64)
 
 	if vFrom < v {
-		h.r.Writer().WriteError(w, r, errors.New("Token is not enough"))
+		h.r.Writer().WriteError(w, r, errors.New("token is not enough"))
 		return
 	}
 
