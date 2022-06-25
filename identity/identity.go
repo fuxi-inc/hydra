@@ -25,7 +25,7 @@ type IdentityPod struct {
 
 type ResponseIdentity struct {
 	UserDomainID string `json:"userDomainID"`
-	PrivateKey   string `json:"privateKey"`
+	PrivateKey   []byte `json:"privateKey"`
 	Token        string `json:"token"`
 }
 
