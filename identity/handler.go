@@ -98,10 +98,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	var entity Identity
 	var responseEntity ResponseIdentity
 
-	// w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
-	// w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
-	// w.Header().Set("content-type", "application/json")             //返回数据格式是json
-
 	setupCORS(&w)
 	if r.Method == "OPTIONS" {
 		return
@@ -573,6 +569,8 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 func setupCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "*")
-	(*w).Header().Set("Access-Control-Allow-Headers", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+	(*w).Header().Set("Content-Type", "application/json")
 }
