@@ -128,7 +128,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4445/identity/pod userDomainID=alice.user.fuxi podAddress="https://pan.baidu.com/index" sign="xxx"
+http POST http://106.14.192.31:4445/identity/pod userDomainID=alice30.user.fuxi podAddress="https://pan.baidu.com/index" sign="7d2dc1ea53171143ed1a99fd399516f0dc726fc022a0dd11ee31a6ff8fe02e57e952c00786b554745e73b8c4c361e3e41fb36653f0ebd37f811c8b22800806a618a7b0b3c233384129326fd67ee8892b3568bb9b712a9d15e34a2a52276f4191d4ef051518a521451c716ba44bc974e7463c8ef23e5160320bb69aa41ed4bc24e73d614379a19fe049eed31f019727abe52de3cb2d7bf4b7ad0c3f1781e50de4ab32a8b3a4387fad0c1b08addb12f461c5d4e3a7b7462e16d10e74ab61ac0ca5346b619cd5f31cd62b4dc2bfc1e93db0286c2e37a5cd9497e2c97f530c3050a9caa82f06de12157252298ddcaf526602e1093cad76050eccf051e9cbf0488204"
 ```
 
 
@@ -345,7 +345,7 @@ Json参数，以 Json 的格式放在请求体Body中。
 **示例**
 
 ```powershell
-http POST http://106.14.192.31:4444/authorization/addAuth dataDomainID=data.alice.pod.fuxi userDomainID=alice.user.fuxi viewUserDomainID=bob.user.fuxi sign="xxx"
+http POST http://106.14.192.31:4445/authorization/addAuth dataDomainID=77eed0fe-05e1-4664-81fc-cade1441366a.alice30.pod.fuxi userDomainID=alice30.user.fuxi viewUserDomainID=bob.user.fuxi sign="62f65dfaffc56c6f23b66970459cbe77ab80f4eedcf0072c8eb6f465f6c31d4cb124d56ffc7a5d61fbd40f7672ad0afbb042fc0261f9222e90016fb7c586cd0da62a58daec4a800cce74bd9fe5cb2ea4a46c7ea6201c4cbf3d3e214f629f2c269c6d2dd24e205ea111491d6d8610e6d64f84e729c56e86c162a7e352ad9accbf6b42630f60d8ce2d2f55e32273c7389dee1a39d56f814d6c3be6abd05883df03be7e779865656eebeb03b391636432082706fe7047f92a5c42f2fb55f7c5a068d83c65a03cb229e964d00c8096b3c7b4918479d15f24bff464f6382fcda588b95aa6287d52e2505f95389a59426c2aa641dd86fa4bd57e219a9cda83b198d8f8"
 ```
 
 
@@ -437,63 +437,5 @@ http POST http://106.14.192.31:4444/authorization/authentication dataDomainID=da
 
 
 
-## pod端RSA签名流程
-
-以下流程通过`golang`语言作为示意，pod端需要通过对应代码实现类似流程，只要保证算法一致即可
 
 
-
-（1）将用户注册后返回的privateKey（byte[]类型）进行解码，得到rsa格式的私钥
-
-```go
-// x509将数据解析得到RSA私钥
-privateKey, _ := x509.ParsePKCS1PrivateKey(entity.PrivateKey)
-```
-
-
-
-（2）对请求body中（JSON格式）的内容进行hash，加上DIS_2020前缀
-
-- **hash内容**：DIS_2020 + “数据body内容”(sign为空)
-
-​		 以1.4节token转账的POST请求为例，流程如下：
-
-```go
-// 记录body内容的结构体
-type TokenTransferRequest struct {
-	FromID      string `json:"fromUserDomainID"`
-	ToID      	string `json:"toUserDomainID"`
-	Token		string `json:"token"`
-	Sign        byte[] `json:"sign"`
-}
-
-var tokenTransferRequest TokenTransferRequest
-
-// 赋值，先将sign值置空
-tokenTransferRequest.FromID = alice.user.fuxi
-tokenTransferRequest.ToID = bob.user.fuxi
-tokenTransferRequest.Token = 10
-
-// 序列化，将struct转为json格式的byte[]
-data, _ := json.Marshal(tokenTransferRequest)
-
-// 加上DIS_2020前缀，并且计算hash，Hash算法采用SHA1
-hash := crypto.SHA1.New()
-hash.Write([]byte("DIS_2020" + string(data)))
-verifyHash := hash.Sum(nil)
-```
-
-
-
-（3）利用私钥对hash内容进行签名，并记录到body的sign字段中
-
-```go
-// 对hash内容进行签名，采用SHA1方法
-signature, _ := rsa.SignPKCS1v15(rand.Reader, privatekey, crypto.SHA256, verifyHash)
-
-// 将得到的signature存到body的sign字段中
-tokenTransferRequest.Sign = signature
-
-// 发送HTTP请求
-...
-```
