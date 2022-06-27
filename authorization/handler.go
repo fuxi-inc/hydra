@@ -345,6 +345,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	signature, err := hex.DecodeString(params.Sign)
 	if err != nil {
 		logger.Get().Infow("decode pod signature error", zap.Error(err))
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	//paramsJson, err := transformAuthzParamstoJson(&params)
@@ -362,6 +363,7 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 	signature, err = hex.DecodeString(params.SignRecipient)
 	if err != nil {
 		logger.Get().Infow("decode recipient signature error", zap.Error(err))
+		h.r.Writer().WriteError(w, r, err)
 		return
 	}
 	//paramsJson, err := transformAuthzParamstoJson(&params)
