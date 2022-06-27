@@ -334,36 +334,46 @@ func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request, _ httprou
 		return
 	}
 
-	signature := params.Sign
-	//signature, err := hex.DecodeString(params.Sign)
-	//if err != nil {
-	//	logger.Get().Infow("decode signature error", zap.Error(err))
-	//	return
-	//}
-	logger.Get().Infow("signature", zap.Any("signature", hex.EncodeToString(signature)))
-	paramsJson, err := transformAuthnParamstoJson(&params)
-	err = verifySignature(owner, paramsJson, signature)
+	recipient, err := h.r.AuthorizationManager().GetAuthorizationIdentity(ctx, authEntity.Recipient)
+	if err != nil || recipient == nil {
+		logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrNotFoundIdentifier)
+		return
+	}
+
+	//verify the signature of pod
+	signature, err := hex.DecodeString(params.Sign)
+	if err != nil {
+		logger.Get().Infow("decode pod signature error", zap.Error(err))
+		return
+	}
+	//paramsJson, err := transformAuthzParamstoJson(&params)
+	paramsStr := params.Identifier + params.Recipient + params.SignRecipient
+	logger.Get().Infow("signature string", zap.Any("signature", paramsStr))
+	err = verifySignatureStr(owner, paramsStr, signature)
+	//err = verifySignature(recipient, paramsJson, signature)
 	if err != nil {
 		logger.Get().Infow("failed to verify the signature of pod", zap.Error(err))
 		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
 		return
 	}
 
-	//recipient, err := h.r.AuthorizationManager().GetAuthorizationIdentity(ctx, subject)
-	//if err != nil {
-	//	logger.Get().Infow("failed to get the data recipient identifier", zap.Error(err))
-	//	//h.r.Writer().WriteError(w, r, err)
-	//	h.r.Writer().WriteErrorCode(w, r, http.StatusNotFound, errors.New("failed to get the viewUserDomainID"))
-	//	return
-	//}
-	//recipientSignature := params.SignRecipient
-	//authParamsJson, err := transformAuthzParamstoJson(&AuthorizationParams{Identifier:id, Owner: owner.ID, Recipient: subject,Sign:nil})
-	//err = verifySignature(recipient, authParamsJson, recipientSignature)
-	//if err != nil{
-	//	logger.Get().Infow("failed to verify the signature of recipient", zap.Error(err))
-	//	h.r.Writer().WriteErrorCode(w, r, http.StatusForbidden, errors.New("failed to verify the signature of recipient"))
-	//	return
-	//}
+	//verify the signature of recipient
+	signature, err = hex.DecodeString(params.SignRecipient)
+	if err != nil {
+		logger.Get().Infow("decode recipient signature error", zap.Error(err))
+		return
+	}
+	//paramsJson, err := transformAuthzParamstoJson(&params)
+	paramsStr = params.Identifier + params.Recipient
+	logger.Get().Infow("signature string", zap.Any("signature", paramsStr))
+	err = verifySignatureStr(recipient, paramsStr, signature)
+	//err = verifySignature(recipient, paramsJson, signature)
+	if err != nil {
+		logger.Get().Infow("failed to verify the signature of recipient", zap.Error(err))
+		h.r.Writer().WriteError(w, r, ErrInvalidAuthorizationRequests)
+		return
+	}
 
 	entity, err := h.r.AuthorizationManager().GetAuthorization(ctx, id, subject)
 	if err != nil {
@@ -742,19 +752,6 @@ func transformAuthzParamstoJson(params *AuthorizationParams) ([]byte, error) {
 	paramsJson, err := json.Marshal(params)
 	if err != nil {
 		logger.Get().Infow("failed to marshal authorization params to json", zap.Any("paramsJson", paramsJson))
-		return nil, err
-	}
-	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
-	return paramsJson, nil
-}
-
-func transformAuthnParamstoJson(params *AuthenticationParams) ([]byte, error) {
-	//params.Sign = ""
-	params.Sign = nil
-
-	paramsJson, err := json.Marshal(params)
-	if err != nil {
-		logger.Get().Infow("failed to marshal authentication params to json", zap.Any("paramsJson", paramsJson))
 		return nil, err
 	}
 	logger.Get().Infow("params in json format", zap.Any("paramsJson", string(paramsJson)))
