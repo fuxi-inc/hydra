@@ -201,6 +201,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	publishData.UserDomainID = entity.ID
 	publishData.PrivateKey = hex.EncodeToString(entity.PrivateKey)
 	publishData.PublicKey = hex.EncodeToString(entity.PublicKey)
+	logger.Get().Infow("publickey", zap.Any("pub", publishData.PublicKey))
 
 	targetUrl := "http://139.196.168.128:8000" + "/getkeys"
 	plainText, _ := json.Marshal(publishData)
