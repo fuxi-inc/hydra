@@ -41,6 +41,12 @@ type tokenTrans struct {
 	Token  string `json:"token"`
 }
 
+type PublishRequest struct {
+	UserDomainID string `json:"userDomainID"`
+	PrivateKey   string `json:"privateKey"`
+	PublicKey    string `json:"publicKey"`
+}
+
 func (entity *Identity) ToIdentityIdentifier(signature []byte) *api.IdentityIdentifier {
 	return &api.IdentityIdentifier{
 		Id:               entity.ID,

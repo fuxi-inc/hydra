@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ory/fosite"
@@ -35,6 +36,7 @@ const (
 	PodHandlerPath      = "/pod"
 	TokenHandlerPath    = "/token"
 	TransHandlerPath    = "/transaction"
+	KeyHandlerPath      = "/ "
 )
 
 func NewHandler(r InternalRegistry) *Handler {
@@ -194,7 +196,26 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	responseEntity.PrivateKey = hex.EncodeToString(entity.PrivateKey)
 	responseEntity.Token = "100"
 
-	logger.Get().Infow("privatekey", zap.Any("privatekey", responseEntity.PrivateKey))
+	var publishData PublishRequest
+
+	publishData.UserDomainID = entity.ID
+	publishData.PrivateKey = hex.EncodeToString(entity.PrivateKey)
+	publishData.PublicKey = hex.EncodeToString(entity.PublicKey)
+
+	targetUrl := "http://139.196.168.128:8000" + "/getkeys"
+	plainText, _ := json.Marshal(publishData)
+	payload := strings.NewReader(string(plainText))
+
+	req, _ := http.NewRequest("POST", targetUrl, payload)
+	req.Header.Add("Content-Type", "application/json")
+
+	_, err = http.DefaultClient.Do(req)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	logger.Get().Infow("publish key done")
 
 	h.r.Writer().Write(w, r, &responseEntity)
 }
